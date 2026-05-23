@@ -152,7 +152,7 @@ function ErrorBanner({ lines }: { lines: ParseLine[] }) {
           <Text style={styles.errIconText}>!</Text>
         </View>
         <Text style={styles.errTitle}>
-          {flagged.length} line{flagged.length !== 1 ? 's' : ''} couldn't be parsed
+          {flagged.length} line{flagged.length !== 1 ? 's' : ''} couldn&apos;t be parsed
         </Text>
         <Text style={[styles.exChevron, open && styles.exChevronOpen]}>⌄</Text>
       </View>
