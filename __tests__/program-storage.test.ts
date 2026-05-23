@@ -1,6 +1,6 @@
 import BetterSqlite from 'better-sqlite3';
 import { initSchema, makeTestDB, type DB } from '../src/storage';
-import { savePrograms, getPrograms, getProgramDay } from '../src/programStorage';
+import { savePrograms, getPrograms, getProgramDay, updateActiveDayIndex } from '../src/programStorage';
 import type { Program } from '../src/types';
 
 function makeInMemoryDB(): DB {
@@ -115,5 +115,20 @@ describe('program storage', () => {
     expect(target.reps).toBe(8);
     expect(target.minReps).toBe(6);
     expect(target.weight).toBe(60);
+  });
+
+  it('updateActiveDayIndex persists the new selection', async () => {
+    await savePrograms(db, [PROGRAM_A]);
+    await updateActiveDayIndex(db, 'v1', 0);
+    const programs = await getPrograms(db);
+    expect(programs[0].activeDayIndex).toBe(0);
+  });
+
+  it('updateActiveDayIndex does not affect other programs', async () => {
+    await savePrograms(db, [PROGRAM_A, PROGRAM_B]);
+    await updateActiveDayIndex(db, 'v1', 1);
+    const programs = await getPrograms(db);
+    expect(programs[0].activeDayIndex).toBe(1);
+    expect(programs[1].activeDayIndex).toBe(0); // v2 unchanged
   });
 });

@@ -80,6 +80,17 @@ export async function getProgramDay(db: DB, dayIndex: number): Promise<ProgramDa
   return { name: dayRows[0].name, exercises };
 }
 
+export async function updateActiveDayIndex(
+  db: DB,
+  programName: string,
+  dayIndex: number
+): Promise<void> {
+  await db.run(
+    'UPDATE programs SET active_day_index = ? WHERE name = ?',
+    [dayIndex, programName]
+  );
+}
+
 async function loadExercises(db: DB, dayId: number): Promise<ProgramExercise[]> {
   const rows = await db.all<ExerciseRow>(
     'SELECT name, exercise_index, targets_json FROM program_exercises WHERE program_day_id = ? ORDER BY exercise_index ASC',
