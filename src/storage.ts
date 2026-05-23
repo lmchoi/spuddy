@@ -6,22 +6,23 @@ export interface DB {
   all<T>(sql: string, params?: unknown[]): Promise<T[]>;
 }
 
-const SCHEMA = `
-  CREATE TABLE IF NOT EXISTS sessions (
+const SCHEMA_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
     exercise_name TEXT NOT NULL,
     sets_json TEXT NOT NULL,
     targets_json TEXT NOT NULL
-  );
-  CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions (date DESC);
-  CREATE INDEX IF NOT EXISTS idx_sessions_exercise ON sessions (exercise_name);
-`;
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions (date DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_sessions_exercise ON sessions (exercise_name)`,
+];
 
 export async function initDB(): Promise<DB> {
   const db = await SQLite.openDatabaseAsync('spuddy.db');
-  await db.execAsync(SCHEMA);
-  return makeExpoAdapter(db);
+  const adapter = makeExpoAdapter(db);
+  await initSchema(adapter);
+  return adapter;
 }
 
 function makeExpoAdapter(db: SQLite.SQLiteDatabase): DB {
@@ -52,21 +53,9 @@ interface BetterSqliteDB {
 }
 
 export async function initSchema(db: DB): Promise<void> {
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS sessions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT NOT NULL,
-      exercise_name TEXT NOT NULL,
-      sets_json TEXT NOT NULL,
-      targets_json TEXT NOT NULL
-    )
-  `);
-  await db.run(
-    `CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions (date DESC)`
-  );
-  await db.run(
-    `CREATE INDEX IF NOT EXISTS idx_sessions_exercise ON sessions (exercise_name)`
-  );
+  for (const sql of SCHEMA_STATEMENTS) {
+    await db.run(sql);
+  }
 }
 
 export async function saveSession(db: DB, session: Session): Promise<void> {
