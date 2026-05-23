@@ -14,7 +14,32 @@ import { getDB } from '@/src/db';
 import { parseLiftohistoryText } from '@/src/parser';
 import { saveSession, sessionExists } from '@/src/storage';
 import type { ExerciseEntry, Session } from '@/src/types';
-import { C } from '@/components/spuddy/palette';
+
+// ─── Palette ─────────────────────────────────────────────────────────────────
+
+const C = {
+  bg:          '#181109',
+  bg2:         '#1F1610',
+  surface:     '#251A12',
+  card:        '#2E2218',
+  card2:       '#382A1B',
+  cardSoft:    '#3F3122',
+  border:      '#3A2C1F',
+  borderHi:    '#52402C',
+  faint:       '#3F3122',
+  text:        '#F5EDDD',
+  text2:       '#D6C2A2',
+  sub:         '#A89175',
+  muted:       '#6B5639',
+  hit:         '#B7D26A',
+  hitBg:       '#2F3D1B',
+  below:       '#E8884A',
+  belowBg:     '#3D2517',
+  exceeded:    '#F4C44F',
+  exceededBg:  '#3D2F13',
+  spudFlesh:   '#F2DEB4',
+  spudSkin:    '#C77F39',
+} as const;
 
 // ─── Spuddy mascot ───────────────────────────────────────────────────────────
 
@@ -145,11 +170,6 @@ export default function AddScreen() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [existing, setExisting] = useState(false);
-  // resolvedDate tracks which date existing was last checked for.
-  // checking is derived: true whenever parsed.date hasn't been resolved yet,
-  // so the save button is disabled with no synchronous setState needed.
-  const [resolvedDate, setResolvedDate] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState(false);
   const autoNavTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const parsed: Session | null = useMemo(
@@ -163,16 +183,14 @@ export default function AddScreen() {
 
   // Derive state
   const isEmpty = !text.trim();
-  const checking = !!parsed?.date && resolvedDate !== parsed.date;
-  const isDuplicate = !isEmpty && !saved && !!parsed && !checking && existing;
-  const isClean = !isEmpty && !saved && !!parsed && !checking && !existing;
+  const isDuplicate = !isEmpty && !saved && !!parsed && existing;
+  const isClean = !isEmpty && !saved && !!parsed && !existing;
 
   // Save button label + enabled
   let saveLabel = 'Paste to begin';
   let saveEnabled = false;
-  if (checking) { saveLabel = 'Checking…'; }
-  else if (isPartial) { saveLabel = 'Still typing…'; }
-  else if (isDuplicate) { saveLabel = 'Overwrite'; }  // enabled in slice 3 once replaceSession exists
+  if (isPartial) { saveLabel = 'Still typing…'; }
+  else if (isDuplicate) { saveLabel = 'Overwrite'; }
   else if (isClean && parsed) {
     saveLabel = `Save ${parsed.exercises.length} exercise${parsed.exercises.length !== 1 ? 's' : ''}`;
     saveEnabled = !saving;
@@ -183,20 +201,16 @@ export default function AddScreen() {
     let cancelled = false;
     getDB()
       .then(db => sessionExists(db, parsed.date))
-      .then(exists => {
-        if (!cancelled) { setExisting(exists); setResolvedDate(parsed.date); }
-      })
-      .catch(() => { if (!cancelled) setResolvedDate(parsed.date); });
-    return () => { cancelled = true; };
+      .then(exists => { if (!cancelled) setExisting(exists); });
+    return () => {
+      cancelled = true;
+      setExisting(false);
+    };
   }, [parsed?.date]);
-
-  // Clear the auto-nav timer on unmount
-  useEffect(() => () => { if (autoNavTimer.current) clearTimeout(autoNavTimer.current); }, []);
 
   async function handleSave() {
     if (!parsed || saving) return;
     setSaving(true);
-    setSaveError(false);
     try {
       const db = await getDB();
       await saveSession(db, parsed);
@@ -204,24 +218,18 @@ export default function AddScreen() {
       autoNavTimer.current = setTimeout(() => router.push(`/progress/${parsed.date}`), 1500);
     } catch (err) {
       console.error(err);
-      setSaveError(true);
     } finally {
       setSaving(false);
     }
   }
 
-  function handleViewSession(date: string) {
-    if (autoNavTimer.current) clearTimeout(autoNavTimer.current);
-    router.push(`/progress/${date}`);
-  }
+  useEffect(() => () => { if (autoNavTimer.current) clearTimeout(autoNavTimer.current); }, []);
 
   function handleCancel() {
-    if (saving) return;
     if (autoNavTimer.current) clearTimeout(autoNavTimer.current);
     setText('');
     setExisting(false);
     setSaved(false);
-    setSaveError(false);
   }
 
   // ─── State chip
@@ -239,9 +247,9 @@ export default function AddScreen() {
 
   // ─── Subtitle
   let subtitle = 'Paste below — Spuddy will preview before saving';
-  if (saved && parsed?.date) subtitle = `Saved · ${formatDateShort(parsed.date)}`;
-  else if (isPartial) subtitle = 'Still typing… preview will update';
+  if (isPartial) subtitle = 'Still typing… preview will update';
   else if (parsed?.date) subtitle = formatDateShort(parsed.date);
+  else if (saved) subtitle = `Saved · ${parsed?.date ?? ''}`;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -278,7 +286,7 @@ export default function AddScreen() {
           </Text>
           <View style={styles.savedActions}>
             <Pressable
-              onPress={() => handleViewSession(parsed.date)}
+              onPress={() => router.push(`/progress/${parsed.date}`)}
               style={styles.ghostBtn}
             >
               <Text style={styles.ghostBtnText}>View session</Text>
@@ -328,13 +336,6 @@ export default function AddScreen() {
                   onView={() => router.push(`/progress/${parsed.date}`)}
                   onCancel={handleCancel}
                 />
-              </View>
-            )}
-
-            {/* Save error */}
-            {saveError && (
-              <View style={styles.saveErrorBanner}>
-                <Text style={styles.saveErrorText}>Couldn&apos;t save — check your format and try again.</Text>
               </View>
             )}
 
@@ -537,19 +538,6 @@ const styles = StyleSheet.create({
   },
   pillBtnMutedText: {
     color: C.sub,
-  },
-
-  // ─── Save error
-  saveErrorBanner: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: C.belowBg,
-    borderWidth: 1,
-    borderColor: `${C.below}55`,
-  },
-  saveErrorText: {
-    fontSize: 13,
-    color: C.below,
   },
 
   // ─── Preview card
