@@ -286,7 +286,7 @@ export default function AddScreen() {
               <Text style={styles.ghostBtnText}>View session</Text>
             </Pressable>
             <Pressable onPress={handleCancel} style={styles.primaryBtn}>
-              <Text style={styles.primaryBtnText}>Done</Text>
+              <Text style={styles.primaryBtnText}>Add another</Text>
             </Pressable>
           </View>
         </View>
