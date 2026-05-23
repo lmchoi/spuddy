@@ -126,3 +126,17 @@ redesign (settings, bento detail) cheap.
 - Should the save success state route back to the progress list or stay on
   the Add screen with a fresh empty state? (lean: route to the just-saved
   session's detail page)
+
+## Follow-up backlog (post slice 1)
+
+- **"View existing" leaves no back route.** `router.push('/progress/[date]')`
+  from a tab navigates within the tab group — no stack entry is created, so
+  the back gesture doesn't return to add. Needs investigation: either wrap
+  the add screen in its own stack navigator, or use a different routing
+  strategy when pushing from add. Track before the Sources Hub lands, since
+  the hub will push add as a child and the same issue will recur.
+
+- **Duplicate banner is date-only, no content diff.** The banner fires whether
+  the pasted content is identical to the stored session or genuinely different.
+  Consider suppressing or softening the message when the incoming data matches
+  what's already stored. Not urgent for v0.1.

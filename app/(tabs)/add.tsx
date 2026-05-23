@@ -348,9 +348,11 @@ export default function AddScreen() {
 
           {/* Sticky bottom bar */}
           <View style={[styles.stickyBar, { paddingBottom: insets.bottom + 18 }]}>
-            <Pressable onPress={handleCancel} style={styles.ghostBtn}>
-              <Text style={styles.ghostBtnText}>Cancel</Text>
-            </Pressable>
+            {!isEmpty && (
+              <Pressable onPress={handleCancel} style={styles.ghostBtn}>
+                <Text style={styles.ghostBtnText}>Cancel</Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={handleSave}
               disabled={!saveEnabled}
