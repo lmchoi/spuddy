@@ -6,6 +6,6 @@ module.exports = defineConfig([
   ...expo,
   prettier,
   {
-    ignores: ['.claude/**'],
+    ignores: ['.claude/**', 'docs/**'],
   },
 ]);

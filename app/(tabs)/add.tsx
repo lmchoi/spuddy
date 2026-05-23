@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -196,12 +196,15 @@ export default function AddScreen() {
   }
 
   useEffect(() => {
-    if (!parsed?.date) { setExisting(false); return; }
+    if (!parsed?.date) return;
     let cancelled = false;
     getDB()
       .then(db => sessionExists(db, parsed.date))
       .then(exists => { if (!cancelled) setExisting(exists); });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      setExisting(false);
+    };
   }, [parsed?.date]);
 
   async function handleSave() {

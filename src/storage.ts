@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import type { ExerciseEntry, Session, Target, WorkingSet } from './types';
+import type { Session, Target, WorkingSet } from './types';
 
 export interface DB {
   run(sql: string, params?: unknown[]): Promise<void>;

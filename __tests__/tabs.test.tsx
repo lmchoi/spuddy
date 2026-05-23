@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react-native';
 import ProgressScreen from '../app/(tabs)/progress/index';
 import AddScreen from '../app/(tabs)/add';
 import SettingsScreen from '../app/(tabs)/settings';
+import { getPrograms } from '@/src/programStorage';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({
@@ -46,10 +47,8 @@ describe('Progress screen', () => {
 });
 
 describe('Settings screen', () => {
-  const { getPrograms } = require('@/src/programStorage');
-
   afterEach(() => {
-    getPrograms.mockResolvedValue([]);
+    (getPrograms as jest.Mock).mockResolvedValue([]);
   });
 
   it('shows "No programs loaded" when storage is empty', async () => {
@@ -58,7 +57,7 @@ describe('Settings screen', () => {
   });
 
   it('shows program days when a program is loaded', async () => {
-    getPrograms.mockResolvedValue([{
+    (getPrograms as jest.Mock).mockResolvedValue([{
       name: 'v1',
       activeDayIndex: 0,
       days: [
