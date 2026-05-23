@@ -8,6 +8,7 @@ import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const addButtonColor = Colors[colorScheme].tint;
 
   return (
     <Tabs
@@ -33,7 +34,7 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarIcon: () => (
-            <View style={styles.addButton}>
+            <View style={[styles.addButton, { backgroundColor: addButtonColor }]}>
               <SymbolView
                 name={{ ios: 'plus', android: 'add', web: 'add' }}
                 tintColor="#fff"
@@ -65,7 +66,6 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: Colors.light.tint,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
