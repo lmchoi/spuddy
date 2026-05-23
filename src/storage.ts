@@ -16,6 +16,24 @@ const SCHEMA_STATEMENTS = [
   )`,
   `CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions (date DESC)`,
   `CREATE INDEX IF NOT EXISTS idx_sessions_exercise ON sessions (exercise_name)`,
+  `CREATE TABLE IF NOT EXISTS programs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    active_day_index INTEGER NOT NULL DEFAULT 0
+  )`,
+  `CREATE TABLE IF NOT EXISTS program_days (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    program_id INTEGER NOT NULL REFERENCES programs(id),
+    day_index INTEGER NOT NULL,
+    name TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS program_exercises (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    program_day_id INTEGER NOT NULL REFERENCES program_days(id),
+    exercise_index INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    targets_json TEXT NOT NULL
+  )`,
 ];
 
 export async function initDB(): Promise<DB> {
