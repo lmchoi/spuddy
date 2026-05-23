@@ -15,30 +15,7 @@ import { getSetStatus, getEntryStatus } from '@/src/domain/status';
 import { computeStats, coachLine } from '@/src/domain/stats';
 import type { SessionStats } from '@/src/domain/stats';
 import type { Session, ExerciseEntry, Target } from '@/src/types';
-
-// ─── Palette — warm dark ──────────────────────────────────────────────────────
-
-const C = {
-  bg:         '#181109',
-  bg2:        '#1F1610',
-  surface:    '#251A12',
-  card:       '#2E2218',
-  cardSoft:   '#3F3122',
-  border:     '#3A2C1F',
-  text:       '#F5EDDD',
-  text2:      '#D6C2A2',
-  sub:        '#A89175',
-  muted:      '#6B5639',
-  faint:      '#3F3122',
-  hit:        '#B7D26A',
-  hitBg:      '#2F3D1B',
-  below:      '#E8884A',
-  belowBg:    '#3D2517',
-  exceeded:   '#F4C44F',
-  exceededBg: '#3D2F13',
-  noTarget:   '#6B5639',
-  pr:         '#FFB94D',
-} as const;
+import { C } from '@/components/spuddy/palette';
 
 const STATUS_COLOR: Record<string, string> = {
   hit:         C.hit,
