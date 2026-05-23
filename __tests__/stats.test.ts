@@ -105,11 +105,18 @@ describe('coachLine', () => {
       .toBe('Perfect session — every set hit its target.');
   });
 
-  it('returns strong-session line when exceeded dominates', () => {
-    // exceeded (6) > hits (3) + below (1)
+  it('returns strong-session line when exceeded dominates and onTarget is high', () => {
+    // exceeded (6) > hits (3) + below (1), onTarget 90%
     const line = coachLine({ ...base, hits: 3, exceeded: 6, below: 1, onTarget: 90 });
     expect(line).toContain('Strong session');
     expect(line).toContain('90%');
+  });
+
+  it('does not return strong-session when exceeded dominates but onTarget is low', () => {
+    // exceeded (3) > hits (0) + below (2), but only 60% on target
+    const line = coachLine({ ...base, hits: 0, exceeded: 3, below: 2, onTarget: 60 });
+    expect(line).not.toContain('Strong session');
+    expect(line).toContain('60%');
   });
 
   it('returns solid-work line for ≥80% on target', () => {

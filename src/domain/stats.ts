@@ -33,7 +33,7 @@ export function computeStats(session: Session): SessionStats {
 export function coachLine(stats: SessionStats): string {
   if (stats.working === 0) return 'No sets logged for this session.';
   if (stats.onTarget === 100) return 'Perfect session — every set hit its target.';
-  if (stats.exceeded > stats.hits + stats.below) return `Strong session — ${stats.onTarget}% on target, with extra reps to spare.`;
+  if (stats.exceeded > stats.hits + stats.below && stats.onTarget >= 80) return `Strong session — ${stats.onTarget}% on target, with extra reps to spare.`;
   if (stats.onTarget >= 80) return `Solid work — ${stats.onTarget}% of sets on target.`;
   return `${stats.onTarget}% on target. Focus on the sets that fell short next time.`;
 }
