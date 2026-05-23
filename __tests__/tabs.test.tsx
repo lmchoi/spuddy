@@ -5,10 +5,13 @@ import SettingsScreen from '../app/(tabs)/settings';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({ getUniqueExerciseNames: jest.fn().mockResolvedValue([]) }));
-jest.mock('@/src/programStorage', () => ({ getPrograms: jest.fn().mockResolvedValue([]) }));
+jest.mock('@/src/programStorage', () => ({
+  getPrograms: jest.fn().mockResolvedValue([]),
+  updateActiveDayIndex: jest.fn().mockResolvedValue(undefined),
+}));
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
-  useFocusEffect: jest.fn(),
+  useFocusEffect: (cb: () => void) => cb(),
 }));
 
 describe('Add screen', () => {
@@ -33,7 +36,30 @@ describe('Progress screen', () => {
 });
 
 describe('Settings screen', () => {
-  it('renders without crashing', () => {
+  const { getPrograms } = require('@/src/programStorage');
+
+  afterEach(() => {
+    getPrograms.mockResolvedValue([]);
+  });
+
+  it('shows "No programs loaded" when storage is empty', async () => {
     render(<SettingsScreen />);
+    await waitFor(() => expect(screen.getByText('No programs loaded')).toBeTruthy());
+  });
+
+  it('shows program days when a program is loaded', async () => {
+    getPrograms.mockResolvedValue([{
+      name: 'v1',
+      activeDayIndex: 0,
+      days: [
+        { name: 'Day 1', exercises: [{ name: 'Squat', targets: [] }] },
+        { name: 'Day 2', exercises: [{ name: 'Bench Press', targets: [] }] },
+      ],
+    }]);
+    render(<SettingsScreen />);
+    await waitFor(() => {
+      expect(screen.getByText('Day 1')).toBeTruthy();
+      expect(screen.getByText('Day 2')).toBeTruthy();
+    });
   });
 });
