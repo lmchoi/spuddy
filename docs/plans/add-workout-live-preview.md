@@ -1,7 +1,7 @@
 # Plan: Add Workout screen — Live Preview (single page)
 
 **Milestone:** v0.1 (replaces the current minimal `app/(tabs)/add.tsx`)
-**Status:** Draft
+**Status:** Slice 1 complete — Slice 2 next
 
 ## What we're building
 
@@ -27,24 +27,21 @@ Chat, Voice).
 Per the walking-skeleton principle in `CLAUDE.md`: ship the full screen with
 just the data the parser already returns. No new types, no storage changes.
 
-### Slice 1 — Visual rebuild (no logic changes)
+### Slice 1 — Visual rebuild (no logic changes) ✓ DONE
 
-Same parser, same storage, same domain. Wrap it in the new layout.
+`app/(tabs)/add.tsx` rebuilt. Palette extracted to
+`components/spuddy/palette.ts` (imported by both `add.tsx` and
+`progress/[date].tsx`). Full button coverage in
+`__tests__/add-screen.test.tsx`. Key decisions made during implementation:
 
-- Replace the `View` / `TextInput` / `TouchableOpacity` in `add.tsx` with the
-  warm-dark vocabulary used in `progress/[date].tsx` and the bento detail
-  screen
-- Pull palette + Spuddy + Chip + DuplicateBanner + StickyBar into shared
-  components (suggest `components/spuddy/` or `src/ui/`)
-- Wire `parseLiftohistoryText(text)` to a `useMemo` so the preview updates
-  on every keystroke
-- Replace the alert-on-duplicate with the inline `DuplicateBanner`
-
-**Tests:**
-- Component test: text → preview renders an exercise row per parsed entry
-- Component test: invalid text → preview hidden, save button disabled
-- Component test: `sessionExists(date) === true` → duplicate banner with
-  Overwrite/View/Cancel actions
+- Components kept inline in `add.tsx` for now (not extracted to
+  `components/spuddy/`) — will extract when settings screen is redesigned
+  and there are two real consumers
+- Overwrite button is intentionally disabled — requires `replaceSession`
+  from Slice 3 before it can be safely enabled
+- `saveSession` now wraps inserts in a transaction
+- See `docs/plans/add-workout-live-preview.md` follow-up backlog for known
+  UX issues (back navigation, clear button, cancel redundancy)
 
 ### Slice 2 — Parse error surfacing
 
@@ -66,6 +63,11 @@ type ParseResult = {
 Keep the existing `parseLiftohistoryText` as a thin wrapper over the new
 function (return `null` if `!ok`). No breakage to existing callers.
 
+**`ok` semantics:** `ok: true` requires both a valid date AND at least one
+`ok` line. Three cases map to `ok: false` → `null` in the wrapper: no
+`exercises: {` marker, no date, or every exercise line errored. Structure
+valid but content all-bad is `ok: false` — nothing usable to save.
+
 **UI:** `ErrorBanner` shows the count and expands to a `ParseLog` of
 flagged lines using monospace + color cues.
 
@@ -80,8 +82,11 @@ Currently the save handler hard-fails on duplicate dates with an alert.
 We need a real overwrite path.
 
 **Data:** add `replaceSession(db, session)` to `src/storage.ts` —
-transactional delete-then-insert. Add the table+index migration if the
-delete needs to cascade to sets.
+transactional `DELETE WHERE date = ?` then insert. No migration needed:
+`sessions` is a flat table with no child tables referencing it.
+Also enable `saveEnabled` in the `isDuplicate` branch of `add.tsx` (currently
+stubbed with a comment) and route through `replaceSession` instead of
+`saveSession`.
 
 **UI:** the Overwrite button on the banner runs the new code path; success
 toast distinguishes "overwritten" from "saved".
