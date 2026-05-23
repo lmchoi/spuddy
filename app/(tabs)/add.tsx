@@ -305,11 +305,6 @@ export default function AddScreen() {
                 <Text style={styles.heroBody}>
                   Paste a session from Liftosaur → History → Share.
                 </Text>
-                <View style={styles.formatCard}>
-                  <Text style={styles.formatText}>
-                    {`format · {date}\nexercises: {\n  {name} / {sets} / target: …\n}`}
-                  </Text>
-                </View>
               </View>
             )}
 
@@ -454,23 +449,6 @@ const styles = StyleSheet.create({
     color: C.sub,
     textAlign: 'center',
   },
-  formatCard: {
-    borderWidth: 1,
-    borderColor: C.border,
-    borderStyle: 'dashed',
-    borderRadius: 10,
-    padding: 12,
-    marginTop: 8,
-    backgroundColor: C.surface,
-    width: '100%',
-  },
-  formatText: {
-    fontSize: 10,
-    color: C.sub,
-    fontVariant: ['tabular-nums'],
-    lineHeight: 16,
-  },
-
   // ─── Textarea
   textarea: {
     minHeight: 140,
