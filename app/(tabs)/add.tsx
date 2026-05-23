@@ -147,14 +147,16 @@ function DuplicateBanner({
         <Text style={styles.dupIconText}>!</Text>
       </View>
       <View style={styles.dupBody}>
-        <Text style={styles.dupTitle}>A session for {formatDateShort(date)} already exists</Text>
+        <View style={styles.dupTitleRow}>
+          <Text style={styles.dupTitle}>A session for {formatDateShort(date)} already exists</Text>
+          <Pressable onPress={onCancel} hitSlop={8}>
+            <Text style={styles.dupCancelLink}>Dismiss</Text>
+          </Pressable>
+        </View>
         <Text style={styles.dupSub}>Choose what to do with the incoming data.</Text>
         <View style={styles.dupActions}>
           <Pressable onPress={onView} style={styles.pillBtn}>
             <Text style={styles.pillBtnText}>View existing</Text>
-          </Pressable>
-          <Pressable onPress={onCancel} style={[styles.pillBtn, styles.pillBtnMuted]}>
-            <Text style={[styles.pillBtnText, styles.pillBtnMutedText]}>Cancel</Text>
           </Pressable>
         </View>
       </View>
@@ -348,11 +350,6 @@ export default function AddScreen() {
 
           {/* Sticky bottom bar */}
           <View style={[styles.stickyBar, { paddingBottom: insets.bottom + 18 }]}>
-            {!isEmpty && (
-              <Pressable onPress={handleCancel} style={styles.ghostBtn}>
-                <Text style={styles.ghostBtnText}>Cancel</Text>
-              </Pressable>
-            )}
             <Pressable
               onPress={handleSave}
               disabled={!saveEnabled}
@@ -499,10 +496,21 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
+  dupTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   dupTitle: {
+    flex: 1,
     fontSize: 13,
     fontWeight: '600',
     color: C.text,
+  },
+  dupCancelLink: {
+    fontSize: 12,
+    color: C.sub,
   },
   dupSub: {
     fontSize: 12,
