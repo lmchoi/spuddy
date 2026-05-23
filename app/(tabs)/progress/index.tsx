@@ -1,104 +1,77 @@
 import { useCallback, useState } from 'react';
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  StatusBar,
-} from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { FlatList, View, Text, StyleSheet, StatusBar } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { getAllSessions } from '@/src/storage';
 import type { Session } from '@/src/types';
+import { C } from '@/components/spuddy/palette';
+import { ActivityStrip } from '@/components/spuddy/ActivityStrip';
+import { HeroStat } from '@/components/spuddy/HeroStat';
+import { SessionRow } from '@/components/spuddy/SessionRow';
+import { getCurrentStreak, getLongestStreak } from '@/src/domain/streak';
+import { computeStats } from '@/src/domain/stats';
 
-// ─── Palette ─────────────────────────────────────────────────────────────────
+const WINDOW_DAYS = 30;
 
-const C = {
-  bg:      '#08080E',
-  surface: '#111118',
-  border:  '#1C1C2A',
-  accent:  '#39FF82',
-  text:    '#ECEEFF',
-  sub:     '#5C5C88',
-  muted:   '#2A2A3C',
-} as const;
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatDate(yyyymmdd: string): string {
-  const [y, m, d] = yyyymmdd.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
+function localDateStr(d = new Date()): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function relativeDate(yyyymmdd: string): string {
-  const [y, m, d] = yyyymmdd.split('-').map(Number);
-  const diff = Math.floor(
-    (Date.now() - new Date(y, m - 1, d).getTime()) / 86400000
-  );
-  if (diff === 0) return 'today';
-  if (diff === 1) return 'yesterday';
-  if (diff < 7) return `${diff} days ago`;
-  return '';
+function today(): string {
+  return localDateStr();
 }
 
-// ─── Activity Strip ───────────────────────────────────────────────────────────
+function withinWindow(sessions: Session[]): Session[] {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - WINDOW_DAYS);
+  const cutoffStr = localDateStr(cutoff);
+  return sessions.filter(s => s.date >= cutoffStr);
+}
 
-function ActivityStrip({ sessions }: { sessions: Session[] }) {
-  const today = new Date();
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today.getTime() - (6 - i) * 86400000);
-    const dateStr = d.toISOString().slice(0, 10);
-    return {
-      label: d.toLocaleDateString('en-GB', { weekday: 'narrow' }),
-      active: sessions.some(s => s.date === dateStr),
-      isToday: i === 6,
-    };
-  });
+function heroStats(sessions: Session[]) {
+  const recent = withinWindow(sessions);
+  const dates = sessions.map(s => s.date);
+  const streak = getCurrentStreak(dates, today());
+  const longest = getLongestStreak(dates);
+  const sessionCount = recent.length;
+
+  const totalSets = recent.reduce((sum, s) => sum + computeStats(s).working, 0);
+  const onTargetSets = recent.reduce((sum, s) => {
+    const { hits, exceeded } = computeStats(s);
+    return sum + hits + exceeded;
+  }, 0);
+  const onTargetPct = totalSets > 0 ? Math.round((onTargetSets / totalSets) * 100) : 0;
+
+  return { streak, longest, sessionCount, onTargetPct };
+}
+
+// ─── Hero card ────────────────────────────────────────────────────────────────
+
+function HeroCard({ sessions }: { sessions: Session[] }) {
+  const { streak, longest, sessionCount, onTargetPct } = heroStats(sessions);
+  const hasData = sessions.length > 0;
 
   return (
-    <View style={styles.strip}>
-      {days.map((day, i) => (
-        <View key={i} style={styles.stripCol}>
-          <View
-            style={[
-              styles.stripDot,
-              day.active && styles.stripDotActive,
-              day.isToday && day.active && styles.stripDotToday,
-            ]}
-          />
-          <Text style={styles.stripLabel}>{day.label}</Text>
+    <View style={styles.hero}>
+      <View style={styles.heroTop}>
+        <View style={styles.heroStreak}>
+          <Text style={styles.heroStreakNumber}>{streak}</Text>
+          <Text style={styles.heroStreakUnit}>day{streak !== 1 ? 's' : ''}</Text>
         </View>
-      ))}
-    </View>
-  );
-}
-
-// ─── Session Row ──────────────────────────────────────────────────────────────
-
-function SessionRow({ session }: { session: Session }) {
-  const rel = relativeDate(session.date);
-  const count = session.exercises.length;
-
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-      onPress={() => router.push(`/(tabs)/progress/${session.date}`)}
-    >
-      <View style={styles.rowLeft}>
-        <Text style={styles.rowDate}>{formatDate(session.date)}</Text>
-        <Text style={styles.rowMeta}>
-          {count} exercise{count !== 1 ? 's' : ''}
-          {rel ? `  ·  ${rel}` : ''}
-        </Text>
+        <View style={styles.heroStreakMeta}>
+          <Text style={styles.heroStreakLabel}>current streak</Text>
+          {longest > 0 && (
+            <Text style={styles.heroStreakSub}>longest {longest}</Text>
+          )}
+        </View>
       </View>
-      <Text style={styles.rowChevron}>›</Text>
-    </Pressable>
+      <View style={styles.heroStats}>
+        <HeroStat value={hasData ? sessionCount : '—'} label="sessions" />
+        <HeroStat value={hasData ? `${onTargetPct}%` : '—'} label="on target" />
+        <HeroStat value="—" label="last PR" />
+      </View>
+    </View>
   );
 }
 
@@ -123,21 +96,21 @@ export default function ProgressScreen() {
         data={sessions}
         keyExtractor={s => s.date}
         contentContainerStyle={styles.list}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListHeaderComponent={
-          <View style={styles.listHeader}>
+          <View style={styles.header}>
+            <Text style={styles.screenTitle}>Progress</Text>
+            <HeroCard sessions={sessions} />
             <ActivityStrip sessions={sessions} />
           </View>
         }
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyText}>No workouts logged yet</Text>
-            <Text style={styles.emptyHint}>
-              Paste a session from the + tab to get started
-            </Text>
+            <Text style={styles.emptyHint}>Add a session from the + tab to get started</Text>
           </View>
         }
-        renderItem={({ item }) => <SessionRow session={item} />}
+        ItemSeparatorComponent={() => <View style={styles.gap} />}
+        renderItem={({ item }) => <SessionRow session={item} dense />}
       />
     </View>
   );
@@ -151,87 +124,84 @@ const styles = StyleSheet.create({
     backgroundColor: C.bg,
   },
   list: {
-    paddingBottom: 40,
+    paddingHorizontal: 18,
+    paddingBottom: 120,
   },
-  listHeader: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
+  header: {
+    paddingTop: 8,
+    paddingBottom: 16,
+    gap: 16,
   },
-  strip: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  stripCol: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  stripDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: C.muted,
-    marginBottom: 6,
-  },
-  stripDotActive: {
-    backgroundColor: C.accent,
-    opacity: 0.6,
-  },
-  stripDotToday: {
-    opacity: 1,
-  },
-  stripLabel: {
-    fontSize: 10,
-    color: C.muted,
-    letterSpacing: 0.3,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: C.border,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-  },
-  rowPressed: {
-    backgroundColor: C.surface,
-  },
-  rowLeft: {
-    flex: 1,
-  },
-  rowDate: {
-    fontSize: 16,
-    fontWeight: '600',
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: '700',
     color: C.text,
+    letterSpacing: -0.5,
   },
-  rowMeta: {
+  // Hero
+  hero: {
+    backgroundColor: C.card2,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: C.border,
+    padding: 16,
+    gap: 14,
+  },
+  heroTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  heroStreak: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
+  heroStreakNumber: {
+    fontSize: 40,
+    fontWeight: '700',
+    color: C.text,
+    letterSpacing: -1,
+    lineHeight: 44,
+  },
+  heroStreakUnit: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: C.text2,
+    letterSpacing: -0.3,
+  },
+  heroStreakMeta: {
+    gap: 2,
+  },
+  heroStreakLabel: {
     fontSize: 13,
     color: C.sub,
-    marginTop: 3,
   },
-  rowChevron: {
-    fontSize: 20,
+  heroStreakSub: {
+    fontSize: 12,
     color: C.muted,
-    marginLeft: 8,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  // List
+  gap: {
+    height: 8,
   },
   empty: {
-    paddingTop: 80,
-    paddingHorizontal: 32,
+    paddingTop: 48,
     alignItems: 'center',
+    gap: 8,
   },
   emptyText: {
     fontSize: 15,
-    color: C.sub,
     fontWeight: '500',
+    color: C.sub,
   },
   emptyHint: {
     fontSize: 13,
     color: C.muted,
     textAlign: 'center',
-    marginTop: 8,
   },
 });
