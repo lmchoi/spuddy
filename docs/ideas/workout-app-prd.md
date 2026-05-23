@@ -154,6 +154,8 @@ Liftosaur is the bootstrap platform. This integration covers the full two-way sy
 
 AI coaching is intentionally decoupled from the app — the user brings their own AI (Claude, GPT, local model, etc.) and the app makes it easy to feed it the right data.
 
+**Analysis direction:** The highest-value use of AI is structured data analysis — synthesising signals across the user's workout history (volume trends, fatigue indicators, stall patterns) into plain-language insight. Simple computed signals (PR detection, plateau detection, volume per muscle group) are handled locally without a model; AI is reserved for cross-signal synthesis that can't be expressed as a query. Vision-based form analysis and conversational coaching are out of scope for now.
+
 **MVP (v0.1):**
 - User exports session data from Liftosaur (JSON or CSV)
 - Pastes into their AI chat alongside a coaching prompt (provided by the app as a copyable template)
