@@ -2,9 +2,13 @@ import { StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 
 export default function ProgressScreen() {
+  const exercises: string[] = [];
+
   return (
     <View style={styles.container}>
-      <Text style={styles.placeholder}>Progress coming soon</Text>
+      {exercises.length === 0 ? (
+        <Text style={styles.empty}>No workouts logged yet</Text>
+      ) : null}
     </View>
   );
 }
@@ -12,11 +16,11 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 16,
   },
-  placeholder: {
-    fontSize: 16,
+  empty: {
+    textAlign: 'center',
     color: '#888',
+    marginTop: 40,
   },
 });
