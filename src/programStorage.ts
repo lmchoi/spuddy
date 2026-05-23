@@ -2,37 +2,43 @@ import type { DB } from './storage';
 import type { Program, ProgramDay, ProgramExercise, Target } from './types';
 
 export async function savePrograms(db: DB, programs: Program[]): Promise<void> {
-  await db.run('DELETE FROM program_exercises');
-  await db.run('DELETE FROM program_days');
-  await db.run('DELETE FROM programs');
+  await db.run('BEGIN');
+  try {
+    await db.run('DELETE FROM program_exercises');
+    await db.run('DELETE FROM program_days');
+    await db.run('DELETE FROM programs');
 
-  for (const program of programs) {
-    await db.run(
-      'INSERT INTO programs (name, active_day_index) VALUES (?, ?)',
-      [program.name, program.activeDayIndex]
-    );
-
-    const programRows = await db.all<{ id: number }>('SELECT last_insert_rowid() AS id');
-    const programId = programRows[0].id;
-
-    for (let di = 0; di < program.days.length; di++) {
-      const day = program.days[di];
+    for (const program of programs) {
       await db.run(
-        'INSERT INTO program_days (program_id, day_index, name) VALUES (?, ?, ?)',
-        [programId, di, day.name]
+        'INSERT INTO programs (name, active_day_index) VALUES (?, ?)',
+        [program.name, program.activeDayIndex]
       );
+      const programRows = await db.all<{ id: number }>('SELECT last_insert_rowid() AS id');
+      const programId = programRows[0].id;
 
-      const dayRows = await db.all<{ id: number }>('SELECT last_insert_rowid() AS id');
-      const dayId = dayRows[0].id;
-
-      for (let ei = 0; ei < day.exercises.length; ei++) {
-        const exercise = day.exercises[ei];
+      for (let di = 0; di < program.days.length; di++) {
+        const day = program.days[di];
         await db.run(
-          'INSERT INTO program_exercises (program_day_id, exercise_index, name, targets_json) VALUES (?, ?, ?, ?)',
-          [dayId, ei, exercise.name, JSON.stringify(exercise.targets)]
+          'INSERT INTO program_days (program_id, day_index, name) VALUES (?, ?, ?)',
+          [programId, di, day.name]
         );
+        const dayRows = await db.all<{ id: number }>('SELECT last_insert_rowid() AS id');
+        const dayId = dayRows[0].id;
+
+        for (let ei = 0; ei < day.exercises.length; ei++) {
+          const exercise = day.exercises[ei];
+          await db.run(
+            'INSERT INTO program_exercises (program_day_id, exercise_index, name, targets_json) VALUES (?, ?, ?, ?)',
+            [dayId, ei, exercise.name, JSON.stringify(exercise.targets)]
+          );
+        }
       }
     }
+
+    await db.run('COMMIT');
+  } catch (e) {
+    await db.run('ROLLBACK');
+    throw e;
   }
 }
 
@@ -64,15 +70,17 @@ export async function getPrograms(db: DB): Promise<Program[]> {
   );
 }
 
-export async function getProgramDay(db: DB, dayIndex: number): Promise<ProgramDay | null> {
+export async function getProgramDay(
+  db: DB,
+  programName: string,
+  dayIndex: number
+): Promise<ProgramDay | null> {
   const dayRows = await db.all<DayRow>(
     `SELECT pd.id, pd.program_id, pd.day_index, pd.name
      FROM program_days pd
      JOIN programs p ON pd.program_id = p.id
-     WHERE pd.day_index = ?
-     ORDER BY p.id ASC
-     LIMIT 1`,
-    [dayIndex]
+     WHERE p.name = ? AND pd.day_index = ?`,
+    [programName, dayIndex]
   );
   if (dayRows.length === 0) return null;
 

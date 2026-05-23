@@ -63,7 +63,7 @@ describe('program schema', () => {
   });
 
   it('getProgramDay stub returns null', async () => {
-    await expect(getProgramDay(db, 1)).resolves.toBeNull();
+    await expect(getProgramDay(db, 'Test', 0)).resolves.toBeNull();
   });
 });
 
@@ -102,10 +102,18 @@ describe('program storage', () => {
 
   it('getProgramDay returns the correct day with its exercises', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    const day = await getProgramDay(db, 1); // day_index 1 = Day 2
+    const day = await getProgramDay(db, 'v1', 1); // day_index 1 = Day 2
     expect(day).not.toBeNull();
     expect(day!.name).toBe('Day 2');
     expect(day!.exercises[0].name).toBe('Bench Press');
+  });
+
+  it('getProgramDay does not bleed across programs with the same day index', async () => {
+    await savePrograms(db, [PROGRAM_A, PROGRAM_B]);
+    const day = await getProgramDay(db, 'v2', 0);
+    expect(day!.name).toBe('Full Body');
+    const dayA = await getProgramDay(db, 'v1', 0);
+    expect(dayA!.name).toBe('Day 1');
   });
 
   it('preserves target data through serialisation round-trip', async () => {
