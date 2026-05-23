@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/cli": "^56.1.10",
+    "@tailwindcss/postcss": "^4.3.0",
     "clsx": "^2.1.1",
     "expo": "~56.0.3",
     "expo-constants": "~56.0.14",
@@ -18,7 +19,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.85.3",
-    "react-native-css": "0.0.0-nightly.5ce6396",
+    "react-native-css": "3.0.7",
     "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.1",
@@ -43,6 +44,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
