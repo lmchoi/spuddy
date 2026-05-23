@@ -120,8 +120,6 @@ describe('cancel button', () => {
 // ─── Save flow ────────────────────────────────────────────────────────────────
 
 describe('save flow', () => {
-  beforeEach(() => jest.useFakeTimers());
-  afterEach(() => jest.useRealTimers());
 
   it('calls saveSession and shows the saved state', async () => {
     render(<AddScreen />);
