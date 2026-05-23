@@ -1,40 +1,60 @@
 import type { ExerciseEntry, Session, Target, WorkingSet } from './types';
 
-export function parseLiftohistoryText(text: string): Session | null {
+export type ParseLine = { raw: string; kind: 'ok' | 'warn' | 'error'; note?: string };
+
+export type ParseResult =
+  | { ok: true; date: string; exercises: ExerciseEntry[]; lines: ParseLine[] }
+  | { ok: false; date: string | null; exercises: ExerciseEntry[]; lines: ParseLine[] };
+
+export function parseLiftohistoryTextDetailed(text: string): ParseResult {
   const exercisesMarker = 'exercises: {';
   const markerIdx = text.indexOf(exercisesMarker);
-  if (markerIdx === -1) return null;
+  if (markerIdx === -1) return { ok: false, date: null, exercises: [], lines: [] };
 
   const headerStr = text.slice(0, markerIdx);
   const afterMarker = text.slice(markerIdx + exercisesMarker.length);
   const closingBrace = afterMarker.lastIndexOf('}');
-  if (closingBrace === -1) return null;
+  if (closingBrace === -1) return { ok: false, date: null, exercises: [], lines: [] };
   const exercisesBlock = afterMarker.slice(0, closingBrace);
 
   const dateMatch = headerStr.match(/^(\d{4}-\d{2}-\d{2})/);
-  if (!dateMatch) return null;
+  if (!dateMatch) return { ok: false, date: null, exercises: [], lines: [] };
   const date = dateMatch[1];
 
-  const lines = exercisesBlock
+  const rawLines = exercisesBlock
     .split('\n')
     .map(l => l.trim())
     .filter(l => l.length > 0);
 
+  const lines: ParseLine[] = [];
   const exercises: ExerciseEntry[] = [];
 
-  for (const line of lines) {
-    const entry = parseExerciseLine(line);
-    if (entry) exercises.push(entry);
+  for (const raw of rawLines) {
+    const classified = classifyExerciseLine(raw);
+    lines.push({ raw, kind: classified.kind, note: classified.note });
+    if (classified.kind === 'ok') exercises.push(classified.entry);
   }
 
-  if (exercises.length === 0) return null;
-
-  return { date, exercises };
+  const ok = exercises.length > 0;
+  return ok ? { ok: true, date, exercises, lines } : { ok: false, date, exercises, lines };
 }
 
-function parseExerciseLine(line: string): ExerciseEntry | null {
+export function parseLiftohistoryText(text: string): Session | null {
+  const result = parseLiftohistoryTextDetailed(text);
+  if (!result.ok) return null;
+  return { date: result.date, exercises: result.exercises };
+}
+
+type ClassifiedLine =
+  | { kind: 'ok'; entry: ExerciseEntry; note?: undefined }
+  | { kind: 'warn'; note: string }
+  | { kind: 'error'; note: string };
+
+function classifyExerciseLine(line: string): ClassifiedLine {
   const segments = line.split(' / ');
-  if (segments.length < 2) return null;
+  if (segments.length < 2) {
+    return { kind: 'error', note: 'Missing separator — expected "Name / sets"' };
+  }
 
   const name = segments[0].trim();
   let completedStr: string | undefined;
@@ -55,8 +75,13 @@ function parseExerciseLine(line: string): ExerciseEntry | null {
   const warmupSets = warmupStr ? parseWorkingSets(warmupStr, true) : [];
   const workingSets = completedStr ? parseWorkingSets(completedStr, false) : [];
   const targets = targetStr ? parseTargets(targetStr) : [];
+  const sets = [...warmupSets, ...workingSets];
 
-  return { name, sets: [...warmupSets, ...workingSets], targets };
+  if (sets.length === 0) {
+    return { kind: 'warn', note: 'No sets found — check format (e.g. 3x8 60kg)' };
+  }
+
+  return { kind: 'ok', entry: { name, sets, targets } };
 }
 
 function parseWorkingSets(str: string, isWarmup: boolean): WorkingSet[] {

@@ -7,6 +7,13 @@ exercises: {
   Pull-ups / 3x6 / target: 3x6
 }`;
 
+const PASTE_WITH_ERRORS = `2026-05-22
+exercises: {
+  Bench Press / 3x8 60kg
+  badline
+  alsoBad
+}`;
+
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 const mockSessionExists = jest.fn();
@@ -146,6 +153,50 @@ describe('save flow', () => {
     await act(async () => { fireEvent.press(screen.getByText('Save 2 exercises')); });
     fireEvent.press(screen.getByText('Add another'));
     expect(screen.getByText('Paste to begin')).toBeTruthy();
+  });
+});
+
+// ─── Error banner ─────────────────────────────────────────────────────────────
+
+describe('error banner', () => {
+  it('shows error count when some lines fail to parse', async () => {
+    render(<AddScreen />);
+    fireEvent.changeText(screen.getByDisplayValue(''), PASTE_WITH_ERRORS);
+    await waitFor(() =>
+      expect(screen.getByText(/2 lines couldn't be parsed/)).toBeTruthy()
+    );
+  });
+
+  it('is collapsed by default — raw lines not visible', async () => {
+    render(<AddScreen />);
+    fireEvent.changeText(screen.getByDisplayValue(''), PASTE_WITH_ERRORS);
+    await waitFor(() => expect(screen.getByText(/couldn't be parsed/)).toBeTruthy());
+    expect(screen.queryByText('badline')).toBeNull();
+    expect(screen.queryByText('alsoBad')).toBeNull();
+  });
+
+  it('expands to show flagged lines on tap', async () => {
+    render(<AddScreen />);
+    fireEvent.changeText(screen.getByDisplayValue(''), PASTE_WITH_ERRORS);
+    await waitFor(() => expect(screen.getByText(/couldn't be parsed/)).toBeTruthy());
+    fireEvent.press(screen.getByText(/couldn't be parsed/));
+    expect(screen.getByText('badline')).toBeTruthy();
+    expect(screen.getByText('alsoBad')).toBeTruthy();
+  });
+
+  it('does not show the banner when all lines parse', async () => {
+    render(<AddScreen />);
+    fireEvent.changeText(screen.getByDisplayValue(''), VALID_PASTE);
+    await waitFor(() => expect(screen.getByText('Bench Press')).toBeTruthy());
+    expect(screen.queryByText(/couldn't be parsed/)).toBeNull();
+  });
+
+  it('still enables save when some lines parse and some error', async () => {
+    render(<AddScreen />);
+    fireEvent.changeText(screen.getByDisplayValue(''), PASTE_WITH_ERRORS);
+    await waitFor(() =>
+      expect(screen.getByText('Save 1 exercise')).toBeTruthy()
+    );
   });
 });
 

@@ -1,4 +1,4 @@
-import { parseLiftohistoryText } from '../src/parser';
+import { parseLiftohistoryText, parseLiftohistoryTextDetailed } from '../src/parser';
 
 const REAL_EXPORT = `2026-05-19 19:20:52 +01:00 / program: "starter" / dayName: "Day 1" / week: 1 / dayInWeek: 1 / duration: 2811s / exercises: {
   Face Pull / 1x20 9kg, 1x18 9kg, 1x20 9kg / target: 3x15-20 10kg 45s
@@ -109,6 +109,93 @@ describe('parseLiftohistoryText', () => {
       expect(
         parseLiftohistoryText('2026-05-19 19:20:52 +01:00 / exercises: {\n}')
       ).toBeNull();
+    });
+  });
+});
+
+// ─── parseLiftohistoryTextDetailed ────────────────────────────────────────────
+
+describe('parseLiftohistoryTextDetailed', () => {
+  const wrap = (lines: string) =>
+    `2026-05-19 19:20:52 +01:00 / exercises: {\n${lines}\n}`;
+
+  describe('real export', () => {
+    it('ok: true with all 5 lines classified ok', () => {
+      const result = parseLiftohistoryTextDetailed(REAL_EXPORT);
+      expect(result.ok).toBe(true);
+      expect(result.lines).toHaveLength(5);
+      result.lines.forEach(l => expect(l.kind).toBe('ok'));
+    });
+
+    it('returns the same date and exercise count as the thin wrapper', () => {
+      const result = parseLiftohistoryTextDetailed(REAL_EXPORT);
+      expect(result.date).toBe('2026-05-19');
+      expect(result.exercises).toHaveLength(5);
+    });
+  });
+
+  describe('structural failures', () => {
+    it('no exercises marker → ok: false, empty lines, null date', () => {
+      const r = parseLiftohistoryTextDetailed('2026-05-19 19:20:52 no block here');
+      expect(r.ok).toBe(false);
+      expect(r.date).toBeNull();
+      expect(r.lines).toHaveLength(0);
+    });
+
+    it('no date → ok: false, null date', () => {
+      const r = parseLiftohistoryTextDetailed('no date here / exercises: {\n  Bench Press / 3x8 60kg\n}');
+      expect(r.ok).toBe(false);
+      expect(r.date).toBeNull();
+    });
+
+    it('empty exercises block → ok: false', () => {
+      const r = parseLiftohistoryTextDetailed('2026-05-19 19:20:52 +01:00 / exercises: {\n}');
+      expect(r.ok).toBe(false);
+      expect(r.lines).toHaveLength(0);
+    });
+  });
+
+  describe('line classification', () => {
+    it('ok — name with valid sets', () => {
+      const r = parseLiftohistoryTextDetailed(wrap('  Bench Press / 3x8 60kg'));
+      expect(r.lines[0]).toMatchObject({ kind: 'ok', raw: 'Bench Press / 3x8 60kg' });
+    });
+
+    it('error — line with no separator', () => {
+      const r = parseLiftohistoryTextDetailed(wrap('  notanexercise'));
+      expect(r.lines[0]).toMatchObject({ kind: 'error', raw: 'notanexercise' });
+    });
+
+    it('warn — separator present but no valid set descriptors produced', () => {
+      const r = parseLiftohistoryTextDetailed(wrap('  Bench Press / abc xyz'));
+      expect(r.lines[0]).toMatchObject({ kind: 'warn', raw: 'Bench Press / abc xyz' });
+    });
+
+    it('all-error lines → ok: false', () => {
+      const r = parseLiftohistoryTextDetailed(wrap('  bad\n  alsoBad'));
+      expect(r.ok).toBe(false);
+      expect(r.lines).toHaveLength(2);
+      r.lines.forEach(l => expect(l.kind).toBe('error'));
+    });
+
+    it('mixed lines — ok: true when at least one line parses', () => {
+      const r = parseLiftohistoryTextDetailed(wrap('  Bench Press / 3x8 60kg\n  bad line'));
+      expect(r.ok).toBe(true);
+      expect(r.lines[0].kind).toBe('ok');
+      expect(r.lines[1].kind).toBe('error');
+      expect(r.exercises).toHaveLength(1);
+    });
+
+    it('warn lines do not contribute to exercises', () => {
+      const r = parseLiftohistoryTextDetailed(wrap('  Bench Press / 3x8 60kg\n  Squat / abc xyz'));
+      expect(r.exercises).toHaveLength(1);
+      expect(r.exercises[0].name).toBe('Bench Press');
+    });
+
+    it('all-warn lines → ok: false', () => {
+      const r = parseLiftohistoryTextDetailed(wrap('  Bench Press / abc\n  Squat / xyz'));
+      expect(r.ok).toBe(false);
+      r.lines.forEach(l => expect(l.kind).toBe('warn'));
     });
   });
 });
