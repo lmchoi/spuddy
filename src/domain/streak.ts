@@ -16,10 +16,6 @@ export function getCurrentStreak(dates: string[], today: string): number {
   const unique = uniqueSortedDates(dates);
   if (unique.length === 0) return 0;
 
-  // Start cursor at today; if no session today, allow starting from yesterday.
-  const hasToday = unique.includes(today);
-  let cursor = hasToday ? daysAgo(unique[unique.length - 1], today) : 1;
-
   // If the most recent session is more than 1 day back, streak is broken.
   const mostRecentAgo = daysAgo(unique[unique.length - 1], today);
   if (mostRecentAgo > 1) return 0;
