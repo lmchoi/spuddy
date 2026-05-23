@@ -23,3 +23,19 @@ export type Session = {
   date: string; // YYYY-MM-DD
   exercises: ExerciseEntry[];
 };
+
+export type ProgramExercise = {
+  name: string;
+  targets: Target[];
+};
+
+export type ProgramDay = {
+  name: string;
+  exercises: ProgramExercise[];
+};
+
+export type Program = {
+  name: string;
+  days: ProgramDay[];
+  activeDayIndex: number;
+};
