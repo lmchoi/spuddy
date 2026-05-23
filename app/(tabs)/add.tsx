@@ -147,16 +147,14 @@ function DuplicateBanner({
         <Text style={styles.dupIconText}>!</Text>
       </View>
       <View style={styles.dupBody}>
-        <View style={styles.dupTitleRow}>
-          <Text style={styles.dupTitle}>A session for {formatDateShort(date)} already exists</Text>
-          <Pressable onPress={onCancel} hitSlop={8}>
-            <Text style={styles.dupCancelLink}>Dismiss</Text>
-          </Pressable>
-        </View>
+        <Text style={styles.dupTitle}>A session for {formatDateShort(date)} already exists</Text>
         <Text style={styles.dupSub}>Choose what to do with the incoming data.</Text>
         <View style={styles.dupActions}>
           <Pressable onPress={onView} style={styles.pillBtn}>
             <Text style={styles.pillBtnText}>View existing</Text>
+          </Pressable>
+          <Pressable onPress={onCancel} style={styles.pillBtn}>
+            <Text style={styles.pillBtnText}>Dismiss</Text>
           </Pressable>
         </View>
       </View>
@@ -350,10 +348,15 @@ export default function AddScreen() {
 
           {/* Sticky bottom bar */}
           <View style={[styles.stickyBar, { paddingBottom: insets.bottom + 18 }]}>
+            {!isEmpty && (
+              <Pressable onPress={handleCancel} style={styles.cancelBtn}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={handleSave}
               disabled={!saveEnabled}
-              style={[styles.primaryBtn, !saveEnabled && styles.primaryBtnDisabled, { flex: 1 }]}
+              style={[styles.primaryBtn, !saveEnabled && styles.primaryBtnDisabled]}
             >
               <Text style={[styles.primaryBtnText, !saveEnabled && styles.primaryBtnDisabledText]}>
                 {saving ? 'Saving…' : saveLabel}
@@ -496,21 +499,10 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
-  dupTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
   dupTitle: {
-    flex: 1,
     fontSize: 13,
     fontWeight: '600',
     color: C.text,
-  },
-  dupCancelLink: {
-    fontSize: 12,
-    color: C.sub,
   },
   dupSub: {
     fontSize: 12,
@@ -627,13 +619,26 @@ const styles = StyleSheet.create({
 
   // ─── Sticky bar
   stickyBar: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     gap: 8,
     paddingHorizontal: 18,
     paddingTop: 12,
     backgroundColor: C.bg,
     borderTopWidth: 1,
     borderTopColor: C.border,
+  },
+  cancelBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: C.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: C.text2,
   },
   ghostBtn: {
     paddingHorizontal: 16,
