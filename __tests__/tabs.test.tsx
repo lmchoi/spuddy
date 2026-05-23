@@ -11,7 +11,6 @@ jest.mock('@/src/storage', () => ({
 jest.mock('@/src/programStorage', () => ({
   getProgram: jest.fn().mockResolvedValue(null),
   getPrograms: jest.fn().mockResolvedValue([]),
-  updateActiveDayIndex: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
