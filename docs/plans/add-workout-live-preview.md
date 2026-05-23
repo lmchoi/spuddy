@@ -141,8 +141,6 @@ redesign (settings, bento detail) cheap.
   Consider suppressing or softening the message when the incoming data matches
   what's already stored. Not urgent for v0.1.
 
-- **Overwrite button is disabled.** `saveEnabled` is intentionally false in the duplicate state — enabling it requires `replaceSession` (slice 3) to exist first, otherwise pressing Overwrite would silently append a duplicate. Wire up as part of slice 3.
-
 - **Clear button on the textarea.** A small × in the corner of the input to
   wipe the text in one tap, rather than select-all-delete.
 
