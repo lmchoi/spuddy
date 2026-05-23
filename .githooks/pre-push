@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+echo "Running pre-push checks..."
+
+echo "  typecheck..."
+npm run typecheck
+
+echo "  lint..."
+npm run lint
+
+echo "  tests..."
+npm test
+
+echo "All checks passed."
