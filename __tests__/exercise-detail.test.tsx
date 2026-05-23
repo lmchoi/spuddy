@@ -1,19 +1,23 @@
 import { render, screen, waitFor } from '@testing-library/react-native';
-import ExerciseDetailScreen from '../app/(tabs)/progress/[name]';
+import SessionDetailScreen from '../app/(tabs)/progress/[date]';
 import type { Session } from '../src/types';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
-jest.mock('@/src/storage', () => ({ getSessionsForExercise: jest.fn() }));
+jest.mock('@/src/storage', () => ({ getSessionByDate: jest.fn() }));
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: jest.fn().mockReturnValue({ name: 'Squat' }),
+  useLocalSearchParams: jest.fn().mockReturnValue({ date: '2026-05-10' }),
+  router: { back: jest.fn() },
+}));
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
-const { getSessionsForExercise } = jest.requireMock('@/src/storage') as {
-  getSessionsForExercise: jest.Mock;
+const { getSessionByDate } = jest.requireMock('@/src/storage') as {
+  getSessionByDate: jest.Mock;
 };
 
-const SESSION_OLD: Session = {
-  date: '2026-05-01',
+const SESSION: Session = {
+  date: '2026-05-10',
   exercises: [
     {
       name: 'Squat',
@@ -28,48 +32,45 @@ const SESSION_OLD: Session = {
         { reps: 5, weight: 100 },
       ],
     },
-  ],
-};
-
-const SESSION_NEW: Session = {
-  date: '2026-05-10',
-  exercises: [
     {
-      name: 'Squat',
+      name: 'Bench Press',
       sets: [
-        { reps: 4, weight: 100, isWarmup: false, isBodyweight: false },
+        { reps: 4, weight: 80, isWarmup: false, isBodyweight: false },
       ],
-      targets: [{ reps: 5, weight: 100 }],
+      targets: [{ reps: 5, weight: 80 }],
     },
   ],
 };
 
-describe('Exercise detail screen', () => {
-  it('shows the exercise name as heading', async () => {
-    getSessionsForExercise.mockResolvedValue([SESSION_OLD]);
-    render(<ExerciseDetailScreen />);
-    await waitFor(() => expect(screen.getByText('Squat')).toBeTruthy());
-  });
-
-  it('shows sessions newest first', async () => {
-    getSessionsForExercise.mockResolvedValue([SESSION_NEW, SESSION_OLD]);
-    render(<ExerciseDetailScreen />);
+describe('Session detail screen', () => {
+  it('shows all exercises from the session', async () => {
+    getSessionByDate.mockResolvedValue(SESSION);
+    render(<SessionDetailScreen />);
     await waitFor(() => {
-      const dates = screen.getAllByText(/2026-05-\d+/);
-      expect(dates[0].props.children).toBe('2026-05-10');
-      expect(dates[1].props.children).toBe('2026-05-01');
+      expect(screen.getByText('Squat')).toBeTruthy();
+      expect(screen.getByText('Bench Press')).toBeTruthy();
     });
   });
 
   it('shows hit indicator when all sets meet target', async () => {
-    getSessionsForExercise.mockResolvedValue([SESSION_OLD]);
-    render(<ExerciseDetailScreen />);
-    await waitFor(() => expect(screen.getByText('✓')).toBeTruthy());
+    getSessionByDate.mockResolvedValue(SESSION);
+    render(<SessionDetailScreen />);
+    // Squat: all 3 sets hit — expects at least one ● symbol
+    await waitFor(() => expect(screen.getAllByText('●').length).toBeGreaterThan(0));
   });
 
   it('shows below indicator when a set falls short of target', async () => {
-    getSessionsForExercise.mockResolvedValue([SESSION_NEW]);
-    render(<ExerciseDetailScreen />);
+    getSessionByDate.mockResolvedValue(SESSION);
+    render(<SessionDetailScreen />);
+    // Bench Press: 4 reps vs target 5 — below
     await waitFor(() => expect(screen.getByText('↓')).toBeTruthy());
+  });
+
+  it('shows empty state when session not found', async () => {
+    getSessionByDate.mockResolvedValue(null);
+    render(<SessionDetailScreen />);
+    await waitFor(() =>
+      expect(screen.getByText('No data for this session')).toBeTruthy()
+    );
   });
 });

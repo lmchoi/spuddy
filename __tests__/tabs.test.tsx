@@ -4,8 +4,14 @@ import AddScreen from '../app/(tabs)/add';
 import SettingsScreen from '../app/(tabs)/settings';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
-jest.mock('@/src/storage', () => ({ getUniqueExerciseNames: jest.fn().mockResolvedValue([]) }));
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('@/src/storage', () => ({ getAllSessions: jest.fn().mockResolvedValue([]) }));
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn() },
+  useFocusEffect: (cb: () => void) => cb(),
+}));
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
 
 describe('Add screen', () => {
   it('renders a text input', () => {
