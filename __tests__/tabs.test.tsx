@@ -5,7 +5,11 @@ import SettingsScreen from '../app/(tabs)/settings';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({ getUniqueExerciseNames: jest.fn().mockResolvedValue([]) }));
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('@/src/programStorage', () => ({ getProgram: jest.fn().mockResolvedValue(null) }));
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn() },
+  useFocusEffect: jest.fn(),
+}));
 
 describe('Add screen', () => {
   it('renders a text input', () => {
