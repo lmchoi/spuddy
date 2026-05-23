@@ -1,7 +1,7 @@
 import BetterSqlite from 'better-sqlite3';
 import { initSchema, makeTestDB, type DB } from '../src/storage';
 import { importProgramFromJson } from '../src/programImport';
-import { getProgram } from '../src/programStorage';
+import { getPrograms } from '../src/programStorage';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -22,28 +22,26 @@ describe('importProgramFromJson', () => {
     await initSchema(db);
   });
 
-  it('imports fixture JSON and program appears in storage', async () => {
+  it('imports all programs from fixture JSON into storage', async () => {
     const result = await importProgramFromJson(db, fixture);
     expect(result.success).toBe(true);
     if (!result.success) return;
-    expect(result.program.name).toBe('v1');
-    expect(result.program.days).toHaveLength(3);
+    expect(result.programs.length).toBeGreaterThan(0);
+    expect(result.programs[0].name).toBe('v1');
 
-    const stored = await getProgram(db);
-    expect(stored).not.toBeNull();
-    expect(stored!.name).toBe('v1');
-    expect(stored!.days).toHaveLength(3);
+    const stored = await getPrograms(db);
+    expect(stored.length).toBeGreaterThan(0);
+    expect(stored[0].name).toBe('v1');
+    expect(stored[0].days).toHaveLength(3);
   });
 
-  it('importing again replaces the existing program', async () => {
+  it('importing again replaces all existing programs', async () => {
     await importProgramFromJson(db, fixture);
     await importProgramFromJson(db, fixture);
 
-    const stored = await getProgram(db);
-    expect(stored!.name).toBe('v1');
-    // Only one program row should exist
+    const stored = await getPrograms(db);
     const rows = await db.all<{ count: number }>('SELECT COUNT(*) AS count FROM programs');
-    expect(rows[0].count).toBe(1);
+    expect(rows[0].count).toBe(stored.length);
   });
 
   it('returns error and leaves storage unchanged for malformed input', async () => {
@@ -52,8 +50,8 @@ describe('importProgramFromJson', () => {
     if (result.success) return;
     expect(result.error).toBeTruthy();
 
-    const stored = await getProgram(db);
-    expect(stored).toBeNull();
+    const stored = await getPrograms(db);
+    expect(stored).toHaveLength(0);
   });
 
   it('returns error for null input without throwing', async () => {

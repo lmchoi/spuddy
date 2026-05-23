@@ -4,18 +4,18 @@ import { Text, View } from '@/components/Themed';
 import * as DocumentPicker from 'expo-document-picker';
 import { getDB } from '@/src/db';
 import { importProgramFromJson } from '@/src/programImport';
-import { getProgram } from '@/src/programStorage';
+import { getPrograms } from '@/src/programStorage';
 import type { Program } from '@/src/types';
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 
 export default function SettingsScreen() {
-  const [program, setProgram] = useState<Program | null>(null);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [importing, setImporting] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      getDB().then(db => getProgram(db)).then(setProgram).catch(console.error);
+      getDB().then(db => getPrograms(db)).then(setPrograms).catch(console.error);
     }, [])
   );
 
@@ -35,11 +35,11 @@ export default function SettingsScreen() {
       const importResult = await importProgramFromJson(db, json);
 
       if (importResult.success) {
-        setProgram(importResult.program);
-        Alert.alert(
-          'Program imported',
-          `${importResult.program.name} — ${importResult.program.days.length} days`
-        );
+        setPrograms(importResult.programs);
+        const summary = importResult.programs
+          .map(p => `${p.name} (${p.days.length} days)`)
+          .join(', ');
+        Alert.alert('Programs imported', summary);
       } else {
         Alert.alert('Import failed', importResult.error);
       }
@@ -52,13 +52,15 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      {program ? (
-        <View style={styles.programCard}>
-          <Text style={styles.programName}>{program.name}</Text>
-          <Text style={styles.programMeta}>{program.days.length} days</Text>
-        </View>
+      {programs.length > 0 ? (
+        programs.map((program, i) => (
+          <View key={i} style={styles.programCard}>
+            <Text style={styles.programName}>{program.name}</Text>
+            <Text style={styles.programMeta}>{program.days.length} days</Text>
+          </View>
+        ))
       ) : (
-        <Text style={styles.empty}>No program loaded</Text>
+        <Text style={styles.empty}>No programs loaded</Text>
       )}
 
       <TouchableOpacity
@@ -67,7 +69,7 @@ export default function SettingsScreen() {
         disabled={importing}
       >
         <Text style={styles.buttonText}>
-          {importing ? 'Importing…' : program ? 'Replace Program' : 'Import Program'}
+          {importing ? 'Importing…' : programs.length > 0 ? 'Replace Programs' : 'Import Programs'}
         </Text>
       </TouchableOpacity>
     </View>

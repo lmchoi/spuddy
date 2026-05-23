@@ -78,7 +78,82 @@ function extractRefName(segments: string[]): string | null {
   return refSeg.trim().slice(3).trim();
 }
 
-export function parseProgramFromBackup(json: unknown): Program | ParseError {
+function parseSingleProgram(program: Record<string, unknown>): Program | ParseError {
+  const name = program.name as string;
+  const nextDay = typeof program.nextDay === 'number' ? program.nextDay : 0;
+
+  const planner = program.planner as Record<string, unknown>;
+  const weeks = planner?.weeks as unknown[];
+  if (!Array.isArray(weeks) || weeks.length === 0) {
+    return { error: `No weeks found in program "${name}"` };
+  }
+
+  const week0 = weeks[0] as Record<string, unknown>;
+  const rawDays = week0.days as Array<Record<string, unknown>>;
+  if (!Array.isArray(rawDays)) {
+    return { error: `No days found in program "${name}"` };
+  }
+
+  // Pass 1: build name → targets map across all days for reference resolution
+  const nameToTargets = new Map<string, Target[]>();
+  for (const day of rawDays) {
+    const text = day.exerciseText as string;
+    for (const line of text.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('//')) continue;
+      const segments = trimmed.split(' / ');
+      if (segments.length < 2) continue;
+      if (segments.some(s => s.trim().startsWith('...'))) continue;
+
+      let rawName = segments[0].trim();
+      const labelMatch = rawName.match(/^[^/]+:\s+(.+)$/);
+      if (labelMatch) rawName = labelMatch[1].trim();
+
+      const setSegment = segments.find(s => /^\d+x\d/.test(s.trim()));
+      if (!setSegment) continue;
+
+      const targets = parseSetSpec(setSegment.trim(), segments);
+      nameToTargets.set(rawName, targets);
+    }
+  }
+
+  // Pass 2: parse each day, resolving ...References
+  const days: ProgramDay[] = rawDays.map(day => {
+    const text = day.exerciseText as string;
+    const rawExercises: ProgramExercise[] = [];
+
+    for (const line of text.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('//')) continue;
+
+      const segments = trimmed.split(' / ');
+      if (segments.length < 2) continue;
+
+      let exName = segments[0].trim();
+      const labelMatch = exName.match(/^[^/]+:\s+(.+)$/);
+      if (labelMatch) exName = labelMatch[1].trim();
+
+      const refName = extractRefName(segments);
+      if (refName !== null) {
+        const resolved = nameToTargets.get(refName) ?? [];
+        rawExercises.push({ name: exName, targets: resolved.map(t => ({ ...t })) });
+        continue;
+      }
+
+      const setSegment = segments.find(s => /^\d+x\d/.test(s.trim()));
+      if (!setSegment) continue;
+
+      const targets = parseSetSpec(setSegment.trim(), segments);
+      rawExercises.push({ name: exName, targets });
+    }
+
+    return { name: day.name as string, exercises: rawExercises };
+  });
+
+  return { name, days, activeDayIndex: nextDay };
+}
+
+export function parseProgramFromBackup(json: unknown): Program[] | ParseError {
   try {
     const data = json as Record<string, unknown>;
     const programs = data?.programs as unknown[];
@@ -86,79 +161,17 @@ export function parseProgramFromBackup(json: unknown): Program | ParseError {
       return { error: 'No programs found in backup' };
     }
 
-    const program = programs[0] as Record<string, unknown>;
-    const name = program.name as string;
-    const nextDay = typeof program.nextDay === 'number' ? program.nextDay : 0;
-
-    const planner = program.planner as Record<string, unknown>;
-    const weeks = planner?.weeks as unknown[];
-    if (!Array.isArray(weeks) || weeks.length === 0) {
-      return { error: 'No weeks found in planner' };
+    const results: Program[] = [];
+    for (const program of programs) {
+      const parsed = parseSingleProgram(program as Record<string, unknown>);
+      if (!('error' in parsed)) results.push(parsed);
     }
 
-    const week0 = weeks[0] as Record<string, unknown>;
-    const rawDays = week0.days as Array<Record<string, unknown>>;
-    if (!Array.isArray(rawDays)) {
-      return { error: 'No days found in week' };
+    if (results.length === 0) {
+      return { error: 'No valid programs found in backup' };
     }
 
-    // Pass 1: build name → targets map across all days for reference resolution
-    const nameToTargets = new Map<string, Target[]>();
-    for (const day of rawDays) {
-      const text = day.exerciseText as string;
-      for (const line of text.split('\n')) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('//')) continue;
-        const segments = trimmed.split(' / ');
-        if (segments.length < 2) continue;
-        if (segments.some(s => s.trim().startsWith('...'))) continue;
-
-        let rawName = segments[0].trim();
-        const labelMatch = rawName.match(/^[^/]+:\s+(.+)$/);
-        if (labelMatch) rawName = labelMatch[1].trim();
-
-        const setSegment = segments.find(s => /^\d+x\d/.test(s.trim()));
-        if (!setSegment) continue;
-
-        const targets = parseSetSpec(setSegment.trim(), segments);
-        nameToTargets.set(rawName, targets);
-      }
-    }
-
-    // Pass 2: parse each day, resolving ...References
-    const days: ProgramDay[] = rawDays.map(day => {
-      const text = day.exerciseText as string;
-      const rawExercises: ProgramExercise[] = [];
-
-      for (const line of text.split('\n')) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('//')) continue;
-
-        const segments = trimmed.split(' / ');
-        if (segments.length < 2) continue;
-
-        let name = segments[0].trim();
-        const labelMatch = name.match(/^[^/]+:\s+(.+)$/);
-        if (labelMatch) name = labelMatch[1].trim();
-
-        const refName = extractRefName(segments);
-        if (refName !== null) {
-          const resolved = nameToTargets.get(refName) ?? [];
-          rawExercises.push({ name, targets: resolved.map(t => ({ ...t })) });
-          continue;
-        }
-
-        const setSegment = segments.find(s => /^\d+x\d/.test(s.trim()));
-        if (!setSegment) continue;
-
-        const targets = parseSetSpec(setSegment.trim(), segments);
-        rawExercises.push({ name, targets });
-      }
-
-      return { name: day.name as string, exercises: rawExercises };
-    });
-
-    return { name, days, activeDayIndex: nextDay };
+    return results;
   } catch {
     return { error: 'Failed to parse backup JSON' };
   }
