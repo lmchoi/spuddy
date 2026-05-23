@@ -140,3 +140,13 @@ redesign (settings, bento detail) cheap.
   the pasted content is identical to the stored session or genuinely different.
   Consider suppressing or softening the message when the incoming data matches
   what's already stored. Not urgent for v0.1.
+
+- **Clear button on the textarea.** A small × in the corner of the input to
+  wipe the text in one tap, rather than select-all-delete.
+
+- **Cancel vs back — revisit together.** The back button in the header is
+  likely a no-op from the tab root (no stack entry to go back to). Cancel
+  currently fills that gap by resetting state. Once back navigation is fixed
+  (see "View existing" item above), Cancel may become redundant — back handles
+  "leave the screen", a clear button handles "wipe the input". Decide then
+  whether to remove Cancel or keep it as an explicit escape hatch.
