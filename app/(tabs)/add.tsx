@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { Alert, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { parseLiftohistoryText } from '@/src/parser';
 import { saveSession } from '@/src/storage';
@@ -19,6 +19,10 @@ export default function AddScreen() {
       const db = await getDB();
       await saveSession(db, parsed);
       setText('');
+      Alert.alert('Success', 'Workout saved successfully!');
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Failed to save workout. Please check your format.');
     } finally {
       setSaving(false);
     }
