@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { parseLiftohistoryText } from '@/src/parser';
-import { saveSession } from '@/src/storage';
+import { saveSession, sessionExists } from '@/src/storage';
 import { getDB } from '@/src/db';
 
 export default function AddScreen() {
@@ -17,9 +17,13 @@ export default function AddScreen() {
     setSaving(true);
     try {
       const db = await getDB();
+      if (await sessionExists(db, parsed.date)) {
+        Alert.alert('Already saved', `A workout for ${parsed.date} is already recorded.`);
+        return;
+      }
       await saveSession(db, parsed);
       setText('');
-      Alert.alert('Success', 'Workout saved successfully!');
+      Alert.alert('Saved', 'Workout saved successfully!');
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Failed to save workout. Please check your format.');
