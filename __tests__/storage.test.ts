@@ -5,6 +5,7 @@ import {
   saveSession,
   getAllSessions,
   getSessionsForExercise,
+  getUniqueExerciseNames,
   type DB,
 } from '../src/storage';
 import type { Session } from '../src/types';
@@ -86,6 +87,18 @@ describe('SQLite storage', () => {
   it('returns empty array when no sessions exist', async () => {
     const sessions = await getAllSessions(db);
     expect(sessions).toHaveLength(0);
+  });
+
+  it('returns unique exercise names alphabetically', async () => {
+    await saveSession(db, SESSION_A); // Squat, Deadlift
+    await saveSession(db, SESSION_B); // Squat (again)
+    const names = await getUniqueExerciseNames(db);
+    expect(names).toEqual(['Deadlift', 'Squat']);
+  });
+
+  it('returns empty array for exercise names when no sessions', async () => {
+    const names = await getUniqueExerciseNames(db);
+    expect(names).toHaveLength(0);
   });
 
   it('preserves set and target data through serialisation round-trip', async () => {

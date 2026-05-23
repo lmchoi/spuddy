@@ -1,7 +1,11 @@
-import { render, screen } from '@testing-library/react-native';
-import ProgressScreen from '../app/(tabs)/progress';
+import { render, screen, waitFor } from '@testing-library/react-native';
+import ProgressScreen from '../app/(tabs)/progress/index';
 import AddScreen from '../app/(tabs)/add';
 import SettingsScreen from '../app/(tabs)/settings';
+
+jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
+jest.mock('@/src/storage', () => ({ getUniqueExerciseNames: jest.fn().mockResolvedValue([]) }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 
 describe('Add screen', () => {
   it('renders a text input', () => {
@@ -11,19 +15,16 @@ describe('Add screen', () => {
 
   it('renders a disabled Save button', () => {
     render(<AddScreen />);
-    const button = screen.getByText('Save');
-    expect(button).toBeTruthy();
+    expect(screen.getByText('Save')).toBeTruthy();
   });
 });
 
 describe('Progress screen', () => {
-  it('renders without crashing', () => {
+  it('renders without crashing', async () => {
     render(<ProgressScreen />);
-  });
-
-  it('shows empty state when there are no exercises', () => {
-    render(<ProgressScreen />);
-    expect(screen.getByText('No workouts logged yet')).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText('No workouts logged yet')).toBeTruthy()
+    );
   });
 });
 

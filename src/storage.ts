@@ -106,6 +106,13 @@ function rowsToSessions(rows: SessionRow[]): Session[] {
   return Array.from(byDate.values());
 }
 
+export async function getUniqueExerciseNames(db: DB): Promise<string[]> {
+  const rows = await db.all<{ exercise_name: string }>(
+    `SELECT DISTINCT exercise_name FROM sessions ORDER BY exercise_name ASC`
+  );
+  return rows.map(r => r.exercise_name);
+}
+
 export async function getAllSessions(db: DB): Promise<Session[]> {
   const rows = await db.all<SessionRow>(
     `SELECT date, exercise_name, sets_json, targets_json
