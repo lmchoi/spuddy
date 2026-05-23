@@ -1,10 +1,10 @@
 import type { DB } from './storage';
 import type { Program } from './types';
 import { parseProgramFromBackup } from './programParser';
-import { saveProgram } from './programStorage';
+import { savePrograms } from './programStorage';
 
 type ImportResult =
-  | { success: true; program: Program }
+  | { success: true; programs: Program[] }
   | { success: false; error: string };
 
 export async function importProgramFromJson(db: DB, json: unknown): Promise<ImportResult> {
@@ -12,6 +12,6 @@ export async function importProgramFromJson(db: DB, json: unknown): Promise<Impo
   if ('error' in parsed) {
     return { success: false, error: parsed.error };
   }
-  await saveProgram(db, parsed);
-  return { success: true, program: parsed };
+  await savePrograms(db, parsed);
+  return { success: true, programs: parsed };
 }

@@ -97,25 +97,32 @@ const fixture = JSON.parse(
 );
 
 describe('parseProgramFromBackup', () => {
-  it('returns a Program with 3 days from the fixture', () => {
+  it('returns all programs from the fixture as an array', () => {
     const result = parseProgramFromBackup(fixture);
     expect('error' in result).toBe(false);
     if ('error' in result) return;
-    expect(result.name).toBe('v1');
-    expect(result.days).toHaveLength(3);
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('parses the first program with 3 days', () => {
+    const result = parseProgramFromBackup(fixture);
+    if ('error' in result) return;
+    const program = result[0];
+    expect(program.name).toBe('v1');
+    expect(program.days).toHaveLength(3);
   });
 
   it('sets activeDayIndex from nextDay field', () => {
     const result = parseProgramFromBackup(fixture);
     if ('error' in result) return;
-    expect(result.activeDayIndex).toBe(2);
+    expect(result[0].activeDayIndex).toBe(2);
   });
 
   it('resolves cross-day ...Reference in Day 1', () => {
     const result = parseProgramFromBackup(fixture);
     if ('error' in result) return;
-    const day1 = result.days[0];
-    // Incline Chest Press, Band / ...Lunge, Dumbbell — should resolve to Lunge targets
+    const day1 = result[0].days[0];
     const incline = day1.exercises.find(e => e.name === 'Incline Chest Press, Band');
     expect(incline).toBeDefined();
     expect(incline!.targets.length).toBeGreaterThan(0);
@@ -126,7 +133,7 @@ describe('parseProgramFromBackup', () => {
   it('resolves ...Reference in Day 2', () => {
     const result = parseProgramFromBackup(fixture);
     if ('error' in result) return;
-    const day2 = result.days[1];
+    const day2 = result[0].days[1];
     const ohp = day2.exercises.find(e => e.name === 'Overhead Press, Dumbbell');
     expect(ohp).toBeDefined();
     expect(ohp!.targets.length).toBeGreaterThan(0);
@@ -135,7 +142,7 @@ describe('parseProgramFromBackup', () => {
   it('resolves ...Reference in Day 3', () => {
     const result = parseProgramFromBackup(fixture);
     if ('error' in result) return;
-    const day3 = result.days[2];
+    const day3 = result[0].days[2];
     const goblet = day3.exercises.find(e => e.name === 'Goblet Squat');
     expect(goblet).toBeDefined();
     expect(goblet!.targets.length).toBeGreaterThan(0);
