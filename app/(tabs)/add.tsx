@@ -3,17 +3,25 @@ import { StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { parseLiftohistoryText } from '@/src/parser';
 import { saveSession } from '@/src/storage';
+import { getDB } from '@/src/db';
 
 export default function AddScreen() {
   const [text, setText] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const parsed = text.length > 0 ? parseLiftohistoryText(text) : null;
-  const canSave = parsed !== null;
+  const canSave = parsed !== null && !saving;
 
   async function handleSave() {
     if (!parsed) return;
-    await saveSession(parsed);
-    setText('');
+    setSaving(true);
+    try {
+      const db = await getDB();
+      await saveSession(db, parsed);
+      setText('');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -30,7 +38,7 @@ export default function AddScreen() {
         onPress={handleSave}
         disabled={!canSave}
       >
-        <Text style={styles.buttonText}>Save</Text>
+        <Text style={styles.buttonText}>{saving ? 'Saving…' : 'Save'}</Text>
       </TouchableOpacity>
     </View>
   );
