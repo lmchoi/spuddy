@@ -36,15 +36,17 @@ export default function ExerciseDetailScreen() {
       .then(setSessions);
   }, [name]);
 
+  const decodedName = decodeURIComponent(name ?? '');
+
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>{decodeURIComponent(name ?? '')}</Text>
+      <Text style={styles.heading}>{decodedName}</Text>
       {sessions.length === 0 ? (
         <Text style={styles.empty}>No sessions yet</Text>
       ) : (
         <FlatList
           data={sessions}
-          keyExtractor={s => s.date}
+          keyExtractor={s => `${s.date}-${decodedName}`}
           renderItem={({ item: session }) => {
             const entry = session.exercises[0];
             const status = getEntryStatus(entry);
