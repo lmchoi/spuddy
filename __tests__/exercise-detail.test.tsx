@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react-native';
 import SessionDetailScreen from '../app/(tabs)/progress/[date]';
 import type { Session } from '../src/types';
 
@@ -64,6 +64,32 @@ describe('Session detail screen', () => {
     render(<SessionDetailScreen />);
     // Bench Press: 4 reps vs target 5 — below
     await waitFor(() => expect(screen.getByText('↓')).toBeTruthy());
+  });
+
+  it('shows exceeded indicator when all sets beat target', async () => {
+    const exceededSession: Session = {
+      date: '2026-05-10',
+      exercises: [{
+        name: 'Pull-ups',
+        sets: [{ reps: 8, weight: 0, isWarmup: false, isBodyweight: true }],
+        targets: [{ reps: 6 }],
+      }],
+    };
+    getSessionByDate.mockResolvedValue(exceededSession);
+    render(<SessionDetailScreen />);
+    await waitFor(() => expect(screen.getByText('↑')).toBeTruthy());
+  });
+
+  it('reveals set detail when an exercise row is tapped', async () => {
+    getSessionByDate.mockResolvedValue(SESSION);
+    render(<SessionDetailScreen />);
+    await waitFor(() => expect(screen.getByText('Squat')).toBeTruthy());
+
+    // set detail is hidden before tap — "actual" column header shouldn't exist yet
+    expect(screen.queryByText('actual')).toBeNull();
+
+    fireEvent.press(screen.getByText('Squat'));
+    expect(screen.getByText('actual')).toBeTruthy();
   });
 
   it('shows empty state when session not found', async () => {

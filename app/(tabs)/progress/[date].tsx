@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
-  FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -12,31 +12,56 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { getSessionByDate } from '@/src/storage';
 import { getSetStatus, getEntryStatus } from '@/src/domain/status';
-import type { Session, ExerciseEntry, WorkingSet, Target } from '@/src/types';
+import { computeStats, coachLine } from '@/src/domain/stats';
+import type { SessionStats } from '@/src/domain/stats';
+import type { Session, ExerciseEntry, Target } from '@/src/types';
 
-// ─── Palette ─────────────────────────────────────────────────────────────────
+// ─── Palette — warm dark ──────────────────────────────────────────────────────
 
 const C = {
-  bg:       '#08080E',
-  surface:  '#111118',
-  card:     '#16161F',
-  border:   '#1C1C2A',
-  accent:   '#39FF82',
-  below:    '#FF5C38',
-  exceeded: '#38C8FF',
-  text:     '#ECEEFF',
-  sub:      '#5C5C88',
-  muted:    '#2A2A3C',
+  bg:         '#181109',
+  bg2:        '#1F1610',
+  surface:    '#251A12',
+  card:       '#2E2218',
+  cardSoft:   '#3F3122',
+  border:     '#3A2C1F',
+  text:       '#F5EDDD',
+  text2:      '#D6C2A2',
+  sub:        '#A89175',
+  muted:      '#6B5639',
+  faint:      '#3F3122',
+  hit:        '#B7D26A',
+  hitBg:      '#2F3D1B',
+  below:      '#E8884A',
+  belowBg:    '#3D2517',
+  exceeded:   '#F4C44F',
+  exceededBg: '#3D2F13',
+  noTarget:   '#6B5639',
+  pr:         '#FFB94D',
 } as const;
+
+const STATUS_COLOR: Record<string, string> = {
+  hit:         C.hit,
+  below:       C.below,
+  exceeded:    C.exceeded,
+  'no-target': C.noTarget,
+};
+const STATUS_BG: Record<string, string> = {
+  hit:         C.hitBg,
+  below:       C.belowBg,
+  exceeded:    C.exceededBg,
+  'no-target': C.faint,
+};
+const STATUS_GLYPH: Record<string, string> = {
+  hit: '●', below: '↓', exceeded: '↑', 'no-target': '○',
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(yyyymmdd: string): string {
   const [y, m, d] = yyyymmdd.split('-').map(Number);
   return new Date(y, m - 1, d).toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
+    weekday: 'long', day: 'numeric', month: 'long',
   });
 }
 
@@ -44,74 +69,121 @@ function formatWeight(kg: number): string {
   return kg === 0 ? 'BW' : `${kg} kg`;
 }
 
-// ─── Status config ────────────────────────────────────────────────────────────
+function formatTarget(t: Target): string {
+  const reps = t.minReps != null ? `${t.minReps}–${t.reps}` : `${t.reps}`;
+  return t.weight != null ? `${reps} @ ${formatWeight(t.weight)}` : reps;
+}
 
-const STATUS: Record<string, { color: string; symbol: string }> = {
-  hit:         { color: C.accent,   symbol: '●' },
-  below:       { color: C.below,    symbol: '↓' },
-  exceeded:    { color: C.exceeded, symbol: '↑' },
-  'no-target': { color: C.muted,    symbol: '○' },
-};
+// ─── Bento tile ───────────────────────────────────────────────────────────────
 
-// ─── Set Row ──────────────────────────────────────────────────────────────────
-
-function SetRow({
-  set,
-  target,
-  index,
+function BentoTile({
+  children,
+  flex,
+  accentColor,
+  style,
 }: {
-  set: WorkingSet;
-  target: Target | undefined;
-  index: number;
+  children: React.ReactNode;
+  flex: number;
+  accentColor?: string;
+  style?: object;
 }) {
-  const status = getSetStatus(set, target);
-  const { color, symbol } = STATUS[status];
-
   return (
-    <View style={styles.setRow}>
-      <Text style={styles.setIndex}>{index + 1}</Text>
-      <View style={styles.setMain}>
-        <Text style={styles.setReps}>
-          {set.repsLeft != null ? `${set.reps}|${set.repsLeft}` : String(set.reps)}
-        </Text>
-        <Text style={styles.setSep}>×</Text>
-        <Text style={styles.setWeight}>{formatWeight(set.weight)}</Text>
-      </View>
-      {target != null && (
-        <Text style={styles.setTarget}>
-          {target.minReps != null ? `${target.minReps}–` : ''}{target.reps}
-          {target.weight != null ? ` @ ${formatWeight(target.weight)}` : ''}
-        </Text>
-      )}
-      <Text style={[styles.setSymbol, { color }]}>{symbol}</Text>
+    <View style={[styles.bento, { flex }, style]}>
+      {accentColor && <View style={[styles.bentoAccent, { backgroundColor: accentColor }]} />}
+      {children}
     </View>
   );
 }
 
-// ─── Exercise Card ────────────────────────────────────────────────────────────
+// ─── Distribution bar ─────────────────────────────────────────────────────────
 
-function ExerciseCard({ entry }: { entry: ExerciseEntry }) {
+function DistBar({ stats }: { stats: SessionStats }) {
+  const total = stats.working;
+  if (total === 0) return null;
+  return (
+    <BentoTile flex={1}>
+      <Text style={styles.bentoLabel}>Set distribution</Text>
+      <View style={styles.distBar}>
+        {stats.below > 0 && (
+          <View style={{ flex: stats.below, backgroundColor: C.below }} />
+        )}
+        {stats.hits > 0 && (
+          <View style={{ flex: stats.hits, backgroundColor: C.hit }} />
+        )}
+        {stats.exceeded > 0 && (
+          <View style={{ flex: stats.exceeded, backgroundColor: C.exceeded }} />
+        )}
+      </View>
+      <View style={styles.distLegend}>
+        <Text style={[styles.distLegendItem, { color: C.below }]}>↓ {stats.below} short</Text>
+        <Text style={[styles.distLegendItem, { color: C.hit }]}>● {stats.hits} hit</Text>
+        <Text style={[styles.distLegendItem, { color: C.exceeded }]}>↑ {stats.exceeded} over</Text>
+      </View>
+    </BentoTile>
+  );
+}
+
+// ─── Exercise row ─────────────────────────────────────────────────────────────
+
+function ExerciseRow({ entry }: { entry: ExerciseEntry }) {
+  const [open, setOpen] = useState(false);
   const working = entry.sets.filter(s => !s.isWarmup);
-  const warmups = entry.sets.filter(s => s.isWarmup);
-  const overall = getEntryStatus(entry);
-  const barColor = STATUS[overall].color;
+  const status = getEntryStatus(entry);
+  const statusColor = STATUS_COLOR[status];
+  const statusBg = STATUS_BG[status];
+  const glyph = STATUS_GLYPH[status];
+
+  const topReps = working.length ? Math.max(...working.map(s => s.reps)) : 0;
+  const topWeight = working.length ? Math.max(...working.map(s => s.weight)) : 0;
 
   return (
-    <View style={styles.card}>
-      <View style={[styles.cardBar, { backgroundColor: barColor }]} />
-      <View style={styles.cardContent}>
-        <Text style={styles.cardName}>{entry.name}</Text>
-        {warmups.length > 0 && (
-          <Text style={styles.cardWarmup}>
-            {warmups.length} warmup set{warmups.length > 1 ? 's' : ''}
-          </Text>
-        )}
-        <View style={styles.setsBlock}>
-          {working.map((set, i) => (
-            <SetRow key={i} set={set} target={entry.targets[i]} index={i} />
-          ))}
+    <View style={styles.exRow}>
+      <Pressable
+        onPress={() => setOpen(o => !o)}
+        style={styles.exHeader}
+        hitSlop={4}
+      >
+        <View style={[styles.exStatusTile, { backgroundColor: statusBg }]}>
+          <Text style={[styles.exStatusGlyph, { color: statusColor }]}>{glyph}</Text>
         </View>
-      </View>
+        <View style={styles.exHeaderText}>
+          <Text style={styles.exName}>{entry.name}</Text>
+          <Text style={styles.exMeta}>
+            {working.length} set{working.length !== 1 ? 's' : ''} · top {topReps}×{formatWeight(topWeight)}
+          </Text>
+        </View>
+        <Text style={[styles.exChevron, open && styles.exChevronOpen]}>⌄</Text>
+      </Pressable>
+
+      {open && (
+        <View style={styles.exBody}>
+          <View style={styles.setGrid}>
+            <View style={styles.setGridRow}>
+              <Text style={[styles.setGridHdr, { width: 20 }]}>#</Text>
+              <Text style={[styles.setGridHdr, { flex: 2 }]}>actual</Text>
+              <Text style={[styles.setGridHdr, { flex: 2 }]}>target</Text>
+              <Text style={[styles.setGridHdr, { width: 20 }]}> </Text>
+            </View>
+            {working.map((s, i) => {
+              const st = getSetStatus(s, entry.targets[i]);
+              return (
+                <View key={i} style={styles.setGridRow}>
+                  <Text style={styles.setNum}>{i + 1}</Text>
+                  <Text style={styles.setActual}>
+                    {s.reps} × {formatWeight(s.weight)}
+                  </Text>
+                  <Text style={styles.setTargetCell}>
+                    {entry.targets[i] ? formatTarget(entry.targets[i]) : '—'}
+                  </Text>
+                  <Text style={[styles.setStatus, { color: STATUS_COLOR[st] }]}>
+                    {STATUS_GLYPH[st]}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -131,11 +203,13 @@ export default function SessionDetailScreen() {
   }, [date]);
 
   const exercises = session?.exercises ?? [];
+  const stats = session ? computeStats(session) : null;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" />
 
+      {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
           <Text style={styles.backArrow}>←</Text>
@@ -144,23 +218,69 @@ export default function SessionDetailScreen() {
           <Text style={styles.headerDate}>{date ? formatDate(date) : ''}</Text>
           <Text style={styles.headerSub}>
             {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
+            {stats && stats.working > 0 ? ` · ${stats.working} working sets` : ''}
           </Text>
         </View>
       </View>
 
-      <FlatList
-        style={styles.list}
-        data={exercises}
-        keyExtractor={(e, i) => `${e.name}-${i}`}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        ListEmptyComponent={
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        {exercises.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyText}>No data for this session</Text>
           </View>
-        }
-        renderItem={({ item }) => <ExerciseCard entry={item} />}
-      />
+        ) : (
+          <>
+            {/* Bento stat grid */}
+            {stats && (
+              <View style={styles.bentoSection}>
+                {/* Row 1: On target + Volume */}
+                <View style={styles.bentoRow}>
+                  <BentoTile flex={1} accentColor={C.hit}>
+                    <Text style={styles.bentoLabel}>On target</Text>
+                    <View style={styles.bigNumRow}>
+                      <Text style={styles.bigNum}>{stats.onTarget}</Text>
+                      <Text style={styles.bigNumUnit}>%</Text>
+                    </View>
+                    <Text style={styles.bentoSub}>
+                      {stats.hits + stats.exceeded}/{stats.working} sets
+                    </Text>
+                  </BentoTile>
+                  <BentoTile flex={1} accentColor={C.text2}>
+                    <Text style={styles.bentoLabel}>Volume</Text>
+                    <Text style={styles.volumeNum}>{stats.volumeKg.toLocaleString()} kg</Text>
+                    <Text style={styles.bentoSub}>excl. bodyweight</Text>
+                  </BentoTile>
+                </View>
+
+                {/* Row 2: Distribution bar */}
+                <View style={styles.bentoRow}>
+                  <DistBar stats={stats} />
+                </View>
+              </View>
+            )}
+
+            {/* Coach line */}
+            {stats && (
+              <View style={styles.coachCard}>
+                <Text style={styles.coachEmoji}>🥔</Text>
+                <Text style={styles.coachText}>{coachLine(stats)}</Text>
+              </View>
+            )}
+
+            {/* Exercises section heading */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionLabel}>Exercises</Text>
+            </View>
+
+            {/* Collapsible exercise rows */}
+            <View style={styles.exList}>
+              {exercises.map((ex, i) => (
+                <ExerciseRow key={`${ex.name}-${i}`} entry={ex} />
+              ))}
+            </View>
+          </>
+        )}
+      </ScrollView>
     </View>
   );
 }
@@ -175,123 +295,264 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: C.border,
+    gap: 12,
   },
   backBtn: {
-    paddingVertical: 2,
-    marginRight: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: C.card,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   backArrow: {
-    fontSize: 22,
-    color: C.sub,
-    lineHeight: 26,
+    fontSize: 18,
+    color: C.text2,
   },
   headerText: {
     flex: 1,
   },
   headerDate: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: C.text,
+    letterSpacing: -0.2,
   },
   headerSub: {
     fontSize: 12,
     color: C.sub,
     marginTop: 1,
   },
-  list: {
+  scroll: {
     flex: 1,
   },
-  listContent: {
+  scrollContent: {
     paddingBottom: 48,
   },
-  separator: {
-    height: 1,
-    backgroundColor: C.border,
-    marginLeft: 20,
+
+  // ─── Bento
+  bentoSection: {
+    paddingHorizontal: 18,
+    gap: 8,
+    marginBottom: 14,
   },
-  card: {
+  bentoRow: {
     flexDirection: 'row',
-    paddingVertical: 16,
-    paddingLeft: 20,
-    paddingRight: 20,
+    gap: 8,
   },
-  cardBar: {
-    width: 2,
-    borderRadius: 1,
-    marginRight: 14,
-    minHeight: 44,
+  bento: {
+    backgroundColor: C.surface,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: C.border,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  cardContent: {
-    flex: 1,
+  bentoAccent: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
-  cardName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: C.text,
-    marginBottom: 4,
+  bentoLabel: {
+    fontSize: 10,
+    color: C.sub,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
   },
-  cardWarmup: {
+  bentoSub: {
     fontSize: 11,
-    color: C.muted,
-    fontStyle: 'italic',
-    marginBottom: 8,
+    color: C.sub,
+    marginTop: 6,
   },
-  setsBlock: {
+  bigNumRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 4,
     marginTop: 2,
   },
-  setRow: {
+  bigNum: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: C.text,
+    letterSpacing: -0.5,
+  },
+  bigNumUnit: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: C.sub,
+    marginBottom: 3,
+  },
+  volumeNum: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: C.text,
+    letterSpacing: -0.4,
+    marginTop: 2,
+  },
+
+  // ─── Distribution bar
+  distBar: {
+    flexDirection: 'row',
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    backgroundColor: C.faint,
+    marginTop: 8,
+  },
+  distLegend: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  distLegendItem: {
+    fontSize: 11,
+    fontVariant: ['tabular-nums'],
+  },
+
+  // ─── Coach card
+  coachCard: {
+    marginHorizontal: 18,
+    marginBottom: 16,
+    padding: 14,
+    backgroundColor: C.cardSoft,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 7,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: C.border,
   },
-  setIndex: {
-    width: 14,
-    fontSize: 11,
-    color: C.muted,
-    textAlign: 'right',
-    marginRight: 8,
-    fontVariant: ['tabular-nums'],
+  coachEmoji: {
+    fontSize: 28,
   },
-  setMain: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    minWidth: 100,
-    marginRight: 8,
-  },
-  setReps: {
-    fontSize: 16,
-    fontWeight: '700',
+  coachText: {
+    flex: 1,
+    fontSize: 13,
     color: C.text,
-    fontVariant: ['tabular-nums'],
+    lineHeight: 18,
   },
-  setSep: {
-    fontSize: 12,
-    color: C.muted,
-    marginHorizontal: 2,
+
+  // ─── Section heading
+  sectionHeader: {
+    paddingHorizontal: 18,
+    marginBottom: 8,
   },
-  setWeight: {
+  sectionLabel: {
+    fontSize: 11,
+    color: C.sub,
+    textTransform: 'uppercase',
+    letterSpacing: 1.0,
+  },
+
+  // ─── Exercise list
+  exList: {
+    paddingHorizontal: 18,
+    gap: 8,
+  },
+  exRow: {
+    backgroundColor: C.card,
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: C.border,
+  },
+  exHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    gap: 12,
+  },
+  exStatusTile: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exStatusGlyph: {
+    fontSize: 14,
+  },
+  exHeaderText: {
+    flex: 1,
+  },
+  exName: {
     fontSize: 14,
     fontWeight: '600',
     color: C.text,
+  },
+  exMeta: {
+    fontSize: 11,
+    color: C.sub,
+    marginTop: 2,
     fontVariant: ['tabular-nums'],
   },
-  setTarget: {
-    flex: 1,
+  exChevron: {
+    fontSize: 14,
+    color: C.muted,
+  },
+  exChevronOpen: {
+    transform: [{ rotate: '180deg' }],
+  },
+  exBody: {
+    paddingHorizontal: 14,
+    paddingBottom: 12,
+  },
+
+  // ─── Set grid (4 columns: #, actual, target, status)
+  setGrid: {
+    backgroundColor: C.bg2,
+    borderRadius: 10,
+    padding: 10,
+  },
+  setGridRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  setGridHdr: {
+    fontSize: 9,
+    color: C.muted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingBottom: 4,
+  },
+  setNum: {
+    width: 20,
     fontSize: 11,
     color: C.muted,
     fontVariant: ['tabular-nums'],
+    paddingVertical: 3,
   },
-  setSymbol: {
-    width: 14,
-    fontSize: 13,
-    textAlign: 'center',
+  setActual: {
+    flex: 2,
+    fontSize: 12,
+    fontWeight: '600',
+    color: C.text,
+    fontVariant: ['tabular-nums'],
+    paddingVertical: 3,
   },
+  setTargetCell: {
+    flex: 2,
+    fontSize: 11,
+    color: C.sub,
+    fontVariant: ['tabular-nums'],
+    paddingVertical: 3,
+  },
+  setStatus: {
+    width: 20,
+    fontSize: 12,
+    textAlign: 'right',
+    paddingVertical: 3,
+  },
+
+  // ─── Empty state
   empty: {
-    paddingTop: 60,
+    paddingTop: 80,
     alignItems: 'center',
   },
   emptyText: {
