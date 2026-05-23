@@ -126,3 +126,29 @@ redesign (settings, bento detail) cheap.
 - Should the save success state route back to the progress list or stay on
   the Add screen with a fresh empty state? (lean: route to the just-saved
   session's detail page)
+
+## Follow-up backlog (post slice 1)
+
+- **"View existing" leaves no back route.** `router.push('/progress/[date]')`
+  from a tab navigates within the tab group — no stack entry is created, so
+  the back gesture doesn't return to add. Needs investigation: either wrap
+  the add screen in its own stack navigator, or use a different routing
+  strategy when pushing from add. Track before the Sources Hub lands, since
+  the hub will push add as a child and the same issue will recur.
+
+- **Duplicate banner is date-only, no content diff.** The banner fires whether
+  the pasted content is identical to the stored session or genuinely different.
+  Consider suppressing or softening the message when the incoming data matches
+  what's already stored. Not urgent for v0.1.
+
+- **Overwrite button is disabled.** `saveEnabled` is intentionally false in the duplicate state — enabling it requires `replaceSession` (slice 3) to exist first, otherwise pressing Overwrite would silently append a duplicate. Wire up as part of slice 3.
+
+- **Clear button on the textarea.** A small × in the corner of the input to
+  wipe the text in one tap, rather than select-all-delete.
+
+- **Cancel vs back — revisit together.** The back button in the header is
+  likely a no-op from the tab root (no stack entry to go back to). Cancel
+  currently fills that gap by resetting state. Once back navigation is fixed
+  (see "View existing" item above), Cancel may become redundant — back handles
+  "leave the screen", a clear button handles "wipe the input". Decide then
+  whether to remove Cancel or keep it as an explicit escape hatch.

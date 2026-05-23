@@ -89,7 +89,7 @@ function parseSingleProgram(program: Record<string, unknown>): Program | ParseEr
   }
 
   const week0 = weeks[0] as Record<string, unknown>;
-  const rawDays = week0.days as Array<Record<string, unknown>>;
+  const rawDays = week0.days as Record<string, unknown>[];
   if (!Array.isArray(rawDays)) {
     return { error: `No days found in program "${name}"` };
   }

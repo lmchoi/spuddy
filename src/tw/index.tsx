@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 
 // Cast away the complex generic to prevent TS2590 union-too-complex errors
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const useCssElement = _useCssElement as (component: any, props: any, mapping: any) => React.ReactElement | null;
 
 export const Link = (

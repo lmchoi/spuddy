@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import type { ExerciseEntry, Session, Target, WorkingSet } from './types';
+import type { Session, Target, WorkingSet } from './types';
 
 export interface DB {
   run(sql: string, params?: unknown[]): Promise<void>;
@@ -85,17 +85,24 @@ export async function sessionExists(db: DB, date: string): Promise<boolean> {
 }
 
 export async function saveSession(db: DB, session: Session): Promise<void> {
-  for (const entry of session.exercises) {
-    await db.run(
-      `INSERT INTO sessions (date, exercise_name, sets_json, targets_json)
-       VALUES (?, ?, ?, ?)`,
-      [
-        session.date,
-        entry.name,
-        JSON.stringify(entry.sets),
-        JSON.stringify(entry.targets),
-      ]
-    );
+  await db.run('BEGIN');
+  try {
+    for (const entry of session.exercises) {
+      await db.run(
+        `INSERT INTO sessions (date, exercise_name, sets_json, targets_json)
+         VALUES (?, ?, ?, ?)`,
+        [
+          session.date,
+          entry.name,
+          JSON.stringify(entry.sets),
+          JSON.stringify(entry.targets),
+        ]
+      );
+    }
+    await db.run('COMMIT');
+  } catch (err) {
+    await db.run('ROLLBACK');
+    throw err;
   }
 }
 
