@@ -65,7 +65,10 @@
     ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/$1"
-    }
+    },
+    "testPathIgnorePatterns": [
+      "<rootDir>/.claude/"
+    ]
   },
   "overrides": {
     "lightningcss": "1.30.1"
