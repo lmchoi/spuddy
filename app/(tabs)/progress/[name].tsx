@@ -4,42 +4,16 @@ import { useLocalSearchParams } from 'expo-router';
 import { Text, View } from '@/components/Themed';
 import { getDB } from '@/src/db';
 import { getSessionsForExercise } from '@/src/storage';
-import type { ExerciseEntry, Session, Target, WorkingSet } from '@/src/types';
+import { getEntryStatus, STATUS_LABEL, type OnTargetStatus } from '@/src/domain/status';
+import type { Session, WorkingSet } from '@/src/types';
+import Colors from '@/constants/Colors';
+import { useColorScheme } from '@/components/useColorScheme';
 
-type OnTargetStatus = 'hit' | 'below' | 'exceeded' | 'no-target';
-
-function setStatus(set: WorkingSet, target: Target | undefined): OnTargetStatus {
-  if (!target) return 'no-target';
-  const minReps = target.minReps ?? target.reps;
-  const repsOk = set.reps >= minReps;
-  const weightOk = target.weight === undefined || set.weight >= target.weight;
-  if (!repsOk || !weightOk) return 'below';
-  if (set.reps > target.reps || (target.weight !== undefined && set.weight > target.weight))
-    return 'exceeded';
-  return 'hit';
-}
-
-function entryStatus(entry: ExerciseEntry): OnTargetStatus {
-  const working = entry.sets.filter(s => !s.isWarmup);
-  if (working.length === 0 || entry.targets.length === 0) return 'no-target';
-  const statuses = working.map((s, i) => setStatus(s, entry.targets[i]));
-  if (statuses.some(s => s === 'below')) return 'below';
-  if (statuses.every(s => s === 'exceeded')) return 'exceeded';
-  return 'hit';
-}
-
-const STATUS_LABEL: Record<OnTargetStatus, string> = {
-  hit: '✓',
-  below: '↓',
-  exceeded: '↑',
-  'no-target': '–',
-};
-
-const STATUS_COLOR: Record<OnTargetStatus, string> = {
-  hit: '#34C759',
-  below: '#FF3B30',
-  exceeded: '#007AFF',
-  'no-target': '#888',
+const STATUS_COLOR_KEY: Record<OnTargetStatus, keyof typeof Colors.light> = {
+  hit: 'statusHit',
+  below: 'statusBelow',
+  exceeded: 'statusExceeded',
+  'no-target': 'statusNone',
 };
 
 function formatSets(sets: WorkingSet[]): string {
@@ -53,6 +27,7 @@ function formatSets(sets: WorkingSet[]): string {
 export default function ExerciseDetailScreen() {
   const { name } = useLocalSearchParams<{ name: string }>();
   const [sessions, setSessions] = useState<Session[]>([]);
+  const colorScheme = useColorScheme() ?? 'light';
 
   useEffect(() => {
     if (!name) return;
@@ -72,14 +47,15 @@ export default function ExerciseDetailScreen() {
           keyExtractor={s => s.date}
           renderItem={({ item: session }) => {
             const entry = session.exercises[0];
-            const status = entryStatus(entry);
+            const status = getEntryStatus(entry);
+            const color = Colors[colorScheme][STATUS_COLOR_KEY[status]];
             return (
               <View style={styles.row}>
                 <View style={styles.rowLeft}>
                   <Text style={styles.date}>{session.date}</Text>
                   <Text style={styles.sets}>{formatSets(entry.sets)}</Text>
                 </View>
-                <Text style={[styles.indicator, { color: STATUS_COLOR[status] }]}>
+                <Text style={[styles.indicator, { color }]}>
                   {STATUS_LABEL[status]}
                 </Text>
               </View>
