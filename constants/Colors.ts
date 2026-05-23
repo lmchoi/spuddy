@@ -8,6 +8,10 @@ export default {
     tint: tintColorLight,
     tabIconDefault: '#ccc',
     tabIconSelected: tintColorLight,
+    statusHit: '#34C759',
+    statusBelow: '#FF3B30',
+    statusExceeded: '#007AFF',
+    statusNone: '#888',
   },
   dark: {
     text: '#fff',
@@ -15,5 +19,9 @@ export default {
     tint: tintColorDark,
     tabIconDefault: '#ccc',
     tabIconSelected: tintColorDark,
+    statusHit: '#34C759',
+    statusBelow: '#FF3B30',
+    statusExceeded: '#007AFF',
+    statusNone: '#888',
   },
 };
