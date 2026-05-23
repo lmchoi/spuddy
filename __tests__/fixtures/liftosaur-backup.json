@@ -1,0 +1,4533 @@
+{
+  "currentProgramId": "suhehhdo",
+  "reviewRequests": [],
+  "signupRequests": [],
+  "deletedHistory": [],
+  "deletedPrograms": [],
+  "deletedStats": [],
+  "tempUserId": "rxenhzxnac",
+  "affiliates": {},
+  "progress": [
+    {
+      "vtype": "progress",
+      "id": 0,
+      "date": "2026-05-22T21:38:17.808Z",
+      "programId": "suhehhdo",
+      "programName": "starter",
+      "intervals": [],
+      "day": 2,
+      "week": 1,
+      "dayInWeek": 2,
+      "dayName": "Day 2",
+      "startTime": 1779485897807,
+      "updatedAt": 1779485897807,
+      "entries": [
+        {
+          "vtype": "history_entry",
+          "id": "inclineChestPress_band",
+          "index": 0,
+          "exercise": {
+            "id": "inclineChestPress",
+            "name": "Incline Chest Press",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["upper", "push"],
+            "startingWeightLb": {
+              "value": 25,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 10,
+              "unit": "kg"
+            },
+            "equipment": "band"
+          },
+          "programExerciseId": "inclinechestpress_band",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "eytptq",
+              "reps": 12,
+              "index": 0,
+              "minReps": 10,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 0
+            },
+            {
+              "vtype": "set",
+              "id": "ysamyg",
+              "reps": 12,
+              "index": 1,
+              "minReps": 10,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 1
+            },
+            {
+              "vtype": "set",
+              "id": "lkrefc",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 2
+            }
+          ],
+          "warmupSets": [
+            {
+              "vtype": "set",
+              "index": 0,
+              "id": "vslzui",
+              "reps": 5,
+              "isUnilateral": false,
+              "weight": {
+                "value": 7.5,
+                "unit": "kg"
+              },
+              "originalWeight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isCompleted": false
+            }
+          ]
+        },
+        {
+          "vtype": "history_entry",
+          "id": "reverseFly_dumbbell",
+          "index": 1,
+          "exercise": {
+            "id": "reverseFly",
+            "name": "Reverse Fly",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["upper", "pull"],
+            "startingWeightLb": {
+              "value": 15,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "reversefly_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "kokeer",
+              "reps": 15,
+              "index": 0,
+              "minReps": 12,
+              "weight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 0
+            },
+            {
+              "vtype": "set",
+              "id": "hfuhed",
+              "reps": 15,
+              "index": 1,
+              "minReps": 12,
+              "weight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 1
+            },
+            {
+              "vtype": "set",
+              "id": "lnxjzw",
+              "reps": 15,
+              "index": 2,
+              "minReps": 12,
+              "weight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 2
+            }
+          ],
+          "warmupSets": []
+        },
+        {
+          "vtype": "history_entry",
+          "id": "overheadPress_dumbbell",
+          "index": 2,
+          "exercise": {
+            "id": "overheadPress",
+            "name": "Overhead Press",
+            "defaultWarmup": 45,
+            "defaultEquipment": "barbell",
+            "types": ["upper", "push"],
+            "startingWeightLb": {
+              "value": 75,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 32.5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "overheadpress_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "jsilne",
+              "reps": 12,
+              "index": 0,
+              "minReps": 11,
+              "weight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 0
+            },
+            {
+              "vtype": "set",
+              "id": "ibkikb",
+              "reps": 12,
+              "index": 1,
+              "minReps": 11,
+              "weight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 1
+            },
+            {
+              "vtype": "set",
+              "id": "nfvobm",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "weight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 2
+            }
+          ],
+          "warmupSets": []
+        },
+        {
+          "vtype": "history_entry",
+          "id": "facePull_band",
+          "index": 3,
+          "exercise": {
+            "id": "facePull",
+            "name": "Face Pull",
+            "defaultWarmup": 10,
+            "defaultEquipment": "band",
+            "types": ["upper", "pull"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "band"
+          },
+          "programExerciseId": "facepull_band",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "mfpryq",
+              "reps": 20,
+              "index": 0,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 0
+            },
+            {
+              "vtype": "set",
+              "id": "ippxzw",
+              "reps": 20,
+              "index": 1,
+              "minReps": 19,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 1
+            },
+            {
+              "vtype": "set",
+              "id": "goeqap",
+              "reps": 20,
+              "index": 2,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 2
+            }
+          ],
+          "warmupSets": []
+        },
+        {
+          "vtype": "history_entry",
+          "id": "bicycleCrunch_bodyweight",
+          "index": 4,
+          "exercise": {
+            "id": "bicycleCrunch",
+            "name": "Bicycle Crunch",
+            "defaultWarmup": 10,
+            "defaultEquipment": "bodyweight",
+            "types": ["core"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "bodyweight"
+          },
+          "programExerciseId": "bicyclecrunch_bodyweight",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "ikytew",
+              "reps": 20,
+              "index": 0,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 0
+            },
+            {
+              "vtype": "set",
+              "id": "tqdzis",
+              "reps": 20,
+              "index": 1,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 1
+            },
+            {
+              "vtype": "set",
+              "id": "gauoob",
+              "reps": 20,
+              "index": 2,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 2
+            }
+          ],
+          "warmupSets": []
+        }
+      ],
+      "ui": {}
+    }
+  ],
+  "stats": {
+    "weight": {
+      "weight": [
+        {
+          "vtype": "stat",
+          "value": {
+            "value": 62,
+            "unit": "kg"
+          },
+          "timestamp": 1778478376608,
+          "updatedAt": 1778588239862
+        },
+        {
+          "vtype": "stat",
+          "value": {
+            "value": 63,
+            "unit": "kg"
+          },
+          "timestamp": 1778478373621,
+          "updatedAt": 1778588239862
+        }
+      ]
+    },
+    "length": {
+      "neck": [],
+      "shoulders": [],
+      "bicepLeft": [],
+      "bicepRight": [],
+      "forearmLeft": [],
+      "forearmRight": [],
+      "chest": [],
+      "waist": [],
+      "hips": [],
+      "thighLeft": [],
+      "thighRight": [],
+      "calfLeft": [],
+      "calfRight": []
+    },
+    "percentage": {
+      "bodyfat": []
+    }
+  },
+  "settings": {
+    "timers": {
+      "warmup": 90,
+      "workout": 180,
+      "reminder": 900
+    },
+    "units": "kg",
+    "planner": {
+      "strengthSetsPct": 30,
+      "hypertrophySetsPct": 70,
+      "weeklyRangeSets": {
+        "shoulders": [10, 12],
+        "triceps": [10, 12],
+        "back": [10, 12],
+        "abs": [10, 12],
+        "glutes": [10, 12],
+        "hamstrings": [10, 12],
+        "quadriceps": [10, 12],
+        "chest": [10, 12],
+        "biceps": [10, 12],
+        "calves": [10, 12],
+        "forearms": [10, 12]
+      },
+      "weeklyFrequency": {
+        "shoulders": 2,
+        "triceps": 2,
+        "back": 2,
+        "abs": 2,
+        "glutes": 2,
+        "hamstrings": 2,
+        "quadriceps": 2,
+        "chest": 2,
+        "biceps": 2,
+        "calves": 2,
+        "forearms": 2
+      },
+      "synergistMultiplier": 0.5
+    },
+    "graphsSettings": {
+      "isSameXAxis": false,
+      "isWithBodyweight": false,
+      "isWithOneRm": true
+    },
+    "exerciseData": {
+      "squat_dumbbell": {
+        "rm1": {
+          "value": 30,
+          "unit": "kg"
+        },
+        "isUnilateral": false,
+        "equipment": {
+          "default": "dumbbell"
+        }
+      },
+      "benchPress_dumbbell": {
+        "rounding": 2.5
+      },
+      "backExtension_bodyweight": {
+        "equipment": {}
+      }
+    },
+    "graphOptions": {},
+    "exerciseStatsSettings": {
+      "ascendingSort": false
+    },
+    "gyms": [
+      {
+        "vtype": "gym",
+        "id": "default",
+        "name": "Main",
+        "equipment": {
+          "barbell": {
+            "vtype": "equipment_data",
+            "multiplier": 2,
+            "bar": {
+              "lb": {
+                "value": 45,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 20,
+                "unit": "kg"
+              }
+            },
+            "plates": [
+              {
+                "weight": {
+                  "value": 45,
+                  "unit": "lb"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 25,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "lb"
+                },
+                "num": 2
+              },
+              {
+                "weight": {
+                  "value": 20,
+                  "unit": "kg"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 0.5,
+                  "unit": "kg"
+                },
+                "num": 2
+              }
+            ],
+            "fixed": [],
+            "isFixed": false,
+            "isDeleted": true
+          },
+          "trapbar": {
+            "vtype": "equipment_data",
+            "multiplier": 2,
+            "bar": {
+              "lb": {
+                "value": 45,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 20,
+                "unit": "kg"
+              }
+            },
+            "plates": [
+              {
+                "weight": {
+                  "value": 45,
+                  "unit": "lb"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 25,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "lb"
+                },
+                "num": 2
+              },
+              {
+                "weight": {
+                  "value": 20,
+                  "unit": "kg"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 0.5,
+                  "unit": "kg"
+                },
+                "num": 2
+              }
+            ],
+            "fixed": [],
+            "isFixed": false,
+            "isDeleted": true
+          },
+          "leverageMachine": {
+            "vtype": "equipment_data",
+            "multiplier": 1,
+            "bar": {
+              "lb": {
+                "value": 0,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 0,
+                "unit": "kg"
+              }
+            },
+            "plates": [
+              {
+                "weight": {
+                  "value": 45,
+                  "unit": "lb"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 25,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "lb"
+                },
+                "num": 2
+              },
+              {
+                "weight": {
+                  "value": 20,
+                  "unit": "kg"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 0.5,
+                  "unit": "kg"
+                },
+                "num": 2
+              }
+            ],
+            "fixed": [],
+            "isFixed": false,
+            "isDeleted": true
+          },
+          "smith": {
+            "vtype": "equipment_data",
+            "multiplier": 2,
+            "bar": {
+              "lb": {
+                "value": 45,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 20,
+                "unit": "kg"
+              }
+            },
+            "plates": [
+              {
+                "weight": {
+                  "value": 45,
+                  "unit": "lb"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 25,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "lb"
+                },
+                "num": 2
+              },
+              {
+                "weight": {
+                  "value": 20,
+                  "unit": "kg"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 0.5,
+                  "unit": "kg"
+                },
+                "num": 2
+              }
+            ],
+            "fixed": [],
+            "isFixed": false,
+            "isDeleted": true
+          },
+          "dumbbell": {
+            "vtype": "equipment_data",
+            "multiplier": 2,
+            "bar": {
+              "lb": {
+                "value": 10,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 0.5,
+                "unit": "kg"
+              }
+            },
+            "plates": [
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "lb"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "lb"
+                },
+                "num": 2
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.5,
+                  "unit": "kg"
+                },
+                "num": 4
+              }
+            ],
+            "fixed": [
+              {
+                "value": 10,
+                "unit": "lb"
+              },
+              {
+                "value": 15,
+                "unit": "lb"
+              },
+              {
+                "value": 20,
+                "unit": "lb"
+              },
+              {
+                "value": 25,
+                "unit": "lb"
+              },
+              {
+                "value": 30,
+                "unit": "lb"
+              },
+              {
+                "value": 35,
+                "unit": "lb"
+              },
+              {
+                "value": 40,
+                "unit": "lb"
+              },
+              {
+                "value": 4,
+                "unit": "kg"
+              },
+              {
+                "value": 6,
+                "unit": "kg"
+              },
+              {
+                "value": 8,
+                "unit": "kg"
+              },
+              {
+                "value": 10,
+                "unit": "kg"
+              },
+              {
+                "value": 12,
+                "unit": "kg"
+              },
+              {
+                "value": 14,
+                "unit": "kg"
+              },
+              {
+                "value": 20,
+                "unit": "kg"
+              }
+            ],
+            "isFixed": false,
+            "isDeleted": false,
+            "isAssisting": false
+          },
+          "ezbar": {
+            "vtype": "equipment_data",
+            "multiplier": 2,
+            "bar": {
+              "lb": {
+                "value": 20,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 10,
+                "unit": "kg"
+              }
+            },
+            "plates": [
+              {
+                "weight": {
+                  "value": 45,
+                  "unit": "lb"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 25,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "lb"
+                },
+                "num": 2
+              },
+              {
+                "weight": {
+                  "value": 20,
+                  "unit": "kg"
+                },
+                "num": 8
+              },
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 1.25,
+                  "unit": "kg"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 0.5,
+                  "unit": "kg"
+                },
+                "num": 2
+              }
+            ],
+            "fixed": [],
+            "isFixed": false,
+            "isDeleted": true
+          },
+          "cable": {
+            "vtype": "equipment_data",
+            "multiplier": 1,
+            "bar": {
+              "lb": {
+                "value": 0,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 0,
+                "unit": "kg"
+              }
+            },
+            "plates": [
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "lb"
+                },
+                "num": 20
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "lb"
+                },
+                "num": 10
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "kg"
+                },
+                "num": 20
+              },
+              {
+                "weight": {
+                  "value": 2.5,
+                  "unit": "kg"
+                },
+                "num": 10
+              }
+            ],
+            "fixed": [],
+            "isFixed": false,
+            "isDeleted": true
+          },
+          "kettlebell": {
+            "vtype": "equipment_data",
+            "multiplier": 1,
+            "bar": {
+              "lb": {
+                "value": 0,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 0,
+                "unit": "kg"
+              }
+            },
+            "plates": [],
+            "fixed": [
+              {
+                "value": 10,
+                "unit": "lb"
+              },
+              {
+                "value": 15,
+                "unit": "lb"
+              },
+              {
+                "value": 20,
+                "unit": "lb"
+              },
+              {
+                "value": 25,
+                "unit": "lb"
+              },
+              {
+                "value": 30,
+                "unit": "lb"
+              },
+              {
+                "value": 35,
+                "unit": "lb"
+              },
+              {
+                "value": 40,
+                "unit": "lb"
+              },
+              {
+                "value": 4,
+                "unit": "kg"
+              },
+              {
+                "value": 8,
+                "unit": "kg"
+              },
+              {
+                "value": 12,
+                "unit": "kg"
+              },
+              {
+                "value": 16,
+                "unit": "kg"
+              },
+              {
+                "value": 24,
+                "unit": "kg"
+              }
+            ],
+            "isFixed": true,
+            "isDeleted": true
+          },
+          "equipment-obxkmubd": {
+            "vtype": "equipment_data",
+            "name": "Band",
+            "multiplier": 1,
+            "bar": {
+              "lb": {
+                "value": 0,
+                "unit": "lb"
+              },
+              "kg": {
+                "value": 0,
+                "unit": "kg"
+              }
+            },
+            "plates": [
+              {
+                "weight": {
+                  "value": 10,
+                  "unit": "lb"
+                },
+                "num": 4
+              },
+              {
+                "weight": {
+                  "value": 5,
+                  "unit": "kg"
+                },
+                "num": 4
+              }
+            ],
+            "fixed": [],
+            "isFixed": false,
+            "isDeleted": true
+          }
+        }
+      }
+    ],
+    "deletedGyms": [],
+    "volume": 0.7,
+    "vibration": false,
+    "startWeekFromMonday": false,
+    "lengthUnits": "in",
+    "workoutSettings": {
+      "targetType": "target",
+      "pickerSort": "similar_muscles",
+      "shouldShowInvisibleEquipment": false,
+      "shouldHideGraphs": false
+    },
+    "statsEnabled": {
+      "weight": {
+        "weight": true
+      },
+      "length": {},
+      "percentage": {}
+    },
+    "exercises": {
+      "unknown": {
+        "vtype": "custom_exercise",
+        "id": "unknown",
+        "name": "Unknown",
+        "isDeleted": true,
+        "meta": {
+          "bodyParts": [],
+          "targetMuscles": [],
+          "synergistMuscles": [],
+          "sortedEquipment": []
+        },
+        "types": []
+      },
+      "day-1": {
+        "vtype": "custom_exercise",
+        "id": "day-1",
+        "name": "Day 1",
+        "isDeleted": true,
+        "meta": {
+          "bodyParts": [],
+          "targetMuscles": [],
+          "synergistMuscles": [],
+          "sortedEquipment": []
+        },
+        "types": []
+      }
+    },
+    "graphs": {
+      "vtype": "graphs",
+      "graphs": []
+    },
+    "muscleGroups": {
+      "data": {},
+      "vtype": "muscle_groups_settings"
+    },
+    "starredExercises": {
+      "bentOverOneArmRow_dumbbell": true,
+      "seatedRow_band": true,
+      "shrug_dumbbell": true,
+      "arnoldPress_dumbbell": true,
+      "behindTheNeckPress_band": true,
+      "facePull_band": true,
+      "frontRaise_band": true,
+      "russianTwist_bodyweight": true,
+      "inclineChestPress_band": true,
+      "superman_dumbbell": true,
+      "unknown": true
+    },
+    "googleHealthSyncWorkout": true,
+    "healthConfirmation": true,
+    "googleHealthSyncMeasurements": true,
+    "googleHealthAnchor": "38",
+    "textSize": 18,
+    "currentBodyweight": {
+      "value": 62,
+      "unit": "kg"
+    },
+    "alwaysOnDisplay": true
+  },
+  "history": [
+    {
+      "vtype": "history_record",
+      "id": 1779214852902,
+      "date": "2026-05-19T18:20:52.903Z",
+      "programId": "suhehhdo",
+      "programName": "starter",
+      "intervals": [[1779221874605, 1779224685788]],
+      "day": 1,
+      "week": 1,
+      "dayInWeek": 1,
+      "dayName": "Day 1",
+      "startTime": 1779214852902,
+      "updatedAt": 1779224685782,
+      "entries": [
+        {
+          "vtype": "history_entry",
+          "id": "facePull_band",
+          "index": 0,
+          "exercise": {
+            "id": "facePull",
+            "name": "Face Pull",
+            "defaultWarmup": 10,
+            "defaultEquipment": "band",
+            "types": ["upper", "pull"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "band"
+          },
+          "programExerciseId": "facepull_band",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "amygcc",
+              "reps": 20,
+              "index": 0,
+              "minReps": 15,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779222001189
+            },
+            {
+              "vtype": "set",
+              "id": "fksvos",
+              "reps": 20,
+              "index": 1,
+              "minReps": 15,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 18,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779222140736
+            },
+            {
+              "vtype": "set",
+              "id": "szoxkl",
+              "reps": 20,
+              "index": 2,
+              "minReps": 15,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779222265556
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 15,
+            "maxReps": 20
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "gobletSquat_dumbbell",
+          "index": 1,
+          "exercise": {
+            "id": "gobletSquat",
+            "name": "Goblet Squat",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["lower", "legs"],
+            "startingWeightLb": {
+              "value": 35,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 15,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "gobletsquat_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "evjqwr",
+              "reps": 12,
+              "index": 0,
+              "minReps": 10,
+              "weight": {
+                "value": 14,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 14,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedWeight": {
+                "value": 13.5,
+                "unit": "kg"
+              },
+              "completedReps": 6,
+              "timestamp": 1779222788082
+            },
+            {
+              "vtype": "set",
+              "id": "xucuxw",
+              "reps": 12,
+              "index": 1,
+              "minReps": 10,
+              "weight": {
+                "value": 14,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 14,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 13.5,
+                "unit": "kg"
+              },
+              "timestamp": 1779222902285
+            },
+            {
+              "vtype": "set",
+              "id": "kgrglp",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "weight": {
+                "value": 14,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 14,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 13.5,
+                "unit": "kg"
+              },
+              "timestamp": 1779223033449
+            }
+          ],
+          "warmupSets": [
+            {
+              "vtype": "set",
+              "index": 0,
+              "id": "zbkzri",
+              "reps": 5,
+              "isUnilateral": false,
+              "weight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "originalWeight": {
+                "value": 11.200000000000001,
+                "unit": "kg"
+              },
+              "isCompleted": true,
+              "completedWeight": {
+                "value": 13.5,
+                "unit": "kg"
+              },
+              "completedReps": 5,
+              "timestamp": 1779222668108
+            }
+          ],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "lunge_dumbbell",
+          "index": 2,
+          "exercise": {
+            "id": "lunge",
+            "name": "Lunge",
+            "defaultWarmup": 45,
+            "defaultEquipment": "barbell",
+            "types": ["lower", "legs"],
+            "startingWeightLb": {
+              "value": 75,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 32.5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "lunge_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "ydiftz",
+              "reps": 10,
+              "index": 0,
+              "isUnilateral": true,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedWeight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "completedRepsLeft": 3,
+              "completedReps": 3,
+              "timestamp": 1779223390148
+            },
+            {
+              "vtype": "set",
+              "id": "rguibt",
+              "reps": 10,
+              "index": 1,
+              "isUnilateral": true,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 1
+            },
+            {
+              "vtype": "set",
+              "id": "qvbeiv",
+              "reps": 10,
+              "index": 2,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": true,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 2
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "romanianDeadlift_dumbbell",
+          "index": 3,
+          "exercise": {
+            "id": "romanianDeadlift",
+            "name": "Romanian Deadlift",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["lower", "legs"],
+            "startingWeightLb": {
+              "value": 40,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 17.5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "romaniandeadlift_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "vwpmrs",
+              "reps": 12,
+              "index": 0,
+              "minReps": 10,
+              "weight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "timestamp": 1779224091697
+            },
+            {
+              "vtype": "set",
+              "id": "kgxneg",
+              "reps": 12,
+              "index": 1,
+              "minReps": 10,
+              "weight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "timestamp": 1779224219814
+            },
+            {
+              "vtype": "set",
+              "id": "eoivso",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "weight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 22,
+                "unit": "kg"
+              },
+              "timestamp": 1779224354471
+            }
+          ],
+          "warmupSets": [
+            {
+              "vtype": "set",
+              "index": 0,
+              "id": "ipwpir",
+              "reps": 5,
+              "isUnilateral": false,
+              "weight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "originalWeight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "isCompleted": true,
+              "completedWeight": {
+                "value": 11,
+                "unit": "kg"
+              },
+              "completedReps": 5,
+              "timestamp": 1779223601900
+            },
+            {
+              "vtype": "set",
+              "index": 1,
+              "id": "fwnkao",
+              "reps": 5,
+              "isUnilateral": false,
+              "weight": {
+                "value": 17.5,
+                "unit": "kg"
+              },
+              "originalWeight": {
+                "value": 17.6,
+                "unit": "kg"
+              },
+              "isCompleted": true,
+              "completedReps": 5,
+              "completedWeight": {
+                "value": 17,
+                "unit": "kg"
+              },
+              "timestamp": 1779223879532
+            }
+          ],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "plank_bodyweight",
+          "index": 4,
+          "exercise": {
+            "id": "plank",
+            "name": "Plank",
+            "defaultWarmup": 10,
+            "defaultEquipment": "bodyweight",
+            "types": ["core"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "bodyweight"
+          },
+          "programExerciseId": "plank_bodyweight",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "qunguw",
+              "reps": 30,
+              "index": 0,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 30,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1779224493474
+            },
+            {
+              "vtype": "set",
+              "id": "hyhlmk",
+              "reps": 30,
+              "index": 1,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 30,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1779224600457
+            },
+            {
+              "vtype": "set",
+              "id": "hwtwkd",
+              "reps": 30,
+              "index": 2,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 30,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1779224680798
+            }
+          ],
+          "warmupSets": [],
+          "state": {},
+          "vars": {}
+        }
+      ],
+      "changes": ["order"],
+      "timer": 45,
+      "timerEntryIndex": 4,
+      "timerSetIndex": 2,
+      "endTime": 1779224685782
+    },
+    {
+      "vtype": "history_record",
+      "id": 1778886435129,
+      "date": "2026-05-15T23:07:15.130Z",
+      "programId": "suhehhdo",
+      "programName": "starter",
+      "intervals": [[1779025959302, 1779028091747]],
+      "day": 2,
+      "week": 1,
+      "dayInWeek": 2,
+      "dayName": "Day 2",
+      "startTime": 1778886435129,
+      "updatedAt": 1779028091745,
+      "entries": [
+        {
+          "vtype": "history_entry",
+          "id": "inclineChestPress_band",
+          "index": 0,
+          "exercise": {
+            "id": "inclineChestPress",
+            "name": "Incline Chest Press",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["upper", "push"],
+            "startingWeightLb": {
+              "value": 25,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 10,
+              "unit": "kg"
+            },
+            "equipment": "band"
+          },
+          "programExerciseId": "inclinechestpress_band",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "fufiyp",
+              "reps": 12,
+              "index": 0,
+              "minReps": 11,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779026038656
+            },
+            {
+              "vtype": "set",
+              "id": "bmgdda",
+              "reps": 12,
+              "index": 1,
+              "minReps": 11,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779026160821
+            },
+            {
+              "vtype": "set",
+              "id": "xulwlq",
+              "reps": 12,
+              "index": 2,
+              "minReps": 11,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779026289197
+            }
+          ],
+          "warmupSets": [
+            {
+              "vtype": "set",
+              "index": 0,
+              "id": "akcpne",
+              "reps": 5,
+              "isUnilateral": false,
+              "weight": {
+                "value": 7.5,
+                "unit": "kg"
+              },
+              "originalWeight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isCompleted": true,
+              "completedReps": 5,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779025959300
+            }
+          ],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "reverseFly_dumbbell",
+          "index": 1,
+          "exercise": {
+            "id": "reverseFly",
+            "name": "Reverse Fly",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["upper", "pull"],
+            "startingWeightLb": {
+              "value": 15,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "reversefly_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "bwgcge",
+              "reps": 15,
+              "index": 0,
+              "minReps": 11,
+              "weight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 15,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779027188115
+            },
+            {
+              "vtype": "set",
+              "id": "bnzdrj",
+              "reps": 15,
+              "index": 1,
+              "weight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 15,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779027361281
+            },
+            {
+              "vtype": "set",
+              "id": "ceazmk",
+              "reps": 15,
+              "index": 2,
+              "weight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 15,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779027437379
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 12,
+            "maxReps": 15
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "overheadPress_dumbbell",
+          "index": 2,
+          "exercise": {
+            "id": "overheadPress",
+            "name": "Overhead Press",
+            "defaultWarmup": 45,
+            "defaultEquipment": "barbell",
+            "types": ["upper", "push"],
+            "startingWeightLb": {
+              "value": 75,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 32.5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "overheadpress_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "nvdxhp",
+              "reps": 12,
+              "index": 0,
+              "minReps": 10,
+              "weight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "completedReps": 10,
+              "timestamp": 1779027576637
+            },
+            {
+              "vtype": "set",
+              "id": "fpbcrp",
+              "reps": 12,
+              "index": 1,
+              "minReps": 10,
+              "weight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "completedReps": 10,
+              "timestamp": 1779027677413
+            },
+            {
+              "vtype": "set",
+              "id": "iesqex",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "weight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 8,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "completedReps": 9,
+              "timestamp": 1779027784322
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "facePull_band",
+          "index": 3,
+          "exercise": {
+            "id": "facePull",
+            "name": "Face Pull",
+            "defaultWarmup": 10,
+            "defaultEquipment": "band",
+            "types": ["upper", "pull"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "band"
+          },
+          "programExerciseId": "facepull_band",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "mzhwpc",
+              "reps": 20,
+              "index": 0,
+              "minReps": 16,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779026442933
+            },
+            {
+              "vtype": "set",
+              "id": "ootnlc",
+              "reps": 20,
+              "index": 1,
+              "minReps": 16,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779026574758
+            },
+            {
+              "vtype": "set",
+              "id": "ebgquh",
+              "reps": 20,
+              "index": 2,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1779026711203
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 15,
+            "maxReps": 20
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "bicycleCrunch_bodyweight",
+          "index": 4,
+          "exercise": {
+            "id": "bicycleCrunch",
+            "name": "Bicycle Crunch",
+            "defaultWarmup": 10,
+            "defaultEquipment": "bodyweight",
+            "types": ["core"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "bodyweight"
+          },
+          "programExerciseId": "bicyclecrunch_bodyweight",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "anjdhn",
+              "reps": 20,
+              "index": 0,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1779027901414
+            },
+            {
+              "vtype": "set",
+              "id": "qyiafa",
+              "reps": 20,
+              "index": 1,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1779027998662
+            },
+            {
+              "vtype": "set",
+              "id": "xaaktf",
+              "reps": 20,
+              "index": 2,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1779028086148
+            }
+          ],
+          "warmupSets": [],
+          "state": {},
+          "vars": {}
+        }
+      ],
+      "timer": 45,
+      "timerEntryIndex": 4,
+      "timerSetIndex": 2,
+      "endTime": 1779028091745
+    },
+    {
+      "vtype": "history_record",
+      "id": 1778590082614,
+      "date": "2026-05-12T12:48:02.614Z",
+      "programId": "suhehhdo",
+      "programName": "starter",
+      "intervals": [
+        [1778849727373, 1778850933975],
+        [1778850934853, 1778851064263],
+        [1778851065100, 1778851738509]
+      ],
+      "day": 1,
+      "week": 1,
+      "dayInWeek": 1,
+      "dayName": "Day 1",
+      "startTime": 1778590082614,
+      "updatedAt": 1778851738498,
+      "entries": [
+        {
+          "vtype": "history_entry",
+          "id": "gobletSquat_dumbbell",
+          "index": 0,
+          "exercise": {
+            "id": "gobletSquat",
+            "name": "Goblet Squat",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["lower", "legs"],
+            "startingWeightLb": {
+              "value": 35,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 15,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "gobletsquat_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "airarh",
+              "reps": 12,
+              "index": 0,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedWeight": {
+                "value": 12,
+                "unit": "kg"
+              },
+              "completedReps": 12,
+              "timestamp": 1778849770973
+            },
+            {
+              "vtype": "set",
+              "id": "nyruoy",
+              "reps": 12,
+              "index": 1,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 12,
+                "unit": "kg"
+              },
+              "timestamp": 1778849880371
+            },
+            {
+              "vtype": "set",
+              "id": "qeqsgg",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 12,
+                "unit": "kg"
+              },
+              "timestamp": 1778849984424
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "romanianDeadlift_dumbbell",
+          "index": 1,
+          "exercise": {
+            "id": "romanianDeadlift",
+            "name": "Romanian Deadlift",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["lower", "legs"],
+            "startingWeightLb": {
+              "value": 40,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 17.5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "romaniandeadlift_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "qykntx",
+              "reps": 12,
+              "index": 0,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 20,
+                "unit": "kg"
+              },
+              "timestamp": 1778850233475
+            },
+            {
+              "vtype": "set",
+              "id": "zuywtx",
+              "reps": 12,
+              "index": 1,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 20,
+                "unit": "kg"
+              },
+              "timestamp": 1778850417096
+            },
+            {
+              "vtype": "set",
+              "id": "bpvbdp",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 20,
+                "unit": "kg"
+              },
+              "timestamp": 1778850567700
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "lunge_dumbbell",
+          "index": 2,
+          "exercise": {
+            "id": "lunge",
+            "name": "Lunge",
+            "defaultWarmup": 45,
+            "defaultEquipment": "barbell",
+            "types": ["lower", "legs"],
+            "startingWeightLb": {
+              "value": 75,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 32.5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "lunge_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "jemful",
+              "reps": 10,
+              "index": 0,
+              "isUnilateral": true,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedRepsLeft": 10,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "completedReps": 19,
+              "timestamp": 1778851159698
+            },
+            {
+              "vtype": "set",
+              "id": "zccaiy",
+              "reps": 10,
+              "index": 1,
+              "isUnilateral": true,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedRepsLeft": 10,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "completedReps": 10,
+              "timestamp": 1778851373761
+            },
+            {
+              "vtype": "set",
+              "id": "yqbjya",
+              "reps": 10,
+              "index": 2,
+              "isUnilateral": true,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedRepsLeft": 10,
+              "completedReps": 8,
+              "completedWeight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "timestamp": 1778851374276
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "facePull_band",
+          "index": 3,
+          "exercise": {
+            "id": "facePull",
+            "name": "Face Pull",
+            "defaultWarmup": 10,
+            "defaultEquipment": "band",
+            "types": ["upper", "pull"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "band"
+          },
+          "programExerciseId": "facepull_band",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "dmefgj",
+              "reps": 20,
+              "index": 0,
+              "minReps": 16,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 0
+            },
+            {
+              "vtype": "set",
+              "id": "dcsnsa",
+              "reps": 20,
+              "index": 1,
+              "minReps": 16,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 1
+            },
+            {
+              "vtype": "set",
+              "id": "luevmc",
+              "reps": 20,
+              "index": 2,
+              "weight": {
+                "value": 10,
+                "unit": "kg"
+              },
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "originalWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "isAmrap": false,
+              "isCompleted": false,
+              "programSetIndex": 2
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 15,
+            "maxReps": 20
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "plank_bodyweight",
+          "index": 4,
+          "exercise": {
+            "id": "plank",
+            "name": "Plank",
+            "defaultWarmup": 10,
+            "defaultEquipment": "bodyweight",
+            "types": ["core"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "bodyweight"
+          },
+          "programExerciseId": "plank_bodyweight",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "aahbul",
+              "reps": 30,
+              "index": 0,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "completedReps": 40,
+              "timestamp": 1778851510185
+            },
+            {
+              "vtype": "set",
+              "id": "dxglqv",
+              "reps": 30,
+              "index": 1,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "completedReps": 30,
+              "timestamp": 1778851600049
+            },
+            {
+              "vtype": "set",
+              "id": "yauhbw",
+              "reps": 30,
+              "index": 2,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "completedReps": 30,
+              "timestamp": 1778851723898
+            }
+          ],
+          "warmupSets": [],
+          "state": {},
+          "vars": {}
+        }
+      ],
+      "timer": 45,
+      "timerEntryIndex": 4,
+      "timerSetIndex": 2,
+      "endTime": 1778851738498
+    },
+    {
+      "vtype": "history_record",
+      "id": 1778585598779,
+      "date": "2026-05-12T11:33:18.779Z",
+      "programId": "suhehhdo",
+      "programName": "starter",
+      "intervals": [[1778585872303, 1778588070522]],
+      "day": 2,
+      "week": 1,
+      "dayInWeek": 2,
+      "dayName": "Day 2",
+      "startTime": 1778585598779,
+      "updatedAt": 1778588070517,
+      "entries": [
+        {
+          "vtype": "history_entry",
+          "id": "inclineChestPress_band",
+          "index": 0,
+          "exercise": {
+            "id": "inclineChestPress",
+            "name": "Incline Chest Press",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["upper", "push"],
+            "startingWeightLb": {
+              "value": 25,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 10,
+              "unit": "kg"
+            },
+            "equipment": "band"
+          },
+          "programExerciseId": "inclinechestpress_band",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "rgonvi",
+              "reps": 12,
+              "index": 0,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1778585979674
+            },
+            {
+              "vtype": "set",
+              "id": "sdsepd",
+              "reps": 12,
+              "index": 1,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1778586140574
+            },
+            {
+              "vtype": "set",
+              "id": "aosxug",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1778586261074
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "reverseFly_dumbbell",
+          "index": 1,
+          "exercise": {
+            "id": "reverseFly",
+            "name": "Reverse Fly",
+            "defaultWarmup": 10,
+            "defaultEquipment": "dumbbell",
+            "types": ["upper", "pull"],
+            "startingWeightLb": {
+              "value": 15,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "reversefly_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "pujjzm",
+              "reps": 15,
+              "index": 0,
+              "minReps": 12,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "completedReps": 10,
+              "timestamp": 1778586819722
+            },
+            {
+              "vtype": "set",
+              "id": "jhzefu",
+              "reps": 15,
+              "index": 1,
+              "minReps": 12,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 15,
+              "completedWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "timestamp": 1778586916216
+            },
+            {
+              "vtype": "set",
+              "id": "sqpght",
+              "reps": 15,
+              "index": 2,
+              "minReps": 12,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 15,
+              "completedWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "timestamp": 1778586916577
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 12,
+            "maxReps": 15
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "overheadPress_dumbbell",
+          "index": 2,
+          "exercise": {
+            "id": "overheadPress",
+            "name": "Overhead Press",
+            "defaultWarmup": 45,
+            "defaultEquipment": "barbell",
+            "types": ["upper", "push"],
+            "startingWeightLb": {
+              "value": 75,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 32.5,
+              "unit": "kg"
+            },
+            "equipment": "dumbbell"
+          },
+          "programExerciseId": "overheadpress_dumbbell",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "hhsvwd",
+              "reps": 12,
+              "index": 0,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "timestamp": 1778587095223
+            },
+            {
+              "vtype": "set",
+              "id": "rpxoqi",
+              "reps": 12,
+              "index": 1,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "timestamp": 1778587181141
+            },
+            {
+              "vtype": "set",
+              "id": "rolrbz",
+              "reps": 12,
+              "index": 2,
+              "minReps": 10,
+              "isUnilateral": false,
+              "timer": 60,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 12,
+              "completedWeight": {
+                "value": 6,
+                "unit": "kg"
+              },
+              "timestamp": 1778587286683
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 10,
+            "maxReps": 12
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "facePull_band",
+          "index": 3,
+          "exercise": {
+            "id": "facePull",
+            "name": "Face Pull",
+            "defaultWarmup": 10,
+            "defaultEquipment": "band",
+            "types": ["upper", "pull"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "band"
+          },
+          "programExerciseId": "facepull_band",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "jpodkq",
+              "reps": 20,
+              "index": 0,
+              "minReps": 15,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 15,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1778587437899
+            },
+            {
+              "vtype": "set",
+              "id": "rponyn",
+              "reps": 20,
+              "index": 1,
+              "minReps": 15,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 15,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1778587544190
+            },
+            {
+              "vtype": "set",
+              "id": "dotcnh",
+              "reps": 20,
+              "index": 2,
+              "minReps": 15,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 9,
+                "unit": "kg"
+              },
+              "timestamp": 1778587677031
+            }
+          ],
+          "warmupSets": [],
+          "state": {
+            "increment": {
+              "value": 2,
+              "unit": "kg"
+            },
+            "minReps": 15,
+            "maxReps": 20
+          },
+          "vars": {}
+        },
+        {
+          "vtype": "history_entry",
+          "id": "bicycleCrunch_bodyweight",
+          "index": 4,
+          "exercise": {
+            "id": "bicycleCrunch",
+            "name": "Bicycle Crunch",
+            "defaultWarmup": 10,
+            "defaultEquipment": "bodyweight",
+            "types": ["core"],
+            "startingWeightLb": {
+              "value": 0,
+              "unit": "lb"
+            },
+            "startingWeightKg": {
+              "value": 0,
+              "unit": "kg"
+            },
+            "equipment": "bodyweight"
+          },
+          "programExerciseId": "bicyclecrunch_bodyweight",
+          "sets": [
+            {
+              "vtype": "set",
+              "id": "eseohb",
+              "reps": 20,
+              "index": 0,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 0,
+              "completedReps": 20,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1778587833499
+            },
+            {
+              "vtype": "set",
+              "id": "mfmygr",
+              "reps": 20,
+              "index": 1,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 1,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1778587936727
+            },
+            {
+              "vtype": "set",
+              "id": "oxzfcf",
+              "reps": 20,
+              "index": 2,
+              "isUnilateral": false,
+              "timer": 45,
+              "logRpe": false,
+              "askWeight": false,
+              "isAmrap": false,
+              "isCompleted": true,
+              "programSetIndex": 2,
+              "completedReps": 10,
+              "completedWeight": {
+                "value": 0,
+                "unit": "kg"
+              },
+              "timestamp": 1778588050623
+            }
+          ],
+          "warmupSets": [],
+          "state": {},
+          "vars": {}
+        }
+      ],
+      "timer": 45,
+      "timerEntryIndex": 4,
+      "timerSetIndex": 2,
+      "endTime": 1778588070517
+    }
+  ],
+  "version": "20260304084247",
+  "subscription": {
+    "apple": [],
+    "google": []
+  },
+  "programs": [
+    {
+      "vtype": "program",
+      "id": "brobovnq",
+      "name": "v1",
+      "url": "",
+      "author": "",
+      "shortDescription": "",
+      "description": "",
+      "nextDay": 2,
+      "weeks": [],
+      "isMultiweek": false,
+      "days": [],
+      "exercises": [],
+      "tags": [],
+      "deletedDays": [],
+      "deletedWeeks": [],
+      "deletedExercises": [],
+      "clonedAt": 1778405502449,
+      "planner": {
+        "vtype": "planner",
+        "name": "v1",
+        "weeks": [
+          {
+            "name": "Week 1",
+            "days": [
+              {
+                "name": "Day 1",
+                "exerciseText": "Squat, Dumbbell / 3x8-12 / 13.5kg / progress: dp(5lb, 8, 12)\n// Label 'posture:' used to keep this separate from Day 3\nposture: Bent Over Row, Dumbbell / 3x8-12 / 13.5kg / progress: dp(5lb, 8, 12)\nIncline Chest Press, Band / ...Lunge, Dumbbell / progress: dp(5lb, 10, 15)\nFace Pull / 3x15-20\nPlank / 3x60",
+                "id": "gzelgxiu"
+              },
+              {
+                "name": "Day 2",
+                "exerciseText": "Lunge, Dumbbell / 3x8-12 / progress: dp(5lb, 8, 12)\nOverhead Press, Dumbbell / ...Lunge, Dumbbell\nRomanian Deadlift / ...Lunge, Dumbbell\nLateral Raise / 3x8-12 / progress: dp(5lb, 8, 12)\nSuperman, Dumbbell / 3x12",
+                "id": "xytopqob"
+              },
+              {
+                "name": "Day 3",
+                "exerciseText": "Goblet Squat / ...Lunge, Dumbbell / progress: dp(5lb, 8, 12)\n// Label 'strength:' used to keep this separate from Day 1\nstrength: Bent Over Row, Dumbbell / 3x10-12 / progress: dp(5lb, 8, 12)\nPush Up / 3x10+\nUpright Row / 3x12-15\nBicycle Crunch / 3x20",
+                "id": "aschtpgp"
+              }
+            ],
+            "id": "hurntfbd"
+          }
+        ]
+      }
+    },
+    {
+      "deletedExercises": [],
+      "planner": {
+        "vtype": "planner",
+        "name": "starter",
+        "weeks": [
+          {
+            "name": "Week 1",
+            "days": [
+              {
+                "name": "Day 1",
+                "exerciseText": "// Keep your chest up and core braced throughout\nGoblet Squat / 1x7-12, 2x11-12 / 14kg 60s / progress: dp(2kg, 10, 12)\n\n// Hinge at the hips, soft bend in knees, keep back flat\nRomanian Deadlift / 3x11-12 / 22kg 60s / progress: dp(2kg, 10, 12)\n\n// Step forward, keep front knee over ankle\nLunge, Dumbbell / 2x10 11kg, 1x10 10kg / 60s / progress: dp(2kg, 10, 12)\n\n// Use a band anchored at head height, pull to your nose\nFace Pull / 1x20-20, 1x19-20, 1x20-20 / 10kg 45s / warmup: none / progress: dp(2kg, 15, 20)\n\n// Hold a strong straight line, don't let your hips drop\nPlank / 3x30 / 45s / warmup: none",
+                "id": "ormraadn"
+              },
+              {
+                "name": "Day 2",
+                "exerciseText": "// Lower slowly, elbows at 45 degrees from your body\nIncline Chest Press, Band / 3x10-12 / 10kg 60s / progress: dp(2kg, 10, 12)\n\n// Pull shoulder blades together at the top\nReverse Fly / 3x12-15 / 11kg 45s / warmup: none / progress: dp(2kg, 12, 15)\n\n// Brace your core, press straight up overhead\nOverhead Press, Dumbbell / 2x11-12, 1x10-12 / 8kg 60s / progress: dp(2kg, 10, 12)\n\n// Use a band anchored at head height, pull to your nose\nFace Pull / 1x20-20, 1x19-20, 1x20-20 / 10kg 45s\n\n// Slow and controlled, elbow to opposite knee\nBicycle Crunch / 3x20 / 45s / warmup: none",
+                "id": "nhchzcyt"
+              }
+            ],
+            "id": "rgofpeju"
+          }
+        ]
+      },
+      "exercises": [],
+      "vtype": "program",
+      "days": [],
+      "deletedDays": [],
+      "url": "",
+      "isMultiweek": false,
+      "name": "starter",
+      "weeks": [],
+      "nextDay": 2,
+      "shortDescription": "",
+      "clonedAt": 1778488262953,
+      "description": "",
+      "tags": [],
+      "deletedWeeks": [],
+      "author": "",
+      "id": "suhehhdo"
+    }
+  ],
+  "helps": [
+    "program.structure",
+    "program.updates",
+    "program.text",
+    "program.liftoscript",
+    "program.addExercise",
+    "program.editExercise",
+    "program.playground",
+    "workout.howItWorks",
+    "workout.completingSets",
+    "workout.editingProgram",
+    "swipeable-set",
+    "workout.swipeSets",
+    "workout.whatIs1RM",
+    "workout.whatIsRPE",
+    "workout.equipment",
+    "workout.progressionPreview",
+    "editProgramExercise.overview",
+    "editProgramExercise.sets",
+    "editProgramExercise.warmups",
+    "editProgramExercise.progress"
+  ],
+  "whatsNew": "20260510",
+  "email": "mundi.c@gmail.com",
+  "id": 1778477740905,
+  "originalId": 1779485897953,
+  "_versions": {
+    "settings": {
+      "units": {
+        "vc": {
+          "and_cqmvnqrv": 3
+        },
+        "t": 1778432476741
+      },
+      "gyms": {
+        "items": {
+          "default": {
+            "id": {
+              "vc": {
+                "and_cqmvnqrv": 1
+              },
+              "t": 1778405323258,
+              "value": "default"
+            },
+            "equipment": {
+              "vc": {
+                "and_cqmvnqrv": 30
+              },
+              "t": 1778417212355
+            }
+          }
+        },
+        "deleted": {}
+      },
+      "starredExercises": {
+        "bentOverOneArmRow_dumbbell": {
+          "vc": {
+            "and_cqmvnqrv": 1
+          },
+          "t": 1778405686096
+        }
+      },
+      "exerciseData": {
+        "items": {
+          "squat_dumbbell": {
+            "vc": {
+              "and_cqmvnqrv": 5
+            },
+            "t": 1778480116221
+          },
+          "benchPress_dumbbell": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778422503092
+          },
+          "backExtension_bodyweight": {
+            "vc": {
+              "and_cqmvnqrv": 1
+            },
+            "t": 1778422581336
+          }
+        },
+        "deleted": {}
+      },
+      "workoutSettings": {
+        "targetType": {
+          "vc": {
+            "edt_eqtgtuqy": 1,
+            "and_cqmvnqrv": 106
+          },
+          "t": 1779224257506
+        },
+        "pickerSort": {
+          "vc": {
+            "and_cqmvnqrv": 1
+          },
+          "t": 1778422718856
+        },
+        "shouldShowInvisibleEquipment": {
+          "vc": {
+            "and_cqmvnqrv": 2
+          },
+          "t": 1778423124613
+        },
+        "shouldHideGraphs": {
+          "vc": {
+            "and_cqmvnqrv": 2
+          },
+          "t": 1778424092993
+        }
+      },
+      "volume": {
+        "vc": {
+          "and_cqmvnqrv": 3
+        },
+        "t": 1778434426389
+      },
+      "exercises": {
+        "items": {
+          "unknown": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778451418960
+          },
+          "day-1": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778590012464
+          }
+        },
+        "deleted": {}
+      },
+      "googleHealthSyncWorkout": {
+        "vc": {
+          "and_cqmvnqrv": 1
+        },
+        "t": 1778477723793
+      },
+      "healthConfirmation": {
+        "vc": {
+          "and_cqmvnqrv": 1
+        },
+        "t": 1778477726373
+      },
+      "googleHealthSyncMeasurements": {
+        "vc": {
+          "and_cqmvnqrv": 1
+        },
+        "t": 1778477727671
+      },
+      "timers": {
+        "reminder": 1778477742256,
+        "warmup": 1778477742256,
+        "workout": 1778477742256
+      },
+      "deletedGyms": 1778477742256,
+      "graphsSettings": {
+        "isSameXAxis": 1778477742256,
+        "isWithOneRm": 1778477742256,
+        "isWithBodyweight": 1778477742256
+      },
+      "lengthUnits": 1778477742256,
+      "vibration": 1778477742256,
+      "statsEnabled": {
+        "weight": {
+          "weight": 1778477742256
+        }
+      },
+      "muscleGroups": 1778477742256,
+      "graphs": 1778477742256,
+      "exerciseStatsSettings": {
+        "ascendingSort": 1778477742256
+      },
+      "planner": {
+        "weeklyRangeSets": {
+          "shoulders": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "triceps": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "quadriceps": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "chest": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "forearms": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "abs": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "hamstrings": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "back": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "biceps": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "glutes": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "calves": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          }
+        },
+        "weeklyFrequency": {
+          "shoulders": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "triceps": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "quadriceps": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "chest": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "forearms": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "abs": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "hamstrings": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "back": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "biceps": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "glutes": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          },
+          "calves": {
+            "vc": {
+              "and_cqmvnqrv": 2
+            },
+            "t": 1778889060330
+          }
+        },
+        "strengthSetsPct": 1778477742256,
+        "hypertrophySetsPct": 1778477742256,
+        "synergistMultiplier": 1778477742256
+      },
+      "startWeekFromMonday": 1778477742256,
+      "googleHealthAnchor": {
+        "vc": {
+          "and_cqmvnqrv": 2
+        },
+        "t": 1778588239862
+      },
+      "textSize": {
+        "vc": {
+          "and_cqmvnqrv": 1
+        },
+        "t": 1778478096684
+      },
+      "currentBodyweight": {
+        "value": {
+          "vc": {
+            "and_cqmvnqrv": 1
+          },
+          "t": 1778588239868
+        },
+        "unit": {
+          "vc": {
+            "and_cqmvnqrv": 1
+          },
+          "t": 1778588239868
+        }
+      },
+      "alwaysOnDisplay": {
+        "vc": {
+          "and_cqmvnqrv": 1
+        },
+        "t": 1778849831796
+      }
+    },
+    "currentProgramId": {
+      "vc": {
+        "and_cqmvnqrv": 10
+      },
+      "t": 1779214848190
+    },
+    "programs": {
+      "items": {
+        "1778405502449": {
+          "clonedAt": {
+            "vc": {
+              "and_cqmvnqrv": 1
+            },
+            "t": 1778405502449,
+            "value": "1778405502449"
+          },
+          "name": {
+            "vc": {
+              "and_cqmvnqrv": 3
+            },
+            "t": 1778419857264
+          },
+          "nextDay": {
+            "vc": {
+              "and_cqmvnqrv": 4
+            },
+            "t": 1778423979008
+          },
+          "planner": {
+            "vc": {
+              "and_cqmvnqrv": 23
+            },
+            "t": 1778486090078
+          }
+        },
+        "1778488262953": {
+          "planner": {
+            "vc": {
+              "edt_eqtgtuqy": 2,
+              "and_cqmvnqrv": 4
+            },
+            "t": 1779224685814
+          },
+          "clonedAt": {
+            "t": 1778489461471,
+            "vc": {
+              "edt_eqtgtuqy": 1
+            },
+            "value": "1778488262953"
+          },
+          "nextDay": {
+            "vc": {
+              "and_cqmvnqrv": 5
+            },
+            "t": 1779224685814
+          }
+        }
+      },
+      "deleted": {}
+    },
+    "helps": {
+      "vc": {
+        "and_cqmvnqrv": 20
+      },
+      "t": 1778422645282
+    },
+    "progress": {
+      "items": {
+        "1779485897807": {
+          "startTime": {
+            "vc": {
+              "and_cqmvnqrv": 1
+            },
+            "t": 1779485897808,
+            "value": "1779485897807"
+          },
+          "entries": {
+            "items": {
+              "inclineChestPress_band": {
+                "id": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808,
+                  "value": "inclineChestPress_band"
+                },
+                "exercise": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "sets": {
+                  "items": {
+                    "eytptq": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "ysamyg": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "lkrefc": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    }
+                  },
+                  "deleted": {}
+                },
+                "warmupSets": {
+                  "items": {
+                    "vslzui": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    }
+                  },
+                  "deleted": {}
+                },
+                "index": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "programExerciseId": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                }
+              },
+              "reverseFly_dumbbell": {
+                "id": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808,
+                  "value": "reverseFly_dumbbell"
+                },
+                "exercise": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "sets": {
+                  "items": {
+                    "kokeer": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "hfuhed": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "lnxjzw": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    }
+                  },
+                  "deleted": {}
+                },
+                "index": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "programExerciseId": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                }
+              },
+              "overheadPress_dumbbell": {
+                "id": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808,
+                  "value": "overheadPress_dumbbell"
+                },
+                "exercise": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "sets": {
+                  "items": {
+                    "jsilne": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "ibkikb": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "nfvobm": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    }
+                  },
+                  "deleted": {}
+                },
+                "index": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "programExerciseId": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                }
+              },
+              "facePull_band": {
+                "id": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808,
+                  "value": "facePull_band"
+                },
+                "exercise": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "sets": {
+                  "items": {
+                    "mfpryq": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "ippxzw": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "goeqap": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    }
+                  },
+                  "deleted": {}
+                },
+                "index": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "programExerciseId": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                }
+              },
+              "bicycleCrunch_bodyweight": {
+                "id": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808,
+                  "value": "bicycleCrunch_bodyweight"
+                },
+                "exercise": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "sets": {
+                  "items": {
+                    "ikytew": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "tqdzis": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    },
+                    "gauoob": {
+                      "vc": {
+                        "and_cqmvnqrv": 1
+                      },
+                      "t": 1779485897808
+                    }
+                  },
+                  "deleted": {}
+                },
+                "index": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                },
+                "programExerciseId": {
+                  "vc": {
+                    "and_cqmvnqrv": 1
+                  },
+                  "t": 1779485897808
+                }
+              }
+            },
+            "deleted": {}
+          },
+          "updatedAt": {
+            "vc": {
+              "and_cqmvnqrv": 1
+            },
+            "t": 1779485897808
+          }
+        }
+      },
+      "deleted": {
+        "1778416692527": 1778422176277,
+        "1778431661311": 1778434207717,
+        "1778480126918": 1778480137770,
+        "1778490933678": 1778585592787,
+        "1778585598779": 1778588070555,
+        "1778590082614": 1778851738542,
+        "1778886435129": 1779028091765,
+        "1779214852902": 1779224685814
+      }
+    },
+    "history": {
+      "items": {
+        "1778585598779": {
+          "vc": {
+            "and_cqmvnqrv": 1
+          },
+          "t": 1778588070555
+        },
+        "1778590082614": {
+          "vc": {
+            "and_cqmvnqrv": 1
+          },
+          "t": 1778851738542
+        },
+        "1778886435129": {
+          "vc": {
+            "and_cqmvnqrv": 1
+          },
+          "t": 1779028091765
+        },
+        "1779214852902": {
+          "vc": {
+            "and_cqmvnqrv": 1
+          },
+          "t": 1779224685814
+        }
+      },
+      "deleted": {
+        "1778416692527": 1778434094058,
+        "1778434488995": 1778434582938,
+        "1778434489116": 1778434587178,
+        "1778434489158": 1778434590235,
+        "1778434489348": 1778434592827,
+        "1778434489391": 1778434595733,
+        "1778434489899": 1778434599020,
+        "1778485217951": 1778486015622
+      }
+    },
+    "email": {
+      "vc": {
+        "and_cqmvnqrv": 1
+      },
+      "t": 1778477742778
+    },
+    "deletedStats": 1778477742256,
+    "reviewRequests": 1778477742256,
+    "tempUserId": 1778477742256,
+    "subscription": {
+      "apple": 1778477742256,
+      "google": 1778477742256
+    },
+    "version": 1778477742256,
+    "deletedHistory": 1778477742256,
+    "deletedPrograms": 1778477742256,
+    "signupRequests": 1778477742256,
+    "affiliates": {
+      "items": {},
+      "deleted": {}
+    },
+    "id": 1778477742256,
+    "originalId": 1778477742256,
+    "stats": {
+      "weight": {
+        "weight": {
+          "items": {
+            "1778478376608": {
+              "vc": {
+                "and_cqmvnqrv": 1
+              },
+              "t": 1778588239862
+            },
+            "1778478373621": {
+              "vc": {
+                "and_cqmvnqrv": 1
+              },
+              "t": 1778588239862
+            }
+          },
+          "deleted": {}
+        }
+      }
+    }
+  }
+}
