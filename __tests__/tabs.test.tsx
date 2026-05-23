@@ -54,6 +54,7 @@ describe('Settings screen', () => {
   it('shows "No programs loaded" when storage is empty', async () => {
     render(<SettingsScreen />);
     await waitFor(() => expect(screen.getByText('No programs loaded')).toBeTruthy());
+    await waitFor(() => expect(getPrograms).toHaveBeenCalled());
   });
 
   it('shows program days when a program is loaded', async () => {

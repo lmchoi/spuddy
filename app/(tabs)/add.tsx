@@ -232,6 +232,11 @@ export default function AddScreen() {
     setSaved(false);
   }
 
+  function handleViewSession(date: string) {
+    if (autoNavTimer.current) clearTimeout(autoNavTimer.current);
+    router.push(`/progress/${date}`);
+  }
+
   // ─── State chip
   let chip: { label: string; color: string; bg: string; border: string } | null = null;
   if (isPartial) {
@@ -286,7 +291,7 @@ export default function AddScreen() {
           </Text>
           <View style={styles.savedActions}>
             <Pressable
-              onPress={() => router.push(`/progress/${parsed.date}`)}
+              onPress={() => handleViewSession(parsed.date)}
               style={styles.ghostBtn}
             >
               <Text style={styles.ghostBtnText}>View session</Text>
