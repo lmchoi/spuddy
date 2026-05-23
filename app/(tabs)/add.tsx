@@ -11,9 +11,10 @@ import {
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
-import { parseLiftohistoryText } from '@/src/parser';
+import { parseLiftohistoryTextDetailed } from '@/src/parser';
+import type { ParseLine, ParseResult } from '@/src/parser';
 import { saveSession, sessionExists } from '@/src/storage';
-import type { ExerciseEntry, Session } from '@/src/types';
+import type { ExerciseEntry } from '@/src/types';
 import { C } from '@/components/spuddy/palette';
 
 // ─── Spuddy mascot ───────────────────────────────────────────────────────────
@@ -137,6 +138,41 @@ function DuplicateBanner({
   );
 }
 
+// ─── Error banner ────────────────────────────────────────────────────────────
+
+function ErrorBanner({ lines }: { lines: ParseLine[] }) {
+  const [open, setOpen] = useState(false);
+  const flagged = lines.filter(l => l.kind !== 'ok');
+  if (flagged.length === 0) return null;
+
+  return (
+    <Pressable onPress={() => setOpen(o => !o)} style={styles.errBanner}>
+      <View style={styles.errHeader}>
+        <View style={styles.errIcon}>
+          <Text style={styles.errIconText}>!</Text>
+        </View>
+        <Text style={styles.errTitle}>
+          {flagged.length} line{flagged.length !== 1 ? 's' : ''} couldn&apos;t be parsed
+        </Text>
+        <Text style={[styles.exChevron, open && styles.exChevronOpen]}>⌄</Text>
+      </View>
+      {open && (
+        <View style={styles.errLog}>
+          {flagged.map((l) => (
+            <View key={l.raw} style={styles.errLogRow}>
+              <View style={[styles.errDot, l.kind === 'warn' && styles.errDotWarn]} />
+              <View style={styles.errLogText}>
+                <Text style={styles.errRaw}>{l.raw}</Text>
+                {l.note && <Text style={styles.errNote}>{l.note}</Text>}
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function AddScreen() {
@@ -147,48 +183,50 @@ export default function AddScreen() {
   const [existing, setExisting] = useState(false);
   const autoNavTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const parsed: Session | null = useMemo(
-    () => (text.trim() ? parseLiftohistoryText(text) : null),
+  const parsed: ParseResult | null = useMemo(
+    () => (text.trim() ? parseLiftohistoryTextDetailed(text) : null),
     [text],
   );
 
   // Detect partial: text has content but parser couldn't close the block yet
   const isPartial =
-    !!text.trim() && !parsed && text.includes('exercises: {') && !text.includes('}');
+    !!text.trim() && !parsed?.ok && text.includes('exercises: {') && !text.includes('}');
 
   // Derive state
   const isEmpty = !text.trim();
-  const isDuplicate = !isEmpty && !saved && !!parsed && existing;
-  const isClean = !isEmpty && !saved && !!parsed && !existing;
+  const parsedDate = parsed?.ok ? parsed.date : null;
+  const isDuplicate = !isEmpty && !saved && !!parsed?.ok && existing;
+  const isClean = !isEmpty && !saved && !!parsed?.ok && !existing;
+  const errorLines = parsed?.lines.filter(l => l.kind !== 'ok') ?? [];
 
   // Save button label + enabled
   let saveLabel = 'Paste to begin';
   let saveEnabled = false;
   if (isPartial) { saveLabel = 'Still typing…'; }
-  else if (isDuplicate) { saveLabel = 'Overwrite'; }
-  else if (isClean && parsed) {
+  else if (isDuplicate) { saveLabel = 'Overwrite'; }  // enabled in slice 3 once replaceSession exists
+  else if (isClean && parsed?.ok) {
     saveLabel = `Save ${parsed.exercises.length} exercise${parsed.exercises.length !== 1 ? 's' : ''}`;
     saveEnabled = !saving;
   }
 
   useEffect(() => {
-    if (!parsed?.date) return;
+    if (!parsedDate) return;
     let cancelled = false;
     getDB()
-      .then(db => sessionExists(db, parsed.date))
+      .then(db => sessionExists(db, parsedDate))
       .then(exists => { if (!cancelled) setExisting(exists); });
     return () => {
       cancelled = true;
       setExisting(false);
     };
-  }, [parsed?.date]);
+  }, [parsedDate]);
 
   async function handleSave() {
-    if (!parsed || saving) return;
+    if (!parsed?.ok || saving) return;
     setSaving(true);
     try {
       const db = await getDB();
-      await saveSession(db, parsed);
+      await saveSession(db, { date: parsed.date, exercises: parsed.exercises });
       setSaved(true);
       autoNavTimer.current = setTimeout(() => router.push(`/progress/${parsed.date}`), 1500);
     } catch (err) {
@@ -216,20 +254,27 @@ export default function AddScreen() {
   let chip: { label: string; color: string; bg: string; border: string } | null = null;
   if (isPartial) {
     chip = { label: 'typing…', color: C.sub, bg: C.cardSoft, border: C.border };
-  } else if (parsed) {
+  } else if (parsed?.ok) {
     chip = {
       label: `${parsed.exercises.length} ex`,
       color: C.hit,
       bg: C.hitBg,
       border: `${C.hit}66`,
     };
+  } else if (errorLines.length > 0) {
+    chip = {
+      label: `${errorLines.length} err`,
+      color: C.below,
+      bg: C.belowBg,
+      border: `${C.below}55`,
+    };
   }
 
   // ─── Subtitle
   let subtitle = 'Paste below — Spuddy will preview before saving';
-  if (isPartial) subtitle = 'Still typing… preview will update';
-  else if (parsed?.date) subtitle = formatDateShort(parsed.date);
-  else if (saved) subtitle = `Saved · ${parsed?.date ?? ''}`;
+  if (saved && parsedDate) subtitle = `Saved · ${formatDateShort(parsedDate)}`;
+  else if (isPartial) subtitle = 'Still typing… preview will update';
+  else if (parsedDate) subtitle = formatDateShort(parsedDate);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -252,7 +297,7 @@ export default function AddScreen() {
       </View>
 
       {/* ─── Saved state */}
-      {saved && parsed ? (
+      {saved && parsed?.ok ? (
         <View style={styles.savedBlock}>
           <View style={styles.savedSpuddy}>
             <Spuddy size={72} mood="happy" />
@@ -308,8 +353,11 @@ export default function AddScreen() {
               textAlignVertical="top"
             />
 
+            {/* Error banner */}
+            {errorLines.length > 0 && parsed && <ErrorBanner lines={errorLines} />}
+
             {/* Duplicate banner */}
-            {isDuplicate && parsed && (
+            {isDuplicate && parsed?.ok && (
               <View style={styles.bannerWrapper}>
                 <DuplicateBanner
                   date={parsed.date}
@@ -320,7 +368,7 @@ export default function AddScreen() {
             )}
 
             {/* Exercise preview */}
-            {parsed && parsed.exercises.length > 0 && (
+            {parsed?.ok && parsed.exercises.length > 0 && (
               <View style={styles.previewCard}>
                 {parsed.exercises.map((ex, i) => (
                   <View key={`${ex.name}-${i}`}>
@@ -518,6 +566,73 @@ const styles = StyleSheet.create({
   },
   pillBtnMutedText: {
     color: C.sub,
+  },
+
+  // ─── Error banner
+  errBanner: {
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: C.belowBg,
+    borderWidth: 1,
+    borderColor: `${C.below}55`,
+  },
+  errHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  errIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 7,
+    backgroundColor: `${C.below}33`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  errIconText: {
+    color: C.below,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  errTitle: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: C.below,
+  },
+  errLog: {
+    marginTop: 10,
+    gap: 6,
+  },
+  errLogRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'flex-start',
+  },
+  errDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: C.below,
+    marginTop: 5,
+    flexShrink: 0,
+  },
+  errDotWarn: {
+    backgroundColor: C.exceeded,
+  },
+  errLogText: {
+    flex: 1,
+  },
+  errRaw: {
+    fontSize: 12,
+    color: C.text2,
+    fontFamily: 'monospace',
+  },
+  errNote: {
+    fontSize: 11,
+    color: C.sub,
+    marginTop: 1,
   },
 
   // ─── Preview card
