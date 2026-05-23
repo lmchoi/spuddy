@@ -1,8 +1,8 @@
 import { initDB, type DB } from './storage';
 
-let _db: DB | null = null;
+let _dbPromise: Promise<DB> | null = null;
 
-export async function getDB(): Promise<DB> {
-  if (!_db) _db = await initDB();
-  return _db;
+export function getDB(): Promise<DB> {
+  if (!_dbPromise) _dbPromise = initDB();
+  return _dbPromise;
 }
