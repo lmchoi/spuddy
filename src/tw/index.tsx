@@ -1,5 +1,5 @@
 import {
-  useCssElement,
+  useCssElement as _useCssElement,
   useNativeVariable as useFunctionalVariable,
 } from 'react-native-css';
 import { Link as RouterLink } from 'expo-router';
@@ -14,6 +14,10 @@ import {
   TextInput as RNTextInput,
   StyleSheet,
 } from 'react-native';
+
+// Cast away the complex generic to prevent TS2590 union-too-complex errors
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const useCssElement = _useCssElement as (component: any, props: any, mapping: any) => React.ReactElement | null;
 
 export const Link = (
   props: React.ComponentProps<typeof RouterLink> & { className?: string }
@@ -77,7 +81,7 @@ export const AnimatedScrollView = (
 function XXTouchableHighlight(
   props: React.ComponentProps<typeof RNTouchableHighlight>
 ) {
-  const { underlayColor, ...style } = StyleSheet.flatten(props.style) || {};
+  const { underlayColor, ...style } = (StyleSheet.flatten(props.style) || {}) as { underlayColor?: string } & ReturnType<typeof StyleSheet.flatten>;
   return (
     <RNTouchableHighlight underlayColor={underlayColor as string} {...props} style={style} />
   );
