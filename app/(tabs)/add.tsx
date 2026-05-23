@@ -14,32 +14,7 @@ import { getDB } from '@/src/db';
 import { parseLiftohistoryText } from '@/src/parser';
 import { saveSession, sessionExists } from '@/src/storage';
 import type { ExerciseEntry, Session } from '@/src/types';
-
-// ─── Palette ─────────────────────────────────────────────────────────────────
-
-const C = {
-  bg:          '#181109',
-  bg2:         '#1F1610',
-  surface:     '#251A12',
-  card:        '#2E2218',
-  card2:       '#382A1B',
-  cardSoft:    '#3F3122',
-  border:      '#3A2C1F',
-  borderHi:    '#52402C',
-  faint:       '#3F3122',
-  text:        '#F5EDDD',
-  text2:       '#D6C2A2',
-  sub:         '#A89175',
-  muted:       '#6B5639',
-  hit:         '#B7D26A',
-  hitBg:       '#2F3D1B',
-  below:       '#E8884A',
-  belowBg:     '#3D2517',
-  exceeded:    '#F4C44F',
-  exceededBg:  '#3D2F13',
-  spudFlesh:   '#F2DEB4',
-  spudSkin:    '#C77F39',
-} as const;
+import { C } from '@/components/spuddy/palette';
 
 // ─── Spuddy mascot ───────────────────────────────────────────────────────────
 
