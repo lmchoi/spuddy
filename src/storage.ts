@@ -58,6 +58,14 @@ export async function initSchema(db: DB): Promise<void> {
   }
 }
 
+export async function sessionExists(db: DB, date: string): Promise<boolean> {
+  const rows = await db.all<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM sessions WHERE date = ?`,
+    [date]
+  );
+  return (rows[0]?.n ?? 0) > 0;
+}
+
 export async function saveSession(db: DB, session: Session): Promise<void> {
   for (const entry of session.exercises) {
     await db.run(
@@ -86,7 +94,10 @@ function rowsToSessions(rows: SessionRow[]): Session[] {
     if (!byDate.has(row.date)) {
       byDate.set(row.date, { date: row.date, exercises: [] });
     }
-    byDate.get(row.date)!.exercises.push({
+    const session = byDate.get(row.date)!;
+    // Skip duplicate exercise entries caused by double-saves before dedup was in place
+    if (session.exercises.some(e => e.name === row.exercise_name)) continue;
+    session.exercises.push({
       name: row.exercise_name,
       sets: JSON.parse(row.sets_json) as WorkingSet[],
       targets: JSON.parse(row.targets_json) as Target[],
@@ -94,6 +105,7 @@ function rowsToSessions(rows: SessionRow[]): Session[] {
   }
   return Array.from(byDate.values());
 }
+
 
 export async function getUniqueExerciseNames(db: DB): Promise<string[]> {
   const rows = await db.all<{ exercise_name: string }>(
@@ -120,4 +132,13 @@ export async function getSessionsForExercise(
     [exerciseName]
   );
   return rowsToSessions(rows);
+}
+
+export async function getSessionByDate(db: DB, date: string): Promise<Session | null> {
+  const rows = await db.all<SessionRow>(
+    `SELECT date, exercise_name, sets_json, targets_json FROM sessions WHERE date = ?`,
+    [date]
+  );
+  const sessions = rowsToSessions(rows);
+  return sessions[0] ?? null;
 }
