@@ -4,7 +4,13 @@ import AddScreen from '../app/(tabs)/add';
 import SettingsScreen from '../app/(tabs)/settings';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
-jest.mock('@/src/storage', () => ({ getAllSessions: jest.fn().mockResolvedValue([]) }));
+jest.mock('@/src/storage', () => ({
+  getAllSessions: jest.fn().mockResolvedValue([]),
+  getUniqueExerciseNames: jest.fn().mockResolvedValue([]),
+}));
+jest.mock('@/src/programStorage', () => ({
+  getProgram: jest.fn().mockResolvedValue(null),
+}));
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
   useFocusEffect: (cb: () => void) => cb(),
