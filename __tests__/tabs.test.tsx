@@ -7,6 +7,8 @@ jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({
   getAllSessions: jest.fn().mockResolvedValue([]),
   getUniqueExerciseNames: jest.fn().mockResolvedValue([]),
+  sessionExists: jest.fn().mockResolvedValue(false),
+  saveSession: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('@/src/programStorage', () => ({
   getProgram: jest.fn().mockResolvedValue(null),
@@ -23,12 +25,14 @@ jest.mock('react-native-safe-area-context', () => ({
 describe('Add screen', () => {
   it('renders a text input', () => {
     render(<AddScreen />);
-    expect(screen.getByPlaceholderText('Paste your Liftosaur workout here')).toBeTruthy();
+    expect(screen.getByText('Add workout')).toBeTruthy();
+    // textarea is present (placeholder is multi-line, test for the input instead)
+    expect(screen.getByDisplayValue('')).toBeTruthy();
   });
 
-  it('renders a disabled Save button', () => {
+  it('renders a disabled save button when empty', () => {
     render(<AddScreen />);
-    expect(screen.getByText('Save')).toBeTruthy();
+    expect(screen.getByText('Paste to begin')).toBeTruthy();
   });
 });
 
