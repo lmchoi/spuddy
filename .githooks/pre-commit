@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Git hooks run with a minimal PATH. Add common tool locations.
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:$PATH"
+
 echo "Running pre-commit checks..."
 
 echo "  typecheck + tests..."

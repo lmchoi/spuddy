@@ -39,9 +39,24 @@ ln -sf "$(pwd)/node_modules" .claude/worktrees/<slug>/node_modules
 ln -sf "$(pwd)/.env" .claude/worktrees/<slug>/.env 2>/dev/null || true
 ```
 
-### Step 4: Confirm
+### Step 4: Verify hooks are wired up
+
+```bash
+git config core.hooksPath
+```
+
+If the result is not `.githooks`, run:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Then confirm: `core.hooksPath = .githooks`. This must be set before any commits — without it, the pre-commit TDD enforcement hook silently does not run.
+
+### Step 5: Confirm
 
 Tell the user:
 - Worktree path: `.claude/worktrees/<slug>`
 - Branch: `feat/<slug>`
+- `core.hooksPath` confirmed as `.githooks`
 - Run `/sp:implement` to begin the TDD loop
