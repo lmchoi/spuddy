@@ -40,3 +40,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+design_handoffs/
+
+# worktrees (managed by /sp:start and /sp:done)
+.claude/worktrees/
