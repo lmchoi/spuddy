@@ -42,8 +42,8 @@ One slice, one commit.
 | `'#ddd'` (separator) | `C.border` |
 | `'#007AFF'` (import button) | `C.hit` |
 | `'#0062CC'` (button pressed) | `C.hit` + opacity (or `C.hitBg` tinted) |
-| `'#ccc'` (button disabled) | `C.cardSoft` |
-| `'#fff'` (button text) | `C.bg` |
+| `'#ccc'` (button disabled) | `C.cardSoft` (background) / `C.sub` (text override) |
+| `'#fff'` (button text, active) | `C.bg` |
 
 #### Layout pattern (matching progress screen)
 
@@ -58,6 +58,12 @@ One slice, one commit.
 ```
 
 `styles.container` → `flex: 1, backgroundColor: C.bg`
+
+## Deviation notes
+
+- Plan said "one commit" — two additional commits landed during review:
+  - `fix: use readable text colour on disabled import button` — `C.bg` on `C.cardSoft` was near-zero contrast; fixed with a `importButtonDisabledText` style override
+  - `__tests__/settings.test.tsx` — smoke test added as part of the contrast fix (was missing; pre-commit hook would have blocked the original commit had it been active at branch creation time)
 
 ## Out of scope
 
