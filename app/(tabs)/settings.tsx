@@ -1,14 +1,16 @@
 import { useState, useCallback } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { importProgramFromJson } from '@/src/programImport';
 import { getPrograms } from '@/src/programStorage';
 import type { Program } from '@/src/types';
+import { C } from '@/components/spuddy/palette';
 
 export default function SettingsScreen() {
+  const insets = useSafeAreaInsets();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [importing, setImporting] = useState(false);
 
@@ -50,53 +52,70 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.container}>
-      {programs.length === 0 ? (
-        <Text style={styles.empty}>No programs loaded</Text>
-      ) : (
-        programs.map(program => (
-          <View key={program.name} style={styles.programSection}>
-            <Text style={styles.programName}>{program.name}</Text>
-            <View style={styles.dayList}>
-              {program.days.map((day, index) => (
-                <View key={index} style={styles.dayRow}>
-                  <Text style={styles.dayName}>{day.name}</Text>
-                  <Text style={styles.exerciseList} numberOfLines={1}>
-                    {day.exercises.map(e => e.name).join(' · ')}
-                  </Text>
-                  {index < program.days.length - 1 && <View style={styles.separator} />}
-                </View>
-              ))}
-            </View>
-          </View>
-        ))
-      )}
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <StatusBar barStyle="light-content" />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.screenTitle}>Settings</Text>
 
-      <Pressable
-        style={({ pressed }) => [
-          styles.importButton,
-          pressed && styles.importButtonPressed,
-          importing && styles.importButtonDisabled,
-        ]}
-        onPress={handleImport}
-        disabled={importing}
-      >
-        <Text style={styles.importButtonText}>
-          {importing ? 'Importing…' : programs.length > 0 ? 'Replace Programs' : 'Import Programs'}
-        </Text>
-      </Pressable>
-    </ScrollView>
+        {programs.length === 0 ? (
+          <Text style={styles.empty}>No programs loaded</Text>
+        ) : (
+          programs.map(program => (
+            <View key={program.name} style={styles.programSection}>
+              <Text style={styles.programName}>{program.name}</Text>
+              <View style={styles.dayList}>
+                {program.days.map((day, index) => (
+                  <View key={index} style={styles.dayRow}>
+                    <Text style={styles.dayName}>{day.name}</Text>
+                    <Text style={styles.exerciseList} numberOfLines={1}>
+                      {day.exercises.map(e => e.name).join(' · ')}
+                    </Text>
+                    {index < program.days.length - 1 && <View style={styles.separator} />}
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))
+        )}
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.importButton,
+            pressed && styles.importButtonPressed,
+            importing && styles.importButtonDisabled,
+          ]}
+          onPress={handleImport}
+          disabled={importing}
+        >
+          <Text style={styles.importButtonText}>
+            {importing ? 'Importing…' : programs.length > 0 ? 'Replace Programs' : 'Import Programs'}
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  scrollContent: {
+    paddingHorizontal: 18,
+    paddingBottom: 120,
     gap: 20,
+  },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: C.text,
+    letterSpacing: -0.5,
+    paddingTop: 8,
   },
   empty: {
     fontSize: 14,
-    color: '#888',
+    color: C.sub,
   },
   programSection: {
     gap: 8,
@@ -104,14 +123,16 @@ const styles = StyleSheet.create({
   programName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#888',
+    color: C.sub,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     paddingHorizontal: 4,
   },
   dayList: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: C.card,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: C.border,
     borderCurve: 'continuous',
     overflow: 'hidden',
   } as object,
@@ -123,33 +144,33 @@ const styles = StyleSheet.create({
   dayName: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#1a1a1a',
+    color: C.text,
   },
   exerciseList: {
     fontSize: 12,
-    color: '#999',
+    color: C.muted,
     marginTop: 2,
   },
   separator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#ddd',
+    backgroundColor: C.border,
     marginTop: 12,
   },
   importButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: C.hit,
     borderRadius: 12,
     borderCurve: 'continuous',
     padding: 14,
     alignItems: 'center',
   } as object,
   importButtonPressed: {
-    backgroundColor: '#0062CC',
+    opacity: 0.8,
   },
   importButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: C.cardSoft,
   },
   importButtonText: {
-    color: '#fff',
+    color: C.bg,
     fontWeight: '600',
     fontSize: 16,
   },
