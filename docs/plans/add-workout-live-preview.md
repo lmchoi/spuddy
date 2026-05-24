@@ -76,22 +76,32 @@ flagged lines using monospace + color cues.
   addition to the existing structural ones
 - Bad-segment text → error count matches what the UI shows
 
-### Slice 3 — Overwrite path
+### Slice 3 — Content-hash duplicate detection
 
-Currently the save handler hard-fails on duplicate dates with an alert.
-We need a real overwrite path.
+Replace the date-only duplicate check with a content hash. Same date but
+different content (e.g. a second session that day) is not a duplicate — just
+save it. Only suppress the save if the content is truly identical.
 
-**Data:** add `replaceSession(db, session)` to `src/storage.ts` —
-transactional `DELETE WHERE date = ?` then insert. No migration needed:
-`sessions` is a flat table with no child tables referencing it.
-Also enable `saveEnabled` in the `isDuplicate` branch of `add.tsx` (currently
-stubbed with a comment) and route through `replaceSession` instead of
-`saveSession`.
+**Data:** add a `hashSession(session)` pure function (e.g. stable JSON
+stringify → SHA-1 or similar) and store the hash alongside each session.
+On save, query `SELECT hash FROM sessions WHERE hash = ?` — if it matches,
+the session is already saved.
 
-**UI:** the Overwrite button on the banner runs the new code path; success
-toast distinguishes "overwritten" from "saved".
+**UI:** replace the current duplicate banner with a simple inline message:
+"Already saved. [View →]" linking to the existing session detail. No
+Overwrite button, no decision required.
 
-### Slice 4 — Edit on the parse-error rows (deferred)
+**Back navigation:** tapping the link pushes to the session detail. A back
+button would be a nice UX touch but is not required — defer unless cheap.
+
+### Slice 4 — Back navigation from "View" link (deferred)
+
+If the user taps "Already saved. View →", they land on the session detail
+with no back route (tab navigation, no stack entry). Fix by wrapping the
+Add screen in its own stack navigator or using `router.push` from a modal
+context. Defer until a user actually hits this wall — it's not blocking.
+
+### Slice 5 — Edit on the parse-error rows (deferred)
 
 Tapping a flagged line in the parse log focuses the textarea and selects
 that line. Nice-to-have; out of scope for v0.1 unless cheap.
@@ -134,17 +144,16 @@ redesign (settings, bento detail) cheap.
 
 ## Follow-up backlog (post slice 1)
 
-- **"View existing" leaves no back route.** `router.push('/progress/[date]')`
-  from a tab navigates within the tab group — no stack entry is created, so
-  the back gesture doesn't return to add. Needs investigation: either wrap
-  the add screen in its own stack navigator, or use a different routing
-  strategy when pushing from add. Track before the Sources Hub lands, since
-  the hub will push add as a child and the same issue will recur.
+- **Back navigation from "View" link** — tracked as Slice 4. Not blocking;
+  defer until a user hits this wall in practice.
 
-- **Duplicate banner is date-only, no content diff.** The banner fires whether
-  the pasted content is identical to the stored session or genuinely different.
-  Consider suppressing or softening the message when the incoming data matches
-  what's already stored. Not urgent for v0.1.
+- ~~**"View existing" leaves no back route.**~~ — superseded by Slice 3 design:
+  the duplicate check is now hash-based and the link is a secondary action,
+  not a primary navigation.
+
+- ~~**Duplicate banner is date-only, no content diff.**~~ — resolved by Slice 3:
+  date-only check replaced with content hash; different content on same date
+  saves without friction.
 
 - **Clear button on the textarea.** A small × in the corner of the input to
   wipe the text in one tap, rather than select-all-delete.
