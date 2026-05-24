@@ -39,7 +39,7 @@ Never batch multiple plan commits into one. Never declare a step done without a 
 
 ### Step 4: UI changes
 
-If a commit touches UI, run the app after the tests pass and confirm the change renders correctly before committing. Do not claim UI work is done based on code edits alone.
+If a commit touches UI components, follow the `verifier-android` skill to screenshot the running AVD and check logcat for errors. Do not claim UI work is done based on code edits alone — a passing test suite is not sufficient.
 
 ### Step 5: When all commits are done
 

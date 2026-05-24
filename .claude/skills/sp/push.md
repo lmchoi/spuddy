@@ -29,6 +29,8 @@ If anything needs updating: write the changes, then run `/sp:commit` with a `doc
 npm run check:full
 ```
 
+If any staged changes touch UI components (`.tsx` files outside `__tests__/`), also run the `verifier-android` skill: screenshot the AVD, check logcat for errors. Block push if the emulator is not running or shows errors.
+
 ### Step 3: Fix failures autonomously
 
 If checks fail:

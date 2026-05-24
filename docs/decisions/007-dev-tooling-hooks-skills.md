@@ -191,7 +191,7 @@ No mechanical enforcement exists for this. When a fix doesn't resolve an issue, 
 - What exactly triggers the `PreToolUse` hook for the "write source without a test" safety net — `Edit` and `Write` on `.ts`/`.tsx` files? What does it check?
 - Should the test-presence check in pre-commit look at staged files only, or also unstaged modifications in the working tree?
 - How should whitelisted paths be maintained — hardcoded in the hook script, or in a config file?
-- Visual verification approach: Detox, or a lighter Expo-specific tool? What constitutes a "visual test" at pre-push (screenshot diff, console errors, or both)?
+- Visual verification approach: ✓ resolved — `adb screencap` + `adb logcat` via `.claude/skills/verifier-android.md`. No Detox needed. Checks: emulator running, screen renders, no console errors.
 - `/sp:push` autonomy boundary: how many fix-and-retry loops before it stops and asks?
 - `/sp:review` plan-adherence check: does it read the most recently modified plan file, or should the user specify which plan?
 - Worktree location: `.claude/worktrees/` (follows existing convention). Symlink `node_modules` and `.env` from main tree on creation to avoid reinstall cost.

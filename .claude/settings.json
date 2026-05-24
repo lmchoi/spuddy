@@ -23,6 +23,9 @@
       }
     ]
   },
+  "env": {
+    "PATH": "/Users/mandy/Library/Android/sdk/platform-tools:$PATH"
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   },
@@ -36,7 +39,10 @@
       "Bash(npm run check)",
       "Bash(npm run check:full)",
       "Bash(npx tsc *)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb devices)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb exec-out screencap *)",
+      "Bash(~/Library/Android/sdk/platform-tools/adb logcat *)"
     ]
   }
 }
