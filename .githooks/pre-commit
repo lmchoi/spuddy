@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e
+
+echo "Running pre-commit checks..."
+
+echo "  typecheck + tests..."
+npm run check
+
+echo "  checking test/source co-presence..."
+staged=$(git diff --cached --name-only)
+
+source_files=$(echo "$staged" | grep -E '\.(ts|tsx)$' \
+  | grep -vE '(\.test\.|\.spec\.|__tests__|\.config\.|jest\.setup|\.d\.ts)' \
+  | grep -vE '^(types/|constants/)' \
+  || true)
+
+test_files=$(echo "$staged" | grep -E '(\.test\.|\.spec\.)(ts|tsx)$\|/__tests__/' || true)
+
+if [ -n "$source_files" ] && [ -z "$test_files" ]; then
+  echo ""
+  echo "Error: source files staged without tests:"
+  echo "$source_files" | sed 's/^/  /'
+  echo ""
+  echo "Include tests in the same commit (TDD: red → green → commit)."
+  echo "Use --no-verify to bypass for genuine exceptions (e.g. types-only changes)."
+  exit 1
+fi
+
+echo "All pre-commit checks passed."
