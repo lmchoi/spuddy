@@ -87,7 +87,7 @@ export default function SettingsScreen() {
           onPress={handleImport}
           disabled={importing}
         >
-          <Text style={styles.importButtonText}>
+          <Text style={[styles.importButtonText, importing && styles.importButtonDisabledText]}>
             {importing ? 'Importing…' : programs.length > 0 ? 'Replace Programs' : 'Import Programs'}
           </Text>
         </Pressable>
@@ -173,5 +173,8 @@ const styles = StyleSheet.create({
     color: C.bg,
     fontWeight: '600',
     fontSize: 16,
+  },
+  importButtonDisabledText: {
+    color: C.sub,
   },
 });
