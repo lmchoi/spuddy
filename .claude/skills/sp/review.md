@@ -8,7 +8,11 @@ Extended code review: base correctness review plus plan-adherence check and simp
 
 ## Usage
 
-`/sp:review`
+`/sp:review [<PR-number-or-URL>] [--comment]`
+
+- No args: reviews the current branch diff
+- `<PR-number-or-URL>`: fetches and reviews that PR's diff via `gh pr diff`
+- `--comment`: after presenting findings, posts each finding as an inline PR comment via `gh pr review --comment`. Comments are prefixed with `🤖 [claude review]` so they're distinguishable from human comments.
 
 ## Steps
 
@@ -47,3 +51,21 @@ Combine all findings into one list ranked by severity:
 - **Low** — style, minor simplifications
 
 For each high finding, propose the exact fix and file/line it belongs in.
+
+### Step 5: Post comments (only if `--comment` was passed)
+
+For each finding, post an inline PR comment using `gh pr review`. Prefix every comment body with `🤖 [claude review]` so it's distinguishable from human comments.
+
+For findings tied to a specific file and line:
+```bash
+gh pr review <PR> --comment \
+  --body "🤖 [claude review] <severity>: <finding>\n\n<proposed fix>"
+```
+
+For general findings not tied to a specific line, post as a top-level review comment:
+```bash
+gh pr review <PR> --comment \
+  --body "🤖 [claude review] <severity>: <finding>"
+```
+
+Post comments only for High and Medium findings. Skip Low findings unless the user explicitly asks for all.
