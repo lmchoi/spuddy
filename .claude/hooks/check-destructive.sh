@@ -3,13 +3,9 @@
 # Receives Bash tool input as JSON on stdin.
 
 input=$(cat)
-command=$(echo "$input" | python3 -c "
-import json, sys
-try:
-    print(json.load(sys.stdin).get('command', ''))
-except:
-    print('')
-" 2>/dev/null)
+
+# Extract the command value from JSON using sed — no python3 needed
+command=$(printf '%s' "$input" | sed 's/.*"command"[[:space:]]*:[[:space:]]*"\(.*\)".*/\1/' | head -1)
 
 if printf '%s' "$command" | grep -qE '(^|&&|\|)\s*cp -r'; then
   printf '{"systemMessage": "Blocked: cp -r can clobber tracked files and git history. Use git-aware operations, or ask the user to confirm before proceeding."}\n'
