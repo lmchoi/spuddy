@@ -56,7 +56,9 @@
     "test": "jest",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit"
+    "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
+    "check": "npm run typecheck && npm test -- --watchAll=false",
+    "check:full": "npm run typecheck && npm run lint && npm test -- --watchAll=false"
   },
   "jest": {
     "preset": "jest-expo",
