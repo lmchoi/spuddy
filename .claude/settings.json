@@ -10,17 +10,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '{\"systemMessage\": \"Before finishing: does docs/prd.md or the active plan in docs/plans/ need updating based on decisions made this session?\"}'",
-            "statusMessage": "Checking plan currency..."
-          }
-        ]
-      }
     ]
   },
   "env": {
