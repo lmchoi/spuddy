@@ -87,6 +87,13 @@ describe('programs loaded', () => {
     render(<SettingsScreen />);
     expect(await screen.findByText('Import Liftosaur JSON')).toBeTruthy();
   });
+
+  it('navigates to day detail when a day row is tapped', async () => {
+    render(<SettingsScreen />);
+    await screen.findByText('Push');
+    fireEvent.press(screen.getByText('Push'));
+    expect(mockPush).toHaveBeenCalledWith('/settings/Push%20Pull%20Legs/0');
+  });
 });
 
 // ─── Import button disabled state ────────────────────────────────────────────
