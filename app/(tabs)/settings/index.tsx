@@ -66,11 +66,19 @@ export default function SettingsScreen() {
               <Text style={styles.programName}>{program.name}</Text>
               <View style={styles.dayList}>
                 {program.days.map((day, index) => (
-                  <View key={index} style={styles.dayRow}>
-                    <Text style={styles.dayName}>{day.name}</Text>
-                    <Text style={styles.exerciseList} numberOfLines={1}>
-                      {day.exercises.map(e => e.name).join(' · ')}
-                    </Text>
+                  <View key={index}>
+                    <Pressable
+                      style={({ pressed }) => [styles.dayRow, pressed && styles.dayRowPressed]}
+                      onPress={() => router.push(`/settings/${encodeURIComponent(program.name)}/${index}`)}
+                    >
+                      <View style={styles.dayRowContent}>
+                        <Text style={styles.dayName}>{day.name}</Text>
+                        <Text style={styles.exerciseList} numberOfLines={1}>
+                          {day.exercises.map(e => e.name).join(' · ')}
+                        </Text>
+                      </View>
+                      <Text style={styles.chevron}>›</Text>
+                    </Pressable>
                     {index < program.days.length - 1 && <View style={styles.separator} />}
                   </View>
                 ))}
@@ -148,9 +156,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   } as object,
   dayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: 'transparent',
+  },
+  dayRowPressed: {
+    opacity: 0.7,
+  },
+  dayRowContent: {
+    flex: 1,
   },
   dayName: {
     fontSize: 15,
@@ -162,10 +177,14 @@ const styles = StyleSheet.create({
     color: C.muted,
     marginTop: 2,
   },
+  chevron: {
+    fontSize: 18,
+    color: C.muted,
+  },
   separator: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: C.border,
-    marginTop: 12,
+    marginHorizontal: 14,
   },
   section: {
     gap: 8,
