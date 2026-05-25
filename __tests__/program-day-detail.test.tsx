@@ -107,6 +107,65 @@ describe('ProgramDayDetail screen', () => {
   });
 });
 
+describe('bug regression: weight=0 during edit', () => {
+  it('keeps the TextInput visible when weight is changed to 0 mid-edit', () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getAllByText('▸')[0]); // expand Bench Press
+    // Enter edit mode by pressing the weight display (shows '80')
+    fireEvent.press(screen.getAllByText('80')[0]);
+    const input = screen.getByDisplayValue('80');
+    // Type '0' — this sets weight=0 which previously swapped the TextInput for a BW pill
+    fireEvent.changeText(input, '0');
+    // TextInput must stay visible; BW pill must not appear
+    expect(screen.queryByDisplayValue('0')).toBeTruthy();
+  });
+});
+
+describe('bug regression: day name persistence', () => {
+  it('persists the typed day name (not the pre-edit snapshot) to DB', async () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Push Day'));
+    const input = screen.getByDisplayValue('Push Day');
+    fireEvent.changeText(input, 'Leg Day');
+    fireEvent(input, 'blur');
+    await waitFor(() =>
+      expect(mockUpdateProgramDay).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        expect.objectContaining({ name: 'Leg Day' })
+      )
+    );
+  });
+});
+
+describe('bug regression: edit state clears on delete', () => {
+  it('clears editingCell when an exercise is deleted', () => {
+    render(<ProgramDayDetailScreen />);
+    // Expand Bench Press and enter reps edit mode for set 1
+    fireEvent.press(screen.getAllByText('▸')[0]);
+    fireEvent.press(screen.getAllByText('5')[0]); // reps cell of first set
+    // Delete Bench Press — Overhead Press shifts to index 0
+    fireEvent.press(screen.getByText('Delete exercise'));
+    // Expand the new exercise 0 (Overhead Press)
+    fireEvent.press(screen.getAllByText('▸')[0]);
+    // editingCell must be cleared — no TextInput should show reps value '12'
+    expect(screen.queryByDisplayValue('12')).toBeNull();
+  });
+
+  it('clears editingCell when a set is removed', () => {
+    render(<ProgramDayDetailScreen />);
+    // Expand Bench Press and enter reps edit mode for set 1
+    fireEvent.press(screen.getAllByText('▸')[0]);
+    fireEvent.press(screen.getAllByText('5')[0]); // reps cell of first set
+    // Remove set 1 — sets shift, editingCell becomes stale
+    const deleteButtons = screen.getAllByText('×');
+    fireEvent.press(deleteButtons[0]);
+    // editingCell must be cleared — no active TextInput showing a reps value
+    expect(screen.queryByDisplayValue('5')).toBeNull();
+  });
+});
+
 describe('real data loading', () => {
   it('shows day name loaded from DB', async () => {
     mockGetProgramDay.mockResolvedValue({

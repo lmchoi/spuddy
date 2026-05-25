@@ -64,6 +64,7 @@ export default function ProgramDayDetailScreen() {
   const [day, setDay] = useState<ProgramDay>(SAMPLE_DAY);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [editingDayName, setEditingDayName] = useState(false);
+  const [draftDayName, setDraftDayName] = useState('');
   const [editingExName, setEditingExName] = useState<number | null>(null);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
 
@@ -79,8 +80,7 @@ export default function ProgramDayDetailScreen() {
     }, [name, idx])
   );
 
-  async function persist(next: ProgramDay) {
-    setDay(next);
+  async function persistToDb(next: ProgramDay) {
     try {
       const db = await getDB();
       await updateProgramDay(db, name, idx, next);
@@ -90,59 +90,80 @@ export default function ProgramDayDetailScreen() {
   }
 
   function updateExercise(exIdx: number, updates: Partial<ProgramExercise>) {
-    const next: ProgramDay = {
-      ...day,
-      exercises: day.exercises.map((ex, i) => i === exIdx ? { ...ex, ...updates } : ex),
-    };
-    persist(next);
+    setDay(prev => {
+      const next: ProgramDay = {
+        ...prev,
+        exercises: prev.exercises.map((ex, i) => i === exIdx ? { ...ex, ...updates } : ex),
+      };
+      persistToDb(next);
+      return next;
+    });
   }
 
   function updateTarget(exIdx: number, setIdx: number, updates: Partial<Target>) {
-    const next: ProgramDay = {
-      ...day,
-      exercises: day.exercises.map((ex, i) => i !== exIdx ? ex : {
-        ...ex,
-        targets: ex.targets.map((t, j) => j !== setIdx ? t : { ...t, ...updates }),
-      }),
-    };
-    persist(next);
+    setDay(prev => {
+      const next: ProgramDay = {
+        ...prev,
+        exercises: prev.exercises.map((ex, i) => i !== exIdx ? ex : {
+          ...ex,
+          targets: ex.targets.map((t, j) => j !== setIdx ? t : { ...t, ...updates }),
+        }),
+      };
+      persistToDb(next);
+      return next;
+    });
   }
 
   function addSet(exIdx: number) {
-    const next: ProgramDay = {
-      ...day,
-      exercises: day.exercises.map((ex, i) => {
-        if (i !== exIdx) return ex;
-        const last = ex.targets[ex.targets.length - 1];
-        return { ...ex, targets: [...ex.targets, last ? { ...last } : { reps: 8 }] };
-      }),
-    };
-    persist(next);
+    setDay(prev => {
+      const next: ProgramDay = {
+        ...prev,
+        exercises: prev.exercises.map((ex, i) => {
+          if (i !== exIdx) return ex;
+          const last = ex.targets[ex.targets.length - 1];
+          return { ...ex, targets: [...ex.targets, last ? { ...last } : { reps: 8 }] };
+        }),
+      };
+      persistToDb(next);
+      return next;
+    });
   }
 
   function removeSet(exIdx: number, setIdx: number) {
-    const next: ProgramDay = {
-      ...day,
-      exercises: day.exercises.map((ex, i) => i !== exIdx ? ex : {
-        ...ex,
-        targets: ex.targets.filter((_, j) => j !== setIdx),
-      }),
-    };
-    persist(next);
+    setDay(prev => {
+      const next: ProgramDay = {
+        ...prev,
+        exercises: prev.exercises.map((ex, i) => i !== exIdx ? ex : {
+          ...ex,
+          targets: ex.targets.filter((_, j) => j !== setIdx),
+        }),
+      };
+      persistToDb(next);
+      return next;
+    });
+    setEditingCell(null);
   }
 
   function deleteExercise(exIdx: number) {
-    const next: ProgramDay = { ...day, exercises: day.exercises.filter((_, i) => i !== exIdx) };
-    persist(next);
+    setDay(prev => {
+      const next: ProgramDay = { ...prev, exercises: prev.exercises.filter((_, i) => i !== exIdx) };
+      persistToDb(next);
+      return next;
+    });
     setExpandedIdx(null);
+    setEditingExName(null);
+    setEditingCell(null);
   }
 
   function addExercise() {
-    const next: ProgramDay = {
-      ...day,
-      exercises: [...day.exercises, { name: 'New exercise', targets: [{ reps: 8 }] }],
-    };
-    persist(next);
+    setDay(prev => {
+      const next: ProgramDay = {
+        ...prev,
+        exercises: [...prev.exercises, { name: 'New exercise', targets: [{ reps: 8 }] }],
+      };
+      persistToDb(next);
+      return next;
+    });
   }
 
   return (
@@ -158,15 +179,25 @@ export default function ProgramDayDetailScreen() {
         {editingDayName ? (
           <TextInput
             style={styles.titleInput}
-            value={day.name}
-            onChangeText={name => setDay(d => ({ ...d, name }))}
-            onBlur={() => setEditingDayName(false)}
+            value={draftDayName}
+            onChangeText={setDraftDayName}
+            onBlur={() => {
+              setEditingDayName(false);
+              const next = { ...day, name: draftDayName };
+              setDay(next);
+              persistToDb(next);
+            }}
             autoFocus
             returnKeyType="done"
-            onSubmitEditing={() => setEditingDayName(false)}
+            onSubmitEditing={() => {
+              setEditingDayName(false);
+              const next = { ...day, name: draftDayName };
+              setDay(next);
+              persistToDb(next);
+            }}
           />
         ) : (
-          <Pressable onPress={() => setEditingDayName(true)} style={styles.titlePressable}>
+          <Pressable onPress={() => { setDraftDayName(day.name); setEditingDayName(true); }} style={styles.titlePressable}>
             <Text style={styles.title}>{day.name}</Text>
           </Pressable>
         )}
@@ -255,7 +286,10 @@ export default function ProgramDayDetailScreen() {
                                   style={styles.cellInput}
                                   value={String(target.minReps)}
                                   keyboardType="numeric"
-                                  onChangeText={v => updateTarget(exIdx, setIdx, { minReps: Math.max(1, parseInt(v, 10) || 1) })}
+                                  onChangeText={v => {
+                                    const val = parseInt(v, 10);
+                                    if (!isNaN(val)) updateTarget(exIdx, setIdx, { minReps: Math.max(1, val) });
+                                  }}
                                   onBlur={() => setEditingCell(null)}
                                   autoFocus
                                   returnKeyType="done"
@@ -272,7 +306,10 @@ export default function ProgramDayDetailScreen() {
                                   style={styles.cellInput}
                                   value={String(target.reps)}
                                   keyboardType="numeric"
-                                  onChangeText={v => updateTarget(exIdx, setIdx, { reps: Math.max(1, parseInt(v, 10) || 1) })}
+                                  onChangeText={v => {
+                                    const val = parseInt(v, 10);
+                                    if (!isNaN(val)) updateTarget(exIdx, setIdx, { reps: Math.max(1, val) });
+                                  }}
                                   onBlur={() => setEditingCell(null)}
                                   autoFocus
                                   returnKeyType="done"
@@ -291,7 +328,10 @@ export default function ProgramDayDetailScreen() {
                                   style={styles.cellInput}
                                   value={String(target.reps)}
                                   keyboardType="numeric"
-                                  onChangeText={v => updateTarget(exIdx, setIdx, { reps: Math.max(1, parseInt(v, 10) || 1) })}
+                                  onChangeText={v => {
+                                    const val = parseInt(v, 10);
+                                    if (!isNaN(val)) updateTarget(exIdx, setIdx, { reps: Math.max(1, val) });
+                                  }}
                                   onBlur={() => setEditingCell(null)}
                                   autoFocus
                                   returnKeyType="done"
@@ -317,20 +357,16 @@ export default function ProgramDayDetailScreen() {
                           <View style={[styles.colWeight, styles.weightRow]}>
                             {target.weight === undefined ? (
                               <Text style={styles.muted}>—</Text>
-                            ) : target.weight === 0 ? (
-                              <Pressable
-                                onPress={() => updateTarget(exIdx, setIdx, { weight: undefined })}
-                                style={styles.bwPill}
-                              >
-                                <Text style={styles.bwPillText}>BW</Text>
-                              </Pressable>
                             ) : isWeight ? (
                               <>
                                 <TextInput
                                   style={styles.cellInput}
                                   value={String(target.weight)}
                                   keyboardType="decimal-pad"
-                                  onChangeText={v => updateTarget(exIdx, setIdx, { weight: parseFloat(v) || target.weight })}
+                                  onChangeText={v => {
+                                    const val = parseFloat(v);
+                                    if (!isNaN(val)) updateTarget(exIdx, setIdx, { weight: val });
+                                  }}
                                   onBlur={() => setEditingCell(null)}
                                   autoFocus
                                   returnKeyType="done"
@@ -338,6 +374,13 @@ export default function ProgramDayDetailScreen() {
                                 />
                                 <Text style={styles.muted}> kg</Text>
                               </>
+                            ) : target.weight === 0 ? (
+                              <Pressable
+                                onPress={() => updateTarget(exIdx, setIdx, { weight: undefined })}
+                                style={styles.bwPill}
+                              >
+                                <Text style={styles.bwPillText}>BW</Text>
+                              </Pressable>
                             ) : (
                               <Pressable
                                 style={styles.weightRow}
@@ -361,7 +404,10 @@ export default function ProgramDayDetailScreen() {
                                   style={styles.cellInput}
                                   value={String(target.restSeconds)}
                                   keyboardType="numeric"
-                                  onChangeText={v => updateTarget(exIdx, setIdx, { restSeconds: parseInt(v, 10) || target.restSeconds })}
+                                  onChangeText={v => {
+                                    const val = parseInt(v, 10);
+                                    if (!isNaN(val)) updateTarget(exIdx, setIdx, { restSeconds: val });
+                                  }}
                                   onBlur={() => setEditingCell(null)}
                                   autoFocus
                                   returnKeyType="done"

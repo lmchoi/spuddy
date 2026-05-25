@@ -47,12 +47,13 @@ export function summaryLine(targets: Target[], unit: 'kg' | 'lb'): string | null
     const uniWeight = targets.every(t => t.weight === t0.weight);
     if (uniWeight && t0.weight !== undefined) {
       weightStr = t0.weight === 0 ? ' BW' : ` @ ${fmtKg(t0.weight, unit)}`;
+    } else if (!uniWeight) {
+      weightStr = ' @ ?';
     }
   }
 
   const rest = uniformRest(targets);
   const restStr = rest != null ? ` · rest ${fmtRest(rest)}` : '';
 
-  if (!uniformReps) return `${sets} × ${repsStr}`;
   return `${sets} × ${repsStr}${weightStr}${restStr}`;
 }

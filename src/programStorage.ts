@@ -96,7 +96,7 @@ export async function updateProgramDay(
 ): Promise<void> {
   const programs = await getPrograms(db);
   const target = programs.find(p => p.name === programName);
-  if (!target) return;
+  if (!target) throw new Error(`Program not found: ${programName}`);
   target.days[dayIndex] = day;
   await savePrograms(db, programs);
 }
