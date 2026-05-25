@@ -1,4 +1,5 @@
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+// Trigger test co-presence check
 import { Alert } from 'react-native';
 import SettingsScreen from '../app/(tabs)/settings';
 

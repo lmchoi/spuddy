@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
+import type { Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { importProgramFromJson } from '@/src/programImport';
@@ -69,7 +70,7 @@ export default function SettingsScreen() {
                   <View key={index}>
                     <Pressable
                       style={({ pressed }) => [styles.dayRow, pressed && styles.dayRowPressed]}
-                      onPress={() => router.push(`/settings/${encodeURIComponent(program.name)}/${index}`)}
+                      onPress={() => router.push(`/settings/${encodeURIComponent(program.name)}/${index}` as Href)}
                     >
                       <View style={styles.dayRowContent}>
                         <Text style={styles.dayName}>{day.name}</Text>
@@ -103,7 +104,7 @@ export default function SettingsScreen() {
             <View style={styles.dataSeparator} />
             <Pressable
               style={({ pressed }) => [styles.dataRow, pressed && styles.dataRowPressed]}
-              onPress={() => router.push('/strong-import')}
+              onPress={() => router.push('/strong-import' as Href)}
             >
               <Text style={styles.dataRowText}>Import from Strong</Text>
               <Text style={styles.dataRowChevron}>›</Text>
