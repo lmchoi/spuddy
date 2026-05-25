@@ -2,7 +2,7 @@
  * MOCKUP — session logging screen
  * Not wired to real data. Toggle states with the buttons at the bottom.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -112,22 +112,19 @@ function Stepper({
 
 function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void }) {
   const [remaining, setRemaining] = useState(duration);
-  const interval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    setRemaining(duration);
-    interval.current = setInterval(() => {
+    const interval = setInterval(() => {
       setRemaining(r => {
         if (r <= 1) {
-          clearInterval(interval.current!);
           onSkip();
           return 0;
         }
         return r - 1;
       });
     }, 1000);
-    return () => clearInterval(interval.current!);
-  }, [duration]);
+    return () => clearInterval(interval);
+  }, [onSkip]);
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
@@ -245,13 +242,6 @@ export default function SessionMockup() {
   const [activeReps, setActiveReps] = useState(target.reps);
   const [activeWeight, setActiveWeight] = useState(target.weight);
 
-  // Reset active inputs when exercise or set changes
-  useEffect(() => {
-    const t = exercise.sets[completedSets.length] ?? exercise.sets[exercise.sets.length - 1];
-    setActiveReps(t.reps);
-    setActiveWeight(t.weight);
-  }, [exIdx, completedSets.length]);
-
   const totalSets = EXERCISES.reduce((n, e) => n + e.sets.length, 0);
   const doneSets = completedPerExercise.reduce((a, b) => a + b, 0);
 
@@ -263,15 +253,29 @@ export default function SessionMockup() {
       updated[exIdx] = next.length;
       return updated;
     });
+
+    // Prep for next set
+    const nextTarget = exercise.sets[next.length] ?? exercise.sets[exercise.sets.length - 1];
+    setActiveReps(nextTarget.reps);
+    setActiveWeight(nextTarget.weight);
+
     if (next.length < exercise.sets.length) setResting(true);
   }
 
   function jumpTo(idx: number) {
     setExIdx(idx);
-    setCompletedSets(Array.from({ length: completedPerExercise[idx] ?? 0 }, (_, i) => ({
-      reps: EXERCISES[idx].sets[i]?.reps ?? 0,
-      weight: EXERCISES[idx].sets[i]?.weight ?? 0,
+    const setsDone = completedPerExercise[idx] ?? 0;
+    const ex = EXERCISES[idx];
+
+    setCompletedSets(Array.from({ length: setsDone }, (_, i) => ({
+      reps: ex.sets[i]?.reps ?? 0,
+      weight: ex.sets[i]?.weight ?? 0,
     })));
+
+    const t = ex.sets[setsDone] ?? ex.sets[ex.sets.length - 1];
+    setActiveReps(t.reps);
+    setActiveWeight(t.weight);
+
     setResting(false);
   }
 
@@ -321,7 +325,6 @@ export default function SessionMockup() {
             const logged = completedSets[i];
             const isActive = i === completedSets.length && !allDone;
             const isPast = i < completedSets.length;
-            const isFuture = i > completedSets.length;
 
             if (isPast && logged) {
               const hitTarget = logged.reps >= set.reps;
