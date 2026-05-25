@@ -18,6 +18,7 @@ jest.mock('expo-document-picker', () => ({
 }));
 jest.mock('expo-router', () => ({
   useFocusEffect: (cb: () => void) => { cb(); },
+  useRouter: () => ({ push: jest.fn() }),
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
