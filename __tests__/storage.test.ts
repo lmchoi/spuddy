@@ -108,4 +108,39 @@ describe('SQLite storage', () => {
     expect(squat.sets[0]).toMatchObject({ reps: 5, weight: 100, isWarmup: false });
     expect(squat.targets[0]).toMatchObject({ reps: 5, weight: 100 });
   });
+
+  it('old sets_json without optional fields deserialises — rpe/distanceMeters/durationSeconds are undefined', async () => {
+    await saveSession(db, SESSION_A);
+    const sessions = await getAllSessions(db);
+    const set = sessions[0].exercises[0].sets[0];
+    expect(set.rpe).toBeUndefined();
+    expect(set.distanceMeters).toBeUndefined();
+    expect(set.durationSeconds).toBeUndefined();
+  });
+
+  it('round-trips sets with optional fields intact', async () => {
+    const sessionWithExtras: Session = {
+      date: '2026-05-20',
+      exercises: [{
+        name: 'Run',
+        sets: [{
+          reps: 1,
+          weight: 0,
+          isWarmup: false,
+          isBodyweight: false,
+          rpe: 7,
+          distanceMeters: 1000,
+          durationSeconds: 300,
+        }],
+        targets: [],
+      }],
+    };
+    await saveSession(db, sessionWithExtras);
+    const sessions = await getAllSessions(db);
+    const run = sessions.find(s => s.date === '2026-05-20')!;
+    const set = run.exercises[0].sets[0];
+    expect(set.rpe).toBe(7);
+    expect(set.distanceMeters).toBe(1000);
+    expect(set.durationSeconds).toBe(300);
+  });
 });
