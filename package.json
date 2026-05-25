@@ -54,6 +54,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
+    "test:coverage": "jest --coverage --watchAll=false",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
@@ -71,7 +72,31 @@
     },
     "testPathIgnorePatterns": [
       "<rootDir>/.claude/"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "**/*.{ts,tsx}",
+      "!**/*.d.ts",
+      "!**/node_modules/**",
+      "!**/.expo/**",
+      "!**/coverage/**",
+      "!**/.claude/**",
+      "!app/_layout.tsx",
+      "!app/+*.tsx",
+      "!app/**/_layout.tsx",
+      "!components/**",
+      "!constants/**",
+      "!src/types.ts",
+      "!src/tw/**",
+      "!src/db.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 85,
+        "branches": 75,
+        "functions": 80,
+        "lines": 85
+      }
+    }
   },
   "overrides": {
     "lightningcss": "1.30.1"
