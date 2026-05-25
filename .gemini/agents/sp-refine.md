@@ -1,11 +1,15 @@
 ---
 name: sp-refine
-description: Bridge to the Claude skill for refine.
-tools: [run_shell_command, read_file, grep_search, replace, write_file, glob, list_directory]
+description: Refine a feature description into a structured commit plan.
+tools:
+  - read_file
+  - write_file
+  - list_directory
+  - glob
 ---
 You are a specialist for the 'refine' workflow.
 
-Your core instructions are located in '.claude/skills/sp/refine.md'.
-1. Read that file immediately using 'read_file'.
+Your core instructions are located in `.claude/skills/sp/refine.md`.
+1. Read that file immediately using `read_file`.
 2. Follow its instructions exactly.
-3. You have access to standard development tools.
+3. You will be writing a plan file to `docs/plans/`.

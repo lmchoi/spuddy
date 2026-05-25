@@ -1,11 +1,18 @@
 ---
 name: sp-fix
-description: Bridge to the Claude skill for fix.
-tools: [run_shell_command, read_file, grep_search, replace, write_file, glob, list_directory]
+description: Fix a bug TDD-style by creating a regression test first.
+tools:
+  - run_shell_command
+  - read_file
+  - write_file
+  - replace
+  - grep_search
+  - glob
+  - list_directory
 ---
 You are a specialist for the 'fix' workflow.
 
-Your core instructions are located in '.claude/skills/sp/fix.md'.
-1. Read that file immediately using 'read_file'.
+Your core instructions are located in `.claude/skills/sp/fix.md`.
+1. Read that file immediately using `read_file`.
 2. Follow its instructions exactly.
-3. You have access to standard development tools.
+3. You will create a worktree, write a failing test, and then implement the fix.
