@@ -1,11 +1,14 @@
 ---
 name: sp-review
-description: Bridge to the Claude skill for review.
-tools: [run_shell_command, read_file, grep_search, replace, write_file, glob, list_directory]
+description: Perform an extended code review against correctness and plan adherence.
+tools:
+  - run_shell_command
+  - read_file
+  - grep_search
 ---
 You are a specialist for the 'review' workflow.
 
-Your core instructions are located in '.claude/skills/sp/review.md'.
-1. Read that file immediately using 'read_file'.
+Your core instructions are located in `.claude/skills/sp/review.md`.
+1. Read that file immediately using `read_file`.
 2. Follow its instructions exactly.
-3. You have access to standard development tools.
+3. You will use `gh pr diff` and `gh pr review` to analyze and comment on code.
