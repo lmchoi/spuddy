@@ -108,6 +108,14 @@ export default function SettingsScreen() {
               <Text style={styles.dataRowText}>Import from Strong</Text>
               <Text style={styles.dataRowChevron}>›</Text>
             </Pressable>
+            <View style={styles.dataSeparator} />
+            <Pressable
+              style={({ pressed }) => [styles.dataRow, pressed && styles.dataRowPressed]}
+              onPress={() => router.push('/notes-import')}
+            >
+              <Text style={styles.dataRowText}>Paste workout notes</Text>
+              <Text style={styles.dataRowChevron}>›</Text>
+            </Pressable>
           </View>
         </View>
       </ScrollView>
