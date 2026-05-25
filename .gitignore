@@ -45,3 +45,6 @@ design_handoffs/
 
 # worktrees (managed by /sp:start and /sp:done)
 .claude/worktrees/
+
+# coverage
+coverage/
