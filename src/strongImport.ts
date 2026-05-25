@@ -80,7 +80,7 @@ export async function importFromStrong(
           .map(exercise => {
             const lastSet = exercise.sets[exercise.sets.length - 1];
             const targets: Target[] = exercise.sets.map(() => ({
-              reps: lastSet.reps,
+              reps: lastSet.reps ?? 0,
               weight: lastSet.weight,
             }));
             return { name: exercise.name, targets };

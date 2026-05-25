@@ -49,9 +49,9 @@ function exerciseSummary(entry: ExerciseEntry): string {
   const weightStr = sameWeight ? formatWeight(weights[0]) : '';
 
   if (sameReps && sameWeight) {
-    return `${working.length} × ${reps[0]} @ ${weightStr}`;
+    return `${working.length} × ${reps[0] ?? '–'} @ ${weightStr}`;
   }
-  const repsStr = reps.join('·');
+  const repsStr = reps.map(r => r ?? '–').join('·');
   return sameWeight ? `${repsStr} @ ${weightStr}` : repsStr;
 }
 
@@ -83,7 +83,7 @@ function ExercisePreviewRow({ entry }: { entry: ExerciseEntry }) {
           <View style={styles.chipRow}>
             {working.map((s, i) => (
               <View key={i} style={styles.chip}>
-                <Text style={styles.chipText}>{s.reps} × {formatWeight(s.weight)}</Text>
+                <Text style={styles.chipText}>{s.reps ?? '–'} × {formatWeight(s.weight)}</Text>
               </View>
             ))}
             {entry.targets[0] && (

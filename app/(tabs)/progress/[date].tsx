@@ -110,7 +110,7 @@ function ExerciseRow({ entry }: { entry: ExerciseEntry }) {
   const statusBg = STATUS_BG[status];
   const glyph = STATUS_GLYPH[status];
 
-  const topReps = working.length ? Math.max(...working.map(s => s.reps)) : 0;
+  const topReps = working.length ? Math.max(...working.map(s => s.reps ?? 0)) : 0;
   const topWeight = working.length ? Math.max(...working.map(s => s.weight)) : 0;
 
   return (
@@ -147,7 +147,7 @@ function ExerciseRow({ entry }: { entry: ExerciseEntry }) {
                 <View key={i} style={styles.setGridRow}>
                   <Text style={styles.setNum}>{i + 1}</Text>
                   <Text style={styles.setActual}>
-                    {s.reps} × {formatWeight(s.weight)}
+                    {s.reps ?? '–'} × {formatWeight(s.weight)}
                   </Text>
                   <Text style={styles.setTargetCell}>
                     {entry.targets[i] ? formatTarget(entry.targets[i]) : '—'}

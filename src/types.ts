@@ -1,5 +1,5 @@
 export type WorkingSet = {
-  reps: number;
+  reps: number | null;
   repsLeft?: number; // unilateral left side
   weight: number;    // kg, 0 = bodyweight
   isWarmup: boolean;
@@ -17,6 +17,7 @@ export type Target = {
 };
 
 export type ExerciseEntry = {
+  id?: string;
   name: string;
   sets: WorkingSet[];
   targets: Target[];
