@@ -13,7 +13,7 @@
     ]
   },
   "env": {
-    "PATH": "/Users/mandy/Library/Android/sdk/platform-tools:$PATH"
+    "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/mandy/Library/Android/sdk/platform-tools"
   },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
@@ -31,7 +31,8 @@
       "Bash(npx eslint *)",
       "Bash(~/Library/Android/sdk/platform-tools/adb devices)",
       "Bash(~/Library/Android/sdk/platform-tools/adb exec-out screencap *)",
-      "Bash(~/Library/Android/sdk/platform-tools/adb logcat *)"
+      "Bash(~/Library/Android/sdk/platform-tools/adb logcat *)",
+      "Bash(git worktree list)"
     ]
   }
 }
