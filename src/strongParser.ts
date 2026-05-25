@@ -14,7 +14,7 @@ export function parseStrongCsv(text: string): ImportedHistory {
     date: cols.indexOf('Date'),
     workoutName: cols.indexOf('Workout Name'),
     exerciseName: cols.indexOf('Exercise Name'),
-    weight: cols.indexOf('Weight (kg)'),
+    weight: findCol(cols, ['Weight (kg)', 'Weight (lbs)', 'Weight']),
     reps: cols.indexOf('Reps'),
     rpe: cols.indexOf('RPE'),
     distance: cols.indexOf('Distance (meters)'),
@@ -109,6 +109,14 @@ type Row = {
   distance?: number;
   seconds?: number;
 };
+
+function findCol(cols: string[], candidates: string[]): number {
+  for (const candidate of candidates) {
+    const idx = cols.indexOf(candidate);
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
 
 function stripEquipmentSuffix(name: string): { name: string; hint: string | null } {
   const match = name.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
