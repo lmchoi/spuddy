@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { C } from './palette';
 
 type RouteKey = 'progress' | 'add' | 'settings';
@@ -37,6 +38,7 @@ const LABELS: Record<RouteKey, string> = {
 
 export function TabBarPill({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   return (
     <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 12) }]}>
@@ -62,7 +64,7 @@ export function TabBarPill({ state, navigation }: TabBarProps) {
             return (
               <TouchableOpacity
                 key={route.key}
-                onPress={onPress}
+                onPress={() => router.push('/log-session')}
                 accessibilityRole="button"
                 accessibilityLabel="Add workout"
                 accessibilityState={{ selected: isFocused }}

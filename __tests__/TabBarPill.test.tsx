@@ -1,11 +1,16 @@
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react-native';
 import { TabBarPill } from '../components/spuddy/TabBarPill';
+
+const mockPush = jest.fn();
 
 jest.mock('expo-symbols', () => ({
   SymbolView: () => null,
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockPush }),
 }));
 
 const ROUTES = [
@@ -20,6 +25,8 @@ function makeNav() {
     navigate: jest.fn(),
   };
 }
+
+beforeEach(() => jest.clearAllMocks());
 
 describe('TabBarPill', () => {
   it('renders all three tab buttons', () => {
@@ -39,6 +46,14 @@ describe('TabBarPill', () => {
       render(<TabBarPill state={{ index: 0, routes: [...ROUTES] }} navigation={makeNav()} />);
       expect(screen.getByLabelText('Add workout')).toHaveAccessibilityState({ selected: false });
     });
+  });
+
+  it('pressing + pushes /log-session instead of navigating the tab', () => {
+    const nav = makeNav();
+    render(<TabBarPill state={{ index: 0, routes: [...ROUTES] }} navigation={nav} />);
+    fireEvent.press(screen.getByLabelText('Add workout'));
+    expect(mockPush).toHaveBeenCalledWith('/log-session');
+    expect(nav.navigate).not.toHaveBeenCalled();
   });
 
   it('renders nothing for an unknown route and does not crash', () => {

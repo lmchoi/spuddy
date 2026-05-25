@@ -12,7 +12,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';
 import { getDB } from '@/src/db';
-import { getProgramDay } from '@/src/programStorage';
+import { getProgramDay, getPrograms } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
 import {
   initSession,
@@ -336,7 +336,15 @@ export default function LogSession() {
     async function load() {
       try {
         const db = await getDB();
-        const day = await getProgramDay(db, programName ?? '', Number(dayIndex ?? 0));
+        let resolvedName = programName;
+        let resolvedDayIndex = Number(dayIndex ?? 0);
+        if (!resolvedName) {
+          const programs = await getPrograms(db);
+          if (programs.length === 0) { setState({ status: 'empty' }); return; }
+          resolvedName = programs[0].name;
+          resolvedDayIndex = programs[0].activeDayIndex;
+        }
+        const day = await getProgramDay(db, resolvedName, resolvedDayIndex);
         if (!day) { setState({ status: 'empty' }); return; }
         const session = initSession(day);
         const input = inputFromTarget(day, session);
