@@ -8,10 +8,18 @@ import { importFromStrong } from '@/src/strongImport';
 import type { ImportedWorkoutGroup } from '@/src/types';
 import { C } from '@/components/spuddy/palette';
 
+const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
+
+function isRecentWorkout(lastUsed: string): boolean {
+  const diff = Date.now() - new Date(lastUsed).getTime();
+  return diff <= SIXTY_DAYS_MS;
+}
+
 export default function StrongImportScreen() {
   const insets = useSafeAreaInsets();
   const [workoutGroups, setWorkoutGroups] = useState<ImportedWorkoutGroup[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [unit, setUnit] = useState<'kg' | 'lbs'>('kg');
   const [csvText, setCsvText] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
 
@@ -27,7 +35,11 @@ export default function StrongImportScreen() {
       const history = parseStrongCsv(text);
       setCsvText(text);
       setWorkoutGroups(history.workoutGroups);
-      const preselected = new Set(history.workoutGroups.map(g => g.name));
+      const preselected = new Set(
+        history.workoutGroups
+          .filter(g => isRecentWorkout(g.lastUsed))
+          .map(g => g.name)
+      );
       setSelected(preselected);
     } catch {
       Alert.alert('Could not read file', 'Please select a valid Strong CSV export.');
@@ -48,7 +60,7 @@ export default function StrongImportScreen() {
     setImporting(true);
     try {
       const db = await getDB();
-      const result = await importFromStrong(db, csvText, Array.from(selected), 'kg');
+      const result = await importFromStrong(db, csvText, Array.from(selected), unit);
       if (result.success) {
         Alert.alert('Imported!', `${result.sessionsImported} sessions saved.`);
       } else {
@@ -64,7 +76,25 @@ export default function StrongImportScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.screenTitle}>Import from Strong</Text>
+        <View style={styles.header}>
+          <Text style={styles.screenTitle}>Import from Strong</Text>
+          {workoutGroups.length > 0 && (
+            <View style={styles.unitPill}>
+              <Pressable
+                style={[styles.unitOption, unit === 'kg' && styles.unitOptionActive]}
+                onPress={() => setUnit('kg')}
+              >
+                <Text style={[styles.unitOptionText, unit === 'kg' && styles.unitOptionTextActive]}>kg</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.unitOption, unit === 'lbs' && styles.unitOptionActive]}
+                onPress={() => setUnit('lbs')}
+              >
+                <Text style={[styles.unitOptionText, unit === 'lbs' && styles.unitOptionTextActive]}>lbs</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
 
         {workoutGroups.length === 0 ? (
           <Pressable
@@ -125,12 +155,41 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     gap: 20,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+  },
   screenTitle: {
     fontSize: 28,
     fontWeight: '700',
     color: C.text,
     letterSpacing: -0.5,
-    paddingTop: 8,
+  },
+  unitPill: {
+    flexDirection: 'row',
+    backgroundColor: C.card,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: C.border,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  unitOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  unitOptionActive: {
+    backgroundColor: C.hitBg,
+  },
+  unitOptionText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: C.sub,
+  },
+  unitOptionTextActive: {
+    color: C.hit,
   },
   pickButton: {
     backgroundColor: C.card,
