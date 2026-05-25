@@ -2,7 +2,6 @@ import { useState, useCallback, useRef } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { parseStrongCsv } from '@/src/strongParser';
 import { importFromStrong } from '@/src/strongImport';
@@ -17,7 +16,6 @@ function isRecentWorkout(lastUsed: string): boolean {
 }
 
 export default function StrongImportScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [workoutGroups, setWorkoutGroups] = useState<ImportedWorkoutGroup[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -88,7 +86,7 @@ export default function StrongImportScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.screenTitle}>Import from Strong</Text>
