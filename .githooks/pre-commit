@@ -17,7 +17,7 @@ source_files=$(echo "$staged" | grep -E '\.(ts|tsx)$' \
   | grep -vE '^(types/|constants/)' \
   || true)
 
-test_files=$(echo "$staged" | grep -E '(\.test\.|\.spec\.)(ts|tsx)$\|/__tests__/' || true)
+test_files=$(echo "$staged" | grep -E '(\.test\.|\.spec\.)(ts|tsx)$|/__tests__/' || true)
 
 if [ -n "$source_files" ] && [ -z "$test_files" ]; then
   echo ""
