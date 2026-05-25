@@ -58,7 +58,8 @@
     "format": "prettier --write .",
     "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
     "check": "npm run typecheck && npm test -- --watchAll=false",
-    "check:full": "npm run typecheck && npm run lint && npm test -- --watchAll=false"
+    "check:full": "npm run typecheck && npm run lint && npm test -- --watchAll=false",
+    "clear:android": "~/Library/Android/sdk/platform-tools/adb shell pm clear host.exp.exponent"
   },
   "jest": {
     "preset": "jest-expo",
