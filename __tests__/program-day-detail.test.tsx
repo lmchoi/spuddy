@@ -1,12 +1,28 @@
-import { render, screen, fireEvent } from '@testing-library/react-native';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import ProgramDayDetailScreen from '../app/(tabs)/settings/[programName]/[dayIndex]';
 
+const mockGetProgramDay = jest.fn();
+const mockUpdateProgramDay = jest.fn();
+
+jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
+jest.mock('@/src/programStorage', () => ({
+  getProgramDay: (...args: unknown[]) => mockGetProgramDay(...args),
+  updateProgramDay: (...args: unknown[]) => mockUpdateProgramDay(...args),
+}));
 jest.mock('expo-router', () => ({
+  useFocusEffect: (cb: () => void) => { cb(); },
+  useLocalSearchParams: jest.fn().mockReturnValue({ programName: 'PPL', dayIndex: '0' }),
   useRouter: () => ({ back: jest.fn() }),
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockGetProgramDay.mockResolvedValue(null);
+  mockUpdateProgramDay.mockResolvedValue(undefined);
+});
 
 describe('ProgramDayDetail screen', () => {
   it('shows the sample day name', () => {
@@ -88,5 +104,43 @@ describe('ProgramDayDetail screen', () => {
     render(<ProgramDayDetailScreen />);
     fireEvent.press(screen.getByText('+ Add exercise'));
     expect(screen.getByText('New exercise')).toBeTruthy();
+  });
+});
+
+describe('real data loading', () => {
+  it('shows day name loaded from DB', async () => {
+    mockGetProgramDay.mockResolvedValue({
+      name: 'Leg Day',
+      exercises: [{ name: 'Squat', targets: [{ reps: 5, weight: 100 }] }],
+    });
+    render(<ProgramDayDetailScreen />);
+    await waitFor(() => expect(screen.getByText('Leg Day')).toBeTruthy());
+  });
+
+  it('shows exercises loaded from DB', async () => {
+    mockGetProgramDay.mockResolvedValue({
+      name: 'Leg Day',
+      exercises: [
+        { name: 'Squat', targets: [{ reps: 5, weight: 100 }] },
+        { name: 'Leg Press', targets: [] },
+      ],
+    });
+    render(<ProgramDayDetailScreen />);
+    await waitFor(() => {
+      expect(screen.getByText('Squat')).toBeTruthy();
+      expect(screen.getByText('Leg Press')).toBeTruthy();
+    });
+  });
+
+  it('calls updateProgramDay when a set is added', async () => {
+    mockGetProgramDay.mockResolvedValue({
+      name: 'Leg Day',
+      exercises: [{ name: 'Squat', targets: [{ reps: 5, weight: 100 }] }],
+    });
+    render(<ProgramDayDetailScreen />);
+    await waitFor(() => expect(screen.getByText('Squat')).toBeTruthy());
+    fireEvent.press(screen.getAllByText('▸')[0]);
+    fireEvent.press(screen.getByText('+ Set'));
+    await waitFor(() => expect(mockUpdateProgramDay).toHaveBeenCalled());
   });
 });
