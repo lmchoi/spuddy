@@ -1,0 +1,89 @@
+import type { ProgramDay, Session, Target } from '../types';
+
+export type LoggedSet = { reps: number; weight: number };
+
+export type SessionState = {
+  loggedSets: LoggedSet[][];
+  targetCounts: number[];
+  currentExerciseIdx: number;
+  isResting: boolean;
+  startedAt: number;
+};
+
+export function initSession(day: ProgramDay): SessionState {
+  return {
+    loggedSets: day.exercises.map(() => []),
+    targetCounts: day.exercises.map(ex => ex.targets.length),
+    currentExerciseIdx: 0,
+    isResting: false,
+    startedAt: Date.now(),
+  };
+}
+
+export function logSet(
+  state: SessionState,
+  exIdx: number,
+  reps: number,
+  weight: number
+): SessionState {
+  const newLoggedSets = state.loggedSets.map((sets, i) =>
+    i === exIdx ? [...sets, { reps, weight }] : sets
+  );
+  const logged = newLoggedSets[exIdx].length;
+  const required = state.targetCounts[exIdx];
+  const isResting = logged < required;
+  return { ...state, loggedSets: newLoggedSets, isResting };
+}
+
+export function skipRest(state: SessionState): SessionState {
+  return { ...state, isResting: false };
+}
+
+export function jumpToExercise(state: SessionState, idx: number): SessionState {
+  return { ...state, currentExerciseIdx: idx, isResting: false };
+}
+
+export function isExerciseDone(
+  state: SessionState,
+  day: ProgramDay,
+  exIdx: number
+): boolean {
+  return state.loggedSets[exIdx].length >= day.exercises[exIdx].targets.length;
+}
+
+export function isSessionDone(state: SessionState, day: ProgramDay): boolean {
+  return day.exercises.every((_, i) => isExerciseDone(state, day, i));
+}
+
+export function getActiveTarget(
+  state: SessionState,
+  day: ProgramDay,
+  exIdx: number
+): Target {
+  const logged = state.loggedSets[exIdx].length;
+  const targets = day.exercises[exIdx].targets;
+  const raw = targets[Math.min(logged, targets.length - 1)];
+  if (!raw.reps) return { ...raw, reps: 10 };
+  return raw;
+}
+
+export function buildSavePayload(
+  state: SessionState,
+  day: ProgramDay,
+  date: string
+): Session {
+  const exercises = day.exercises
+    .map((ex, i) => ({
+      name: ex.name,
+      sets: state.loggedSets[i].map(s => ({
+        reps: s.reps,
+        weight: s.weight,
+        isWarmup: false,
+        isBodyweight: s.weight === 0,
+      })),
+      targets: ex.targets,
+    }))
+    .filter(ex => ex.sets.length > 0);
+
+  return { date, exercises };
+}
