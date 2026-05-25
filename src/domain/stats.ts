@@ -18,8 +18,8 @@ export function computeStats(session: Session): SessionStats {
     for (let i = 0; i < workingSets.length; i++) {
       const s = workingSets[i];
       working++;
-      totalReps += s.reps;
-      if (!s.isBodyweight) volumeKg += s.reps * s.weight;
+      totalReps += s.reps ?? 0;
+      if (!s.isBodyweight) volumeKg += (s.reps ?? 0) * s.weight;
       const st = getSetStatus(s, ex.targets[i]);
       if (st === 'hit') hits++;
       else if (st === 'exceeded') exceeded++;

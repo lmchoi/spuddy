@@ -159,6 +159,31 @@ describe('SQLite storage', () => {
     });
   });
 
+  describe('schema step 0 — nullable reps and optional id', () => {
+    it('sets with reps: null round-trip through storage', async () => {
+      const session: Session = {
+        date: '2026-05-25',
+        exercises: [{
+          name: 'Leg press',
+          sets: [{ reps: null, weight: 68.3, isWarmup: false, isBodyweight: false }],
+          targets: [],
+        }],
+      };
+      await saveSession(db, session);
+      const loaded = await getSessionByDate(db, '2026-05-25');
+      expect(loaded?.exercises[0].sets[0].reps).toBeNull();
+    });
+
+    it('exercises loaded from old data without id field have id undefined', async () => {
+      await db.run(
+        `INSERT INTO sessions (date, exercise_name, sets_json, targets_json) VALUES (?, ?, ?, ?)`,
+        ['2026-05-26', 'Bench', '[{"reps":5,"weight":60,"isWarmup":false,"isBodyweight":false}]', '[]']
+      );
+      const session = await getSessionByDate(db, '2026-05-26');
+      expect(session?.exercises[0].id).toBeUndefined();
+    });
+  });
+
   describe('deduplication safeguard', () => {
     it('skips duplicate exercise entries for the same date/name', async () => {
       // Manually insert duplicate rows to simulate legacy bad data

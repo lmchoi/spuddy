@@ -5,10 +5,10 @@ export type OnTargetStatus = 'hit' | 'below' | 'exceeded' | 'no-target';
 export function getSetStatus(set: WorkingSet, target: Target | undefined): OnTargetStatus {
   if (!target) return 'no-target';
   const minReps = target.minReps ?? target.reps;
-  const repsOk = set.reps >= minReps;
+  const repsOk = set.reps != null && set.reps >= minReps;
   const weightOk = target.weight === undefined || set.weight >= target.weight;
   if (!repsOk || !weightOk) return 'below';
-  if (set.reps > target.reps || (target.weight !== undefined && set.weight > target.weight))
+  if ((set.reps != null && set.reps > target.reps) || (target.weight !== undefined && set.weight > target.weight))
     return 'exceeded';
   return 'hit';
 }
