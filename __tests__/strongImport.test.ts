@@ -139,4 +139,65 @@ describe('importFromStrong', () => {
       }
     });
   });
+
+  describe('edge cases', () => {
+    it('merges multiple sessions on the same date into one session', async () => {
+      // Two different "workouts" (IDs 1 and 2) on the same date
+      const mergedCsv = [
+        SC_HEADER,
+        '"1";"2026-05-10 07:00:00";"Morning Session";"1800";"Squat";"1";"100";"5";"";"";"";"";""',
+        '"2";"2026-05-10 17:00:00";"Evening Session";"1800";"Bench Press";"1";"70";"5";"";"";"";"";""',
+      ].join('\n');
+
+      await importFromStrong(db, mergedCsv, [], 'kg');
+      const sessions = await getAllSessions(db);
+      expect(sessions).toHaveLength(1);
+      expect(sessions[0].date).toBe('2026-05-10');
+      expect(sessions[0].exercises).toHaveLength(2);
+      expect(sessions[0].exercises.map(e => e.name)).toContain('Squat');
+      expect(sessions[0].exercises.map(e => e.name)).toContain('Bench Press');
+    });
+
+    it('merges sets of the same exercise if it appears in multiple sessions on same date', async () => {
+      const mergedCsv = [
+        SC_HEADER,
+        '"1";"2026-05-10 07:00:00";"Morning";"1800";"Squat";"1";"100";"5";"";"";"";"";""',
+        '"2";"2026-05-10 17:00:00";"Evening";"1800";"Squat";"1";"110";"5";"";"";"";"";""',
+      ].join('\n');
+
+      await importFromStrong(db, mergedCsv, [], 'kg');
+      const sessions = await getAllSessions(db);
+      expect(sessions).toHaveLength(1);
+      const squat = sessions[0].exercises[0];
+      expect(squat.sets).toHaveLength(2);
+      expect(squat.sets[0].weight).toBe(100);
+      expect(squat.sets[1].weight).toBe(110);
+    });
+
+    it('returns error result if db fails', async () => {
+      const brokenDb = {
+        run: () => Promise.reject(new Error('DB failure')),
+        all: () => Promise.resolve([]),
+      } as unknown as DB;
+
+      const result = await importFromStrong(brokenDb, BASIC_CSV, [], 'kg');
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe('DB failure');
+      }
+    });
+
+    it('returns generic error if catch receives non-Error object', async () => {
+      const brokenDb = {
+        run: () => { throw 'string error'; },
+        all: () => Promise.resolve([]),
+      } as unknown as DB;
+
+      const result = await importFromStrong(brokenDb, BASIC_CSV, [], 'kg');
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe('Import failed.');
+      }
+    });
+  });
 });

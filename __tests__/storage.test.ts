@@ -6,6 +6,7 @@ import {
   getAllSessions,
   getSessionsForExercise,
   getUniqueExerciseNames,
+  getSessionByDate,
   type DB,
 } from '../src/storage';
 import type { Session } from '../src/types';
@@ -142,5 +143,42 @@ describe('SQLite storage', () => {
     expect(set.rpe).toBe(7);
     expect(set.distanceMeters).toBe(1000);
     expect(set.durationSeconds).toBe(300);
+  });
+
+  describe('getSessionByDate', () => {
+    it('returns a session for a specific date', async () => {
+      await saveSession(db, SESSION_A);
+      const session = await getSessionByDate(db, '2026-05-01');
+      expect(session).not.toBeNull();
+      expect(session?.date).toBe('2026-05-01');
+    });
+
+    it('returns null if no session exists for date', async () => {
+      const session = await getSessionByDate(db, '2999-01-01');
+      expect(session).toBeNull();
+    });
+  });
+
+  describe('deduplication safeguard', () => {
+    it('skips duplicate exercise entries for the same date/name', async () => {
+      // Manually insert duplicate rows to simulate legacy bad data
+      await db.run(
+        `INSERT INTO sessions (date, exercise_name, sets_json, targets_json)
+         VALUES (?, ?, ?, ?)`,
+        ['2026-06-01', 'Bench', '[]', '[]']
+      );
+      await db.run(
+        `INSERT INTO sessions (date, exercise_name, sets_json, targets_json)
+         VALUES (?, ?, ?, ?)`,
+        ['2026-06-01', 'Bench', '[{"reps":10,"weight":60}]', '[]']
+      );
+
+      const sessions = await getAllSessions(db);
+      expect(sessions).toHaveLength(1);
+      expect(sessions[0].exercises).toHaveLength(1);
+      // We pick the first row found for a given exercise on a given date.
+      // This is a simple safeguard against duplicate entries from legacy bugs.
+      expect(sessions[0].exercises[0].sets).toHaveLength(0);
+    });
   });
 });

@@ -153,9 +153,40 @@ describe('parseProgramFromBackup', () => {
     expect('error' in result).toBe(true);
   });
 
+  it('returns error if programs is empty', () => {
+    const result = parseProgramFromBackup({ programs: [] });
+    expect(result).toEqual({ error: 'No programs found in backup' });
+  });
+
+  it('returns error if no valid programs found', () => {
+    const result = parseProgramFromBackup({
+      programs: [
+        { name: 'Bad', planner: { weeks: [] } }
+      ]
+    });
+    expect(result).toEqual({ error: 'No valid programs found in backup' });
+  });
+
+  it('returns error if weeks missing', () => {
+    // @ts-ignore
+    const result = parseProgramFromBackup({ programs: [{ name: 'Test', planner: {} }] });
+    expect(result).toEqual({ error: 'No valid programs found in backup' });
+  });
+
+  it('returns error if days missing', () => {
+    const result = parseProgramFromBackup({
+      programs: [{ name: 'Test', planner: { weeks: [{ days: null }] } }]
+    });
+    expect(result).toEqual({ error: 'No valid programs found in backup' });
+  });
+
+  it('returns error for empty backup', () => {
+    const result = parseProgramFromBackup({});
+    expect(result).toEqual({ error: 'No programs found in backup' });
+  });
+
   it('does not throw for malformed input', () => {
     expect(() => parseProgramFromBackup(null)).not.toThrow();
-    expect(() => parseProgramFromBackup({})).not.toThrow();
     expect(() => parseProgramFromBackup('string')).not.toThrow();
   });
 });
