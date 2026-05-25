@@ -88,6 +88,19 @@ export async function getProgramDay(
   return { name: dayRows[0].name, exercises };
 }
 
+export async function updateProgramDay(
+  db: DB,
+  programName: string,
+  dayIndex: number,
+  day: ProgramDay
+): Promise<void> {
+  const programs = await getPrograms(db);
+  const target = programs.find(p => p.name === programName);
+  if (!target) return;
+  target.days[dayIndex] = day;
+  await savePrograms(db, programs);
+}
+
 export async function updateActiveDayIndex(
   db: DB,
   programName: string,

@@ -1,6 +1,6 @@
 import BetterSqlite from 'better-sqlite3';
 import { initSchema, makeTestDB, type DB } from '../src/storage';
-import { savePrograms, getPrograms, getProgramDay, updateActiveDayIndex } from '../src/programStorage';
+import { savePrograms, getPrograms, getProgramDay, updateActiveDayIndex, updateProgramDay } from '../src/programStorage';
 import type { Program } from '../src/types';
 
 function makeInMemoryDB(): DB {
@@ -138,5 +138,34 @@ describe('program storage', () => {
     const programs = await getPrograms(db);
     expect(programs[0].activeDayIndex).toBe(1);
     expect(programs[1].activeDayIndex).toBe(0); // v2 unchanged
+  });
+
+  it('updateProgramDay replaces the day and persists via round-trip', async () => {
+    await savePrograms(db, [PROGRAM_A]);
+    const updatedDay = {
+      name: 'Day 1 Modified',
+      exercises: [{ name: 'Front Squat', targets: [{ reps: 3, weight: 90 }] }],
+    };
+    await updateProgramDay(db, 'v1', 0, updatedDay);
+    const day = await getProgramDay(db, 'v1', 0);
+    expect(day!.name).toBe('Day 1 Modified');
+    expect(day!.exercises[0].name).toBe('Front Squat');
+    expect(day!.exercises[0].targets[0]).toMatchObject({ reps: 3, weight: 90 });
+  });
+
+  it('updateProgramDay does not mutate other days in the same program', async () => {
+    await savePrograms(db, [PROGRAM_A]);
+    const updatedDay = { name: 'Changed', exercises: [] };
+    await updateProgramDay(db, 'v1', 0, updatedDay);
+    const day1 = await getProgramDay(db, 'v1', 1);
+    expect(day1!.name).toBe('Day 2'); // unchanged
+  });
+
+  it('updateProgramDay does not affect other programs', async () => {
+    await savePrograms(db, [PROGRAM_A, PROGRAM_B]);
+    const updatedDay = { name: 'Changed', exercises: [] };
+    await updateProgramDay(db, 'v1', 0, updatedDay);
+    const b = await getProgramDay(db, 'v2', 0);
+    expect(b!.name).toBe('Full Body'); // unchanged
   });
 });

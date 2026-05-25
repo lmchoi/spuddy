@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Pressable, ScrollView, StatusBar, StyleSheet, Text,
   TextInput, View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ProgramDay, ProgramExercise, Target } from '@/src/types';
 import { summaryLine } from '@/src/domain/programDay';
+import { getDB } from '@/src/db';
+import { getProgramDay, updateProgramDay } from '@/src/programStorage';
 import { C } from '@/components/spuddy/palette';
 
-// ─── Sample data (swapped for real DB load in commit 4) ──────────────────────
+// ─── Sample shown until real DB data arrives ─────────────────────────────────
 
 const SAMPLE_DAY: ProgramDay = {
   name: 'Push Day',
@@ -57,6 +59,7 @@ type EditingCell = {
 export default function ProgramDayDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { programName, dayIndex } = useLocalSearchParams<{ programName: string; dayIndex: string }>();
 
   const [day, setDay] = useState<ProgramDay>(SAMPLE_DAY);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
@@ -64,54 +67,82 @@ export default function ProgramDayDetailScreen() {
   const [editingExName, setEditingExName] = useState<number | null>(null);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
 
+  const name = decodeURIComponent(programName ?? '');
+  const idx = parseInt(dayIndex ?? '0', 10);
+
+  useFocusEffect(
+    useCallback(() => {
+      getDB()
+        .then(db => getProgramDay(db, name, idx))
+        .then(d => { if (d) setDay(d); })
+        .catch(console.error);
+    }, [name, idx])
+  );
+
+  async function persist(next: ProgramDay) {
+    setDay(next);
+    try {
+      const db = await getDB();
+      await updateProgramDay(db, name, idx, next);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   function updateExercise(exIdx: number, updates: Partial<ProgramExercise>) {
-    setDay(d => ({
-      ...d,
-      exercises: d.exercises.map((ex, i) => i === exIdx ? { ...ex, ...updates } : ex),
-    }));
+    const next: ProgramDay = {
+      ...day,
+      exercises: day.exercises.map((ex, i) => i === exIdx ? { ...ex, ...updates } : ex),
+    };
+    persist(next);
   }
 
   function updateTarget(exIdx: number, setIdx: number, updates: Partial<Target>) {
-    setDay(d => ({
-      ...d,
-      exercises: d.exercises.map((ex, i) => i !== exIdx ? ex : {
+    const next: ProgramDay = {
+      ...day,
+      exercises: day.exercises.map((ex, i) => i !== exIdx ? ex : {
         ...ex,
         targets: ex.targets.map((t, j) => j !== setIdx ? t : { ...t, ...updates }),
       }),
-    }));
+    };
+    persist(next);
   }
 
   function addSet(exIdx: number) {
-    setDay(d => ({
-      ...d,
-      exercises: d.exercises.map((ex, i) => {
+    const next: ProgramDay = {
+      ...day,
+      exercises: day.exercises.map((ex, i) => {
         if (i !== exIdx) return ex;
         const last = ex.targets[ex.targets.length - 1];
         return { ...ex, targets: [...ex.targets, last ? { ...last } : { reps: 8 }] };
       }),
-    }));
+    };
+    persist(next);
   }
 
   function removeSet(exIdx: number, setIdx: number) {
-    setDay(d => ({
-      ...d,
-      exercises: d.exercises.map((ex, i) => i !== exIdx ? ex : {
+    const next: ProgramDay = {
+      ...day,
+      exercises: day.exercises.map((ex, i) => i !== exIdx ? ex : {
         ...ex,
         targets: ex.targets.filter((_, j) => j !== setIdx),
       }),
-    }));
+    };
+    persist(next);
   }
 
   function deleteExercise(exIdx: number) {
-    setDay(d => ({ ...d, exercises: d.exercises.filter((_, i) => i !== exIdx) }));
+    const next: ProgramDay = { ...day, exercises: day.exercises.filter((_, i) => i !== exIdx) };
+    persist(next);
     setExpandedIdx(null);
   }
 
   function addExercise() {
-    setDay(d => ({
-      ...d,
-      exercises: [...d.exercises, { name: 'New exercise', targets: [{ reps: 8 }] }],
-    }));
+    const next: ProgramDay = {
+      ...day,
+      exercises: [...day.exercises, { name: 'New exercise', targets: [{ reps: 8 }] }],
+    };
+    persist(next);
   }
 
   return (
