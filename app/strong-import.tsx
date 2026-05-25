@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { parseStrongCsv } from '@/src/strongParser';
@@ -17,18 +18,22 @@ function isRecentWorkout(lastUsed: string): boolean {
 
 export default function StrongImportScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [workoutGroups, setWorkoutGroups] = useState<ImportedWorkoutGroup[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [unit, setUnit] = useState<'kg' | 'lbs'>('kg');
   const [csvText, setCsvText] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
 
-  async function handlePickFile() {
+  async function pickFile() {
     const result = await DocumentPicker.getDocumentAsync({
       type: ['text/csv', '*/*'],
       copyToCacheDirectory: true,
     });
-    if (result.canceled) return;
+    if (result.canceled) {
+      router.back();
+      return;
+    }
 
     try {
       const text = await fetch(result.assets[0].uri).then(r => r.text());
@@ -43,8 +48,17 @@ export default function StrongImportScreen() {
       setSelected(preselected);
     } catch {
       Alert.alert('Could not read file', 'Please select a valid Strong CSV export.');
+      router.back();
     }
   }
+
+  const hasFiredRef = useRef(false);
+  useFocusEffect(useCallback(() => {
+    if (!hasFiredRef.current) {
+      hasFiredRef.current = true;
+      pickFile();
+    }
+  }, []));
 
   function toggleWorkout(name: string) {
     setSelected(prev => {
@@ -96,14 +110,7 @@ export default function StrongImportScreen() {
           )}
         </View>
 
-        {workoutGroups.length === 0 ? (
-          <Pressable
-            style={({ pressed }) => [styles.pickButton, pressed && styles.pressed]}
-            onPress={handlePickFile}
-          >
-            <Text style={styles.pickButtonText}>Select Strong CSV</Text>
-          </Pressable>
-        ) : (
+        {workoutGroups.length > 0 && (
           <>
             <View style={styles.list}>
               {workoutGroups.map(group => (
@@ -190,19 +197,6 @@ const styles = StyleSheet.create({
   },
   unitOptionTextActive: {
     color: C.hit,
-  },
-  pickButton: {
-    backgroundColor: C.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: C.border,
-    padding: 14,
-    alignItems: 'center',
-  } as object,
-  pickButtonText: {
-    color: C.hit,
-    fontWeight: '600',
-    fontSize: 16,
   },
   list: {
     backgroundColor: C.card,
