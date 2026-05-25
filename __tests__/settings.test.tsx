@@ -1,6 +1,5 @@
 import { act, render, screen, fireEvent } from '@testing-library/react-native';
 import SettingsScreen from '../app/(tabs)/settings';
-import { C } from '../components/spuddy/palette';
 
 const mockGetPrograms = jest.fn();
 const mockImportProgramFromJson = jest.fn();
