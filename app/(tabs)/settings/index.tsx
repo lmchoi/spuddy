@@ -59,6 +59,14 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.screenTitle}>Settings</Text>
 
+        {/* DEV — remove before ship */}
+        <Pressable
+          style={styles.devBtn}
+          onPress={() => router.push('/session-mockup')}
+        >
+          <Text style={styles.devBtnText}>🥔 Session logging mockup</Text>
+        </Pressable>
+
         {programs.length === 0 ? (
           <Text style={styles.empty}>No programs loaded</Text>
         ) : (
@@ -189,6 +197,19 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 8,
+  },
+  devBtn: {
+    backgroundColor: C.card2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: C.borderHi,
+    padding: 12,
+    alignItems: 'center',
+  },
+  devBtnText: {
+    color: C.sub,
+    fontWeight: '600',
+    fontSize: 14,
   },
   sectionLabel: {
     fontSize: 13,
