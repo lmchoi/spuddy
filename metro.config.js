@@ -15,4 +15,5 @@ config.resolver.blockList = [
 module.exports = withStorybook(withNativewind(config), {
   enabled: process.env.EXPO_PUBLIC_STORYBOOK === '1',
   configPath: './.storybook',
+  liteMode: true,
 });
