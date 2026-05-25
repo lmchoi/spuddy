@@ -4,6 +4,9 @@ export type WorkingSet = {
   weight: number;    // kg, 0 = bodyweight
   isWarmup: boolean;
   isBodyweight: boolean;
+  rpe?: number;
+  distanceMeters?: number;
+  durationSeconds?: number;
 };
 
 export type Target = {
