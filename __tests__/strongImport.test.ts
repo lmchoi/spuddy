@@ -120,5 +120,23 @@ describe('importFromStrong', () => {
       const result = await importFromStrong(db, 'not a csv at all !!!', ['Push'], 'kg');
       expect(result.success).toBe(false);
     });
+
+    it('does not crash when a selected workout has an exercise with no sets', async () => {
+      // A CSV where every row for one exercise is a Rest Timer — parser filters them all,
+      // leaving an exercise entry with sets: []. Program inference must not crash.
+      const SC_HEADER = '"Workout #";"Date";"Workout Name";"Duration (sec)";"Exercise Name";"Set Order";"Weight (kg)";"Reps";"RPE";"Distance (meters)";"Seconds";"Notes";"Workout Notes"';
+      const csv = [
+        SC_HEADER,
+        '"1";"2026-05-20 07:00:00";"Push";"1800";"Bench Press (Barbell)";"1";"80";"5";"";"";"";"";"" ',
+        '"1";"2026-05-20 07:00:00";"Push";"1800";"Rest Timer";"1";"0";"0";"";"";"60";"";"" ',
+      ].join('\n');
+      const result = await importFromStrong(db, csv, ['Push'], 'kg');
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.programs).toHaveLength(1);
+        expect(result.programs[0].days[0].exercises).toHaveLength(1);
+        expect(result.programs[0].days[0].exercises[0].name).toBe('Bench Press');
+      }
+    });
   });
 });
