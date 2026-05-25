@@ -1,3 +1,4 @@
+// @ts-ignore
 import { getStorybookUI } from "@storybook/react-native";
 import "./storybook.requires";
 

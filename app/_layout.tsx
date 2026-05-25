@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { C } from '@/components/spuddy/palette';
+import Storybook from '../.storybook';
 
 const WarmDarkTheme = { ...DarkTheme, colors: { ...DarkTheme.colors, background: C.bg } };
 
@@ -45,6 +46,10 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  if (process.env.EXPO_PUBLIC_STORYBOOK === '1') {
+    return <Storybook />;
+  }
+
   return (
     <ThemeProvider value={WarmDarkTheme}>
       <Stack>
