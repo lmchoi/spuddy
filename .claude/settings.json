@@ -13,7 +13,7 @@
     ]
   },
   "env": {
-    "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/mandy/Library/Android/sdk/platform-tools"
+    "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/Library/Android/sdk/platform-tools"
   },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
