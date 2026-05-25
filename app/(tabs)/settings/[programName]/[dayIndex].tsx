@@ -6,6 +6,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ProgramDay, ProgramExercise, Target } from '@/src/types';
+import { summaryLine } from '@/src/domain/programDay';
 import { C } from '@/components/spuddy/palette';
 
 // ─── Sample data (swapped for real DB load in commit 4) ──────────────────────
@@ -44,48 +45,6 @@ const SAMPLE_DAY: ProgramDay = {
     },
   ],
 };
-
-// ─── Inline helpers (extracted to src/domain/programDay.ts in commit 3) ───────
-
-function fmtReps(t: Target): string {
-  if (t.minReps != null) return `${t.minReps}–${t.reps}`;
-  return String(t.reps);
-}
-
-export function fmtRest(s: number): string {
-  if (s >= 60 && s % 60 === 0) return `${s / 60} min`;
-  return `${s}s`;
-}
-
-export function summaryLine(targets: Target[]): string | null {
-  if (targets.length === 0) return null;
-  const sets = targets.length;
-  const t0 = targets[0];
-
-  const uniformReps = targets.every(t => t.reps === t0.reps && t.minReps === t0.minReps);
-  const repsStr = uniformReps ? fmtReps(t0) : null;
-
-  const hasWeight = targets.some(t => t.weight !== undefined);
-  let weightStr = '';
-  if (hasWeight) {
-    const uniformWeight = targets.every(t => t.weight === t0.weight);
-    if (uniformWeight && t0.weight !== undefined) {
-      weightStr = t0.weight === 0 ? ' BW' : ` @ ${t0.weight} kg`;
-    }
-  }
-
-  const hasRest = targets.some(t => t.restSeconds != null);
-  let restStr = '';
-  if (hasRest) {
-    const uniformRest = targets.every(t => t.restSeconds === t0.restSeconds);
-    if (uniformRest && t0.restSeconds != null) {
-      restStr = ` · rest ${fmtRest(t0.restSeconds)}`;
-    }
-  }
-
-  const repsDisplay = repsStr ?? '?';
-  return `${sets} × ${repsDisplay}${weightStr}${restStr}`;
-}
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -189,7 +148,7 @@ export default function ProgramDayDetailScreen() {
       <ScrollView contentContainerStyle={styles.list}>
         {day.exercises.map((exercise, exIdx) => {
           const expanded = expandedIdx === exIdx;
-          const summary = summaryLine(exercise.targets);
+          const summary = summaryLine(exercise.targets, 'kg');
           const hasWeight = exercise.targets.some(t => t.weight !== undefined);
           const hasRest = exercise.targets.some(t => t.restSeconds != null);
 
