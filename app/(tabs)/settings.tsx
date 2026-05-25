@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { importProgramFromJson } from '@/src/programImport';
@@ -11,6 +11,7 @@ import { C } from '@/components/spuddy/palette';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [importing, setImporting] = useState(false);
 
@@ -56,6 +57,14 @@ export default function SettingsScreen() {
       <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.screenTitle}>Settings</Text>
+
+        {/* DEV — remove before ship */}
+        <Pressable
+          style={styles.devBtn}
+          onPress={() => router.push('/session-mockup')}
+        >
+          <Text style={styles.devBtnText}>🥔 Session logging mockup</Text>
+        </Pressable>
 
         {programs.length === 0 ? (
           <Text style={styles.empty}>No programs loaded</Text>
@@ -155,6 +164,19 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: C.border,
     marginTop: 12,
+  },
+  devBtn: {
+    backgroundColor: C.card2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: C.borderHi,
+    padding: 12,
+    alignItems: 'center',
+  },
+  devBtnText: {
+    color: C.sub,
+    fontWeight: '600',
+    fontSize: 14,
   },
   importButton: {
     backgroundColor: C.hit,
