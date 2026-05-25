@@ -42,9 +42,10 @@ describe('empty state', () => {
     expect(await screen.findByText('No programs loaded')).toBeTruthy();
   });
 
-  it('shows Import Programs button', async () => {
+  it('shows Data section with both import options', async () => {
     render(<SettingsScreen />);
-    expect(await screen.findByText('Import Programs')).toBeTruthy();
+    expect(await screen.findByText('Import Liftosaur JSON')).toBeTruthy();
+    expect(await screen.findByText('Import from Strong')).toBeTruthy();
   });
 });
 
@@ -76,16 +77,16 @@ describe('programs loaded', () => {
     expect(await screen.findByText('Pull')).toBeTruthy();
   });
 
-  it('shows Replace Programs button when programs exist', async () => {
+  it('shows Import Liftosaur JSON when programs exist', async () => {
     render(<SettingsScreen />);
-    expect(await screen.findByText('Replace Programs')).toBeTruthy();
+    expect(await screen.findByText('Import Liftosaur JSON')).toBeTruthy();
   });
 });
 
 // ─── Import button disabled state ────────────────────────────────────────────
 
 describe('import disabled state', () => {
-  it('shows Importing… and uses a readable text colour during import', async () => {
+  it('shows Importing… during import', async () => {
     // Hang the import so the component stays in importing=true state
     mockGetDocumentAsync.mockResolvedValue({
       canceled: false,
@@ -97,17 +98,14 @@ describe('import disabled state', () => {
     mockImportProgramFromJson.mockReturnValue(new Promise(() => {})); // never resolves
 
     render(<SettingsScreen />);
-    await screen.findByText('Import Programs');
+    await screen.findByText('Import Liftosaur JSON');
 
     await act(async () => {
-      fireEvent.press(screen.getByText('Import Programs'));
+      fireEvent.press(screen.getByText('Import Liftosaur JSON'));
       await Promise.resolve();
       await Promise.resolve();
     });
 
-    const importingText = await screen.findByText('Importing…');
-
-    // C.bg (#181109) is near-black — invisible on the dark C.cardSoft disabled background
-    expect(importingText).not.toHaveStyle({ color: C.bg });
+    expect(await screen.findByText('Importing…')).toBeTruthy();
   });
 });

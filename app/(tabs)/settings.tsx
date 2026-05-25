@@ -79,26 +79,29 @@ export default function SettingsScreen() {
           ))
         )}
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.importButton,
-            pressed && styles.importButtonPressed,
-            importing && styles.importButtonDisabled,
-          ]}
-          onPress={handleImport}
-          disabled={importing}
-        >
-          <Text style={[styles.importButtonText, importing && styles.importButtonDisabledText]}>
-            {importing ? 'Importing…' : programs.length > 0 ? 'Replace Programs' : 'Import Programs'}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={({ pressed }) => [styles.importButton, styles.importButtonSecondary, pressed && styles.importButtonPressed]}
-          onPress={() => router.push('/strong-import')}
-        >
-          <Text style={[styles.importButtonText, styles.importButtonSecondaryText]}>Import from Strong</Text>
-        </Pressable>
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Data</Text>
+          <View style={styles.dataList}>
+            <Pressable
+              style={({ pressed }) => [styles.dataRow, pressed && styles.dataRowPressed, importing && styles.dataRowDisabled]}
+              onPress={handleImport}
+              disabled={importing}
+            >
+              <Text style={[styles.dataRowText, importing && styles.dataRowTextDisabled]}>
+                {importing ? 'Importing…' : 'Import Liftosaur JSON'}
+              </Text>
+              <Text style={styles.dataRowChevron}>›</Text>
+            </Pressable>
+            <View style={styles.dataSeparator} />
+            <Pressable
+              style={({ pressed }) => [styles.dataRow, pressed && styles.dataRowPressed]}
+              onPress={() => router.push('/strong-import')}
+            >
+              <Text style={styles.dataRowText}>Import from Strong</Text>
+              <Text style={styles.dataRowChevron}>›</Text>
+            </Pressable>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -164,33 +167,53 @@ const styles = StyleSheet.create({
     backgroundColor: C.border,
     marginTop: 12,
   },
-  importButton: {
-    backgroundColor: C.hit,
-    borderRadius: 12,
-    borderCurve: 'continuous',
-    padding: 14,
-    alignItems: 'center',
-  } as object,
-  importButtonSecondary: {
-    backgroundColor: C.card,
-    borderWidth: 1,
-    borderColor: C.borderHi,
+  section: {
+    gap: 8,
   },
-  importButtonSecondaryText: {
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: C.sub,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 4,
+  },
+  dataList: {
+    backgroundColor: C.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
+  } as object,
+  dataRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  dataRowPressed: {
+    opacity: 0.7,
+  },
+  dataRowDisabled: {
+    opacity: 0.5,
+  },
+  dataRowText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
     color: C.text,
   },
-  importButtonPressed: {
-    opacity: 0.8,
-  },
-  importButtonDisabled: {
-    backgroundColor: C.cardSoft,
-  },
-  importButtonText: {
-    color: C.bg,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  importButtonDisabledText: {
+  dataRowTextDisabled: {
     color: C.sub,
+  },
+  dataRowChevron: {
+    fontSize: 18,
+    color: C.muted,
+  },
+  dataSeparator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: C.border,
+    marginLeft: 14,
   },
 });
