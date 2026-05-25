@@ -153,11 +153,11 @@ describe('summaryLine', () => {
     expect(summaryLine(targets, 'kg')).toBe('2 × 5 @ 80 kg');
   });
 
-  it('shows ? for reps when non-uniform', () => {
+  it('shows ? for reps when non-uniform but still shows uniform weight', () => {
     const targets: Target[] = [
       { reps: 5, weight: 80 },
       { reps: 3, weight: 80 },
     ];
-    expect(summaryLine(targets, 'kg')).toBe('2 × ?');
+    expect(summaryLine(targets, 'kg')).toBe('2 × ? @ 80 kg');
   });
 });
