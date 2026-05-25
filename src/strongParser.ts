@@ -14,6 +14,7 @@ export function parseStrongCsv(text: string): ImportedHistory {
     date: cols.indexOf('Date'),
     workoutName: cols.indexOf('Workout Name'),
     exerciseName: cols.indexOf('Exercise Name'),
+    setOrder: cols.indexOf('Set Order'),
     weight: findCol(cols, ['Weight (kg)', 'Weight (lbs)', 'Weight']),
     reps: cols.indexOf('Reps'),
     rpe: cols.indexOf('RPE'),
@@ -29,7 +30,8 @@ export function parseStrongCsv(text: string): ImportedHistory {
     if (fields.length < 8) continue;
 
     const exerciseNameRaw = fields[idx.exerciseName] ?? '';
-    if (exerciseNameRaw === 'Rest Timer') continue;
+    const setOrder = fields[idx.setOrder] ?? '';
+    if (exerciseNameRaw === 'Rest Timer' || setOrder === 'Rest Timer') continue;
 
     const workoutName = fields[idx.workoutName] ?? '';
     const dateRaw = fields[idx.date] ?? '';

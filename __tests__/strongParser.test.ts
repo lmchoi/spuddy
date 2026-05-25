@@ -60,7 +60,7 @@ describe('parseStrongCsv', () => {
   });
 
   describe('Rest Timer rows', () => {
-    it('excludes Rest Timer rows from sets', () => {
+    it('excludes Rest Timer rows from sets (Exercise Name = Rest Timer)', () => {
       const result = parseStrongCsv(SEMICOLON_CSV);
       const session = result.workoutGroups[0].sessions[0];
       const totalSets = session.exercises.reduce((n, e) => n + e.sets.length, 0);
@@ -72,6 +72,21 @@ describe('parseStrongCsv', () => {
       const result = parseStrongCsv(SEMICOLON_CSV);
       const names = result.workoutGroups[0].sessions[0].exercises.map(e => e.name);
       expect(names).not.toContain('Rest Timer');
+    });
+
+    it('excludes rows where Set Order = "Rest Timer" (exercise name kept on rest rows)', () => {
+      // Some Strong versions keep the exercise name on rest rows and put "Rest Timer" in Set Order
+      const csv = [
+        SC_HEADER,
+        '"1";"2026-05-20 07:00:00";"Push";"1800";"Bench Press (Barbell)";"1";"80";"8";"";"";"";"";"" ',
+        '"1";"2026-05-20 07:00:00";"Push";"1800";"Bench Press (Barbell)";"Rest Timer";"0";"0";"";"";"60";"";"" ',
+        '"1";"2026-05-20 07:00:00";"Push";"1800";"Bench Press (Barbell)";"2";"80";"6";"";"";"";"";"" ',
+        '"1";"2026-05-20 07:00:00";"Push";"1800";"Bench Press (Barbell)";"Rest Timer";"0";"0";"";"";"60";"";"" ',
+      ].join('\n');
+      const sets = parseStrongCsv(csv).workoutGroups[0].sessions[0].exercises[0].sets;
+      expect(sets).toHaveLength(2);
+      expect(sets[0]).toMatchObject({ weight: 80, reps: 8 });
+      expect(sets[1]).toMatchObject({ weight: 80, reps: 6 });
     });
   });
 
