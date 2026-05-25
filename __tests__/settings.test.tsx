@@ -48,10 +48,17 @@ describe('empty state', () => {
     expect(await screen.findByText('No programs loaded')).toBeTruthy();
   });
 
-  it('shows Data section with both import options', async () => {
+  it('shows Data section with all import options', async () => {
     render(<SettingsScreen />);
     expect(await screen.findByText('Import Liftosaur JSON')).toBeTruthy();
     expect(await screen.findByText('Import from Strong')).toBeTruthy();
+    expect(await screen.findByText('Paste workout notes')).toBeTruthy();
+  });
+
+  it('tapping "Paste workout notes" navigates to /notes-import', async () => {
+    render(<SettingsScreen />);
+    fireEvent.press(await screen.findByText('Paste workout notes'));
+    expect(mockPush).toHaveBeenCalledWith('/notes-import');
   });
 });
 
