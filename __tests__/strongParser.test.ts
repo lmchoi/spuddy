@@ -160,6 +160,28 @@ describe('parseStrongCsv', () => {
     });
   });
 
+  describe('column name variants', () => {
+    it('parses weight from "Weight (lbs)" header (Strong US locale export)', () => {
+      const lbsHeader = '"Workout #","Date","Workout Name","Duration (sec)","Exercise Name","Set Order","Weight (lbs)","Reps","RPE","Distance (meters)","Seconds","Notes","Workout Notes"';
+      const csv = [
+        lbsHeader,
+        '"1","2026-05-20 07:00:00","Push","1800","Bench Press","1","176","5","","","","",""',
+      ].join('\n');
+      const set = parseStrongCsv(csv).workoutGroups[0].sessions[0].exercises[0].sets[0];
+      expect(set.weight).toBe(176);
+    });
+
+    it('parses weight from bare "Weight" header (older Strong versions)', () => {
+      const bareHeader = '"Workout #","Date","Workout Name","Duration (sec)","Exercise Name","Set Order","Weight","Reps","RPE","Distance (meters)","Seconds","Notes","Workout Notes"';
+      const csv = [
+        bareHeader,
+        '"1","2026-05-20 07:00:00","Push","1800","Bench Press","1","80","5","","","","",""',
+      ].join('\n');
+      const set = parseStrongCsv(csv).workoutGroups[0].sessions[0].exercises[0].sets[0];
+      expect(set.weight).toBe(80);
+    });
+  });
+
   describe('edge cases', () => {
     it('returns empty workoutGroups for empty input', () => {
       expect(parseStrongCsv('').workoutGroups).toHaveLength(0);
