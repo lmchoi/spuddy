@@ -42,3 +42,15 @@ export type Program = {
   days: ProgramDay[];
   activeDayIndex: number;
 };
+
+export type ImportedWorkoutGroup = {
+  name: string;
+  sessionCount: number;
+  lastUsed: string; // YYYY-MM-DD
+  sessions: Session[];
+  equipmentHints: Record<string, string | null>;
+};
+
+export type ImportedHistory = {
+  workoutGroups: ImportedWorkoutGroup[];
+};

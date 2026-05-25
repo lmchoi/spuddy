@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Alert, Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { importProgramFromJson } from '@/src/programImport';
@@ -11,6 +11,7 @@ import { C } from '@/components/spuddy/palette';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [importing, setImporting] = useState(false);
 
@@ -91,6 +92,13 @@ export default function SettingsScreen() {
             {importing ? 'Importing…' : programs.length > 0 ? 'Replace Programs' : 'Import Programs'}
           </Text>
         </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [styles.importButton, styles.importButtonSecondary, pressed && styles.importButtonPressed]}
+          onPress={() => router.push('/strong-import')}
+        >
+          <Text style={[styles.importButtonText, styles.importButtonSecondaryText]}>Import from Strong</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );
@@ -163,6 +171,14 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
   } as object,
+  importButtonSecondary: {
+    backgroundColor: C.card,
+    borderWidth: 1,
+    borderColor: C.borderHi,
+  },
+  importButtonSecondaryText: {
+    color: C.text,
+  },
   importButtonPressed: {
     opacity: 0.8,
   },
