@@ -1,5 +1,6 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const { withNativewind } = require('nativewind/metro');
+const { withStorybook } = require('@storybook/react-native/metro/withStorybook');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
@@ -11,4 +12,7 @@ config.resolver.blockList = [
   /expo-sqlite\/web\/wa-sqlite\/.*\.wasm/,
 ];
 
-module.exports = withNativewind(config);
+module.exports = withStorybook(withNativewind(config), {
+  enabled: process.env.EXPO_PUBLIC_STORYBOOK === '1',
+  configPath: './.storybook',
+});
