@@ -75,14 +75,16 @@ export async function importFromStrong(
 
         const convertedLatest = unit === 'lbs' ? convertSessionWeights(latest) : latest;
 
-        const programExercises: ProgramExercise[] = convertedLatest.exercises.map(exercise => {
-          const lastSet = exercise.sets[exercise.sets.length - 1];
-          const targets: Target[] = exercise.sets.map(() => ({
-            reps: lastSet.reps,
-            weight: lastSet.weight,
-          }));
-          return { name: exercise.name, targets };
-        });
+        const programExercises: ProgramExercise[] = convertedLatest.exercises
+          .filter(exercise => exercise.sets.length > 0)
+          .map(exercise => {
+            const lastSet = exercise.sets[exercise.sets.length - 1];
+            const targets: Target[] = exercise.sets.map(() => ({
+              reps: lastSet.reps,
+              weight: lastSet.weight,
+            }));
+            return { name: exercise.name, targets };
+          });
 
         programs.push({
           name: group.name,
