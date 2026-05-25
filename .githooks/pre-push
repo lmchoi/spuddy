@@ -1,6 +1,14 @@
 #!/bin/sh
 set -e
 
+# Block direct pushes to main — use a feature branch and PR instead.
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "Error: direct push to main is not allowed. Create a branch and open a PR."
+    exit 1
+  fi
+done
+
 echo "Running pre-push checks..."
 npm run check:full
 echo "All pre-push checks passed."
