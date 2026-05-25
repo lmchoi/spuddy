@@ -2,6 +2,12 @@
 
 **Status: complete** — all 6 steps delivered on `feat/strong-import`
 
+### Post-merge fixes (on branch, pre-PR)
+- File picker now opens immediately on screen mount — no intermediate button
+- `Weight (lbs)` and bare `Weight` column headers now accepted (Strong US locale)
+- Rest Timer rows filtered by Set Order column, not just Exercise Name (fixes 0×BW interleaved sets)
+- `npm run clear:android` script added for test resets
+
 ## Goal
 
 A user can import their full workout history from a Strong CSV export. All sessions are saved to the app's session history. Programs (templates) are inferred from the most recent session of each workout name — ready for session logging.

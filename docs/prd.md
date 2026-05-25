@@ -178,7 +178,13 @@ Each milestone has its own implementation plan written just before work starts.
 
 ---
 
-## 9. Open Questions
+## 9. Backlog / Deferred
+
+- **Imported session target display preference** — currently we hide the "on target" card when a session has no targets (imported history). A future setting could let users choose: hide / assume met / show N/A. Defer until there's user demand. Designed to be cheap: one `AsyncStorage` key, three options, no data-model change.
+- **Strong import dedup** — re-importing the same file appends duplicate sessions. A content-hash or date-based dedup check can be added without any schema change.
+- **Exercise DB matching** — `exerciseId` FK to canonical library is deferred. Equipment hints from the CSV import are stored and ready to use when on-demand matching is built.
+
+## 10. Open Questions
 
 - What is the exact format of Liftosaur's file export? Does it include equipment type per exercise? — **verify before building import**
 - How should band resistance be handled in progression — approximate kg equivalent, or named scale?
