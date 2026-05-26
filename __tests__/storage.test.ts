@@ -206,4 +206,21 @@ describe('SQLite storage', () => {
       expect(sessions[0].exercises[0].sets).toHaveLength(0);
     });
   });
+
+  describe('saveSession error handling', () => {
+    it('preserves the original error when ROLLBACK also fails', async () => {
+      const originalError = new Error('Cannot use shared object that was already released');
+      let callCount = 0;
+      const flakyDB: DB = {
+        run: jest.fn().mockImplementation(async (sql: string) => {
+          callCount++;
+          if (callCount === 1) return; // BEGIN succeeds
+          throw callCount === 2 ? originalError : new Error('ROLLBACK also failed');
+        }),
+        all: jest.fn().mockResolvedValue([]),
+      };
+
+      await expect(saveSession(flakyDB, SESSION_A)).rejects.toThrow(originalError.message);
+    });
+  });
 });
