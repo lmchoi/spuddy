@@ -8,7 +8,11 @@ export type NotesImportResult =
   | { success: false; error: string };
 
 function exerciseToProgram(ex: ParsedExercise): ProgramExercise {
-  return { name: ex.name, targets: [] };
+  const targets = Array.from({ length: ex.sets }, () => ({
+    reps: 10,
+    weight: ex.weight,
+  }));
+  return { name: ex.name, targets };
 }
 
 export async function importFromNotes(
