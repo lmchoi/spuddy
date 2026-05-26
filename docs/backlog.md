@@ -6,7 +6,6 @@ Items that are scoped and prioritised but not yet assigned to an active mileston
 
 ## Session logging (v0.2)
 
-- **Finish workout button always visible** — a "Finish" button in the top-right corner so users can end the session before completing the last set of the last exercise. Currently only appears after the final set.
 - **Add another set** — allow adding an extra set beyond the program target during a session.
 - **Show PRs during session** — surface the user's best performance per exercise while logging. Cross-reference with `docs/plans/personal-records.md`.
 
