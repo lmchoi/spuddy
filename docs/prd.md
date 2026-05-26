@@ -160,31 +160,7 @@ Intentionally decoupled — user brings their own AI.
 
 ---
 
-## 8. Milestones
-
-Each milestone has its own implementation plan written just before work starts.
-
-| Milestone | Scope |
-|---|---|
-| **v0.1** | Liftosaur file import (history + program), equipment profile, exercise history list, progression charts, JSON export + AI prompt template |
-| **v0.2** | Session logging — log sets against program, targets display, rest timer + haptics, previous session defaults. Replaces Liftosaur for day-to-day logging. |
-| **v0.3** | Smart progression engine — equipment-aware weight suggestions, plate calculator, stall detection, deload |
-| **v0.4** | Session review dashboard, volume per muscle group, in-app Claude API integration |
-| **v1.0** | Polish, CSV export, warm-up set support, deload suggestions |
-| **v2.0** | Desktop MCP server companion, cloud sync, Apple Health write |
-| **v2.1** | Garmin BLE companion (Connect IQ + real-time rep sync) |
-| **v2.2** | Camera-based rep counting (on-device) |
-| **v3.0** | FIT import/export, Strong/Hevy import, standalone program editor |
-
----
-
-## 9. Backlog / Deferred
-
-- **Imported session target display preference** — currently we hide the "on target" card when a session has no targets (imported history). A future setting could let users choose: hide / assume met / show N/A. Defer until there's user demand. Designed to be cheap: one `AsyncStorage` key, three options, no data-model change.
-- **Strong import dedup** — re-importing the same file appends duplicate sessions. A content-hash or date-based dedup check can be added without any schema change.
-- **Exercise DB matching** — `exerciseId` FK to canonical library is deferred. Equipment hints from the CSV import are stored and ready to use when on-demand matching is built.
-
-## 10. Open Questions
+## 8. Open Questions
 
 - What is the exact format of Liftosaur's file export? Does it include equipment type per exercise? — **verify before building import**
 - How should band resistance be handled in progression — approximate kg equivalent, or named scale?
