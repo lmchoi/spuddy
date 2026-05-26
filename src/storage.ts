@@ -101,7 +101,7 @@ export async function saveSession(db: DB, session: Session): Promise<void> {
     }
     await db.run('COMMIT');
   } catch (err) {
-    await db.run('ROLLBACK');
+    try { await db.run('ROLLBACK'); } catch { /* ignore secondary failure */ }
     throw err;
   }
 }
