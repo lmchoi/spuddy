@@ -93,11 +93,14 @@ describe('importFromNotes', () => {
     expect(programs[0].days[0].exercises[1].name).toBe('Overhead press');
   });
 
-  it('exercises have no targets so the tracker never shows exceeded', async () => {
+  it('exercises get one target per set with weight from parsed data and 10 default reps', async () => {
     await importFromNotes(db, ONE_SECTION);
     const programs = await getPrograms(db);
-    const bench = programs[0].days[0].exercises[0];
-    expect(bench.targets).toHaveLength(0);
+    const bench = programs[0].days[0].exercises[0]; // 3 sets, 80kg
+    expect(bench.targets).toHaveLength(3);
+    expect(bench.targets[0]).toEqual({ reps: 10, weight: 80 });
+    expect(bench.targets[1]).toEqual({ reps: 10, weight: 80 });
+    expect(bench.targets[2]).toEqual({ reps: 10, weight: 80 });
   });
 
   it('skips sections with no exercises', async () => {
