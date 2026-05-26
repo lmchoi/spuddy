@@ -111,6 +111,26 @@ describe('logging a set', () => {
   });
 });
 
+// ─── Header finish button ─────────────────────────────────────────────────────
+
+describe('header finish button', () => {
+  it('is visible when the session is in progress (before any set is logged)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    expect(screen.getByText('Finish')).toBeTruthy();
+  });
+
+  it('calls saveSession and navigates when tapped mid-session', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText('Finish')); });
+
+    expect(saveSession).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+  });
+});
+
 // ─── Finish session ───────────────────────────────────────────────────────────
 
 describe('finish session', () => {

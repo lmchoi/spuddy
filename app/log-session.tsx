@@ -417,6 +417,9 @@ export default function LogSession() {
           <Text style={s.headerDay}>{day.name}</Text>
           <Text style={s.headerProgress}>{doneSets} of {totalSets} sets</Text>
         </View>
+        <Pressable onPress={handleFinish} hitSlop={12}>
+          <Text style={s.finishBtnText}>Finish</Text>
+        </Pressable>
       </View>
 
       <ExerciseStrip day={day} sessionState={session} onSelect={handleJump} />
@@ -475,6 +478,7 @@ const s = StyleSheet.create({
   headerMid: { flex: 1 },
   headerDay: { fontSize: 17, fontWeight: '700', color: C.text, letterSpacing: -0.3 },
   headerProgress: { fontSize: 12, color: C.sub, marginTop: 1 },
+  finishBtnText: { fontSize: 14, fontWeight: '600', color: C.sub },
 
   strip: {
     flexDirection: 'row',
