@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
 import { getProgramDay } from '@/src/programStorage';
@@ -133,7 +134,6 @@ describe('header finish button', () => {
 
   it('shows an alert and does not navigate when saveSession throws', async () => {
     (saveSession as jest.Mock).mockRejectedValueOnce(new Error('disk full'));
-    const { Alert } = require('react-native');
     jest.spyOn(Alert, 'alert');
 
     render(<LogSession />);
