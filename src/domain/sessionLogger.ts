@@ -5,6 +5,7 @@ export type LoggedSet = { reps: number; weight: number };
 export type SessionState = {
   loggedSets: LoggedSet[][];
   targetCounts: number[];
+  extraSetCounts: number[];   // sets added beyond program targets, per exercise
   currentExerciseIdx: number;
   isResting: boolean;
   startedAt: number;
@@ -14,10 +15,16 @@ export function initSession(day: ProgramDay): SessionState {
   return {
     loggedSets: day.exercises.map(() => []),
     targetCounts: day.exercises.map(ex => ex.targets.length),
+    extraSetCounts: day.exercises.map(() => 0),
     currentExerciseIdx: 0,
     isResting: false,
     startedAt: Date.now(),
   };
+}
+
+export function addExtraSet(state: SessionState, exIdx: number): SessionState {
+  const extraSetCounts = state.extraSetCounts.map((c, i) => i === exIdx ? c + 1 : c);
+  return { ...state, extraSetCounts, isResting: false };
 }
 
 export function logSet(
@@ -30,7 +37,7 @@ export function logSet(
     i === exIdx ? [...sets, { reps, weight }] : sets
   );
   const logged = newLoggedSets[exIdx].length;
-  const required = state.targetCounts[exIdx];
+  const required = state.targetCounts[exIdx] + state.extraSetCounts[exIdx];
   const isResting = logged < required;
   return { ...state, loggedSets: newLoggedSets, isResting };
 }
@@ -48,7 +55,8 @@ export function isExerciseDone(
   day: ProgramDay,
   exIdx: number
 ): boolean {
-  return state.loggedSets[exIdx].length >= day.exercises[exIdx].targets.length;
+  const total = day.exercises[exIdx].targets.length + state.extraSetCounts[exIdx];
+  return state.loggedSets[exIdx].length >= total;
 }
 
 export function isSessionDone(state: SessionState, day: ProgramDay): boolean {
@@ -62,6 +70,10 @@ export function getActiveTarget(
 ): Target {
   const logged = state.loggedSets[exIdx].length;
   const targets = day.exercises[exIdx].targets;
+  if (logged >= targets.length && logged > 0) {
+    const last = state.loggedSets[exIdx][logged - 1];
+    return { reps: last.reps, weight: last.weight };
+  }
   const raw = targets[Math.min(logged, targets.length - 1)];
   if (!raw.reps) return { ...raw, reps: 10 };
   return raw;
