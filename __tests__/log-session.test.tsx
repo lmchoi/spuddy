@@ -267,3 +267,64 @@ describe('add extra set', () => {
     });
   });
 });
+
+// ─── Extra set — plan target comparison ──────────────────────────────────────
+//
+// The active extra-set row (and hit/miss on done rows) should use the last
+// *planned* target — not the previous set's logged values. Rationale:
+//
+//   Plan: 2 × 5 reps @ 100 kg
+//   Set 2 logged 7 reps (exceeded) → extra set target = 5, not 7
+//   Set 2 logged 3 reps (fell short) → extra set target = 5, not 3
+//
+// Using the last-logged value as target would: (a) penalise an exceptional
+// set (exceeded → hard benchmark for extras) and (b) lower the bar when the
+// user is struggling.
+
+describe('add extra set — plan target comparison', () => {
+  it('set 2 exceeded (logged 7, target 5): extra set active row shows plan target 5 × 100, not 7 × 100', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Set 1 — pre-fill: 5 reps (plan target). Log at default.
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    // Set 2 — pre-fill: 5 reps. Press reps + twice → 7. Log 7 × 100 kg.
+    const incReps = screen.getAllByText('+')[0]; // reps stepper +
+    await act(async () => { fireEvent.press(incReps); }); // 5 → 6
+    await act(async () => { fireEvent.press(incReps); }); // 6 → 7
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); }); // log 7 × 100
+
+    // Tap + Add set
+    await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/\+ Add set/i)); });
+
+    // Outcome: "7 × 100 kg" appears exactly once — Set 2's done row only.
+    // The extra set active row target must be "5 × 100 kg" (plan), not "7 × 100 kg".
+    expect(screen.getAllByText(/7 × 100 kg/i).length).toBe(1);
+  });
+
+  it('set 2 fell short (logged 3, target 5): extra set active row shows plan target 5 × 100, not 3 × 100', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Set 1 — pre-fill: 5 reps. Log at default.
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    // Set 2 — pre-fill: 5 reps. Press reps − twice → 3. Log 3 × 100 kg.
+    const decReps = screen.getAllByText('−')[0]; // reps stepper −
+    await act(async () => { fireEvent.press(decReps); }); // 5 → 4
+    await act(async () => { fireEvent.press(decReps); }); // 4 → 3
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); }); // log 3 × 100
+
+    // Tap + Add set
+    await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/\+ Add set/i)); });
+
+    // Outcome: "3 × 100 kg" appears exactly once — Set 2's done row only.
+    // The extra set active row target must be "5 × 100 kg" (plan), not "3 × 100 kg".
+    expect(screen.getAllByText(/3 × 100 kg/i).length).toBe(1);
+  });
+});
