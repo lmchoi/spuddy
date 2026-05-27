@@ -19,6 +19,7 @@ jest.mock('expo-document-picker', () => ({
 }));
 jest.mock('expo-router', () => ({
   useFocusEffect: (cb: () => void) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('react').useEffect(cb, [cb]);
   },
   useRouter: () => ({ push: mockPush }),

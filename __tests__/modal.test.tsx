@@ -4,6 +4,7 @@ import ModalScreen from '../app/modal';
 // Mock components
 jest.mock('@/components/EditScreenInfo', () => 'EditScreenInfo');
 jest.mock('@/components/Themed', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
   return {
     Text: (props: any) => React.createElement('Text', props),
