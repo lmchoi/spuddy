@@ -23,6 +23,7 @@ import {
   isSessionDone,
   getActiveTarget,
   buildSavePayload,
+  addExtraSet,
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import type { ProgramDay } from '@/src/types';
@@ -109,6 +110,7 @@ function ExerciseStrip({
         const isActive = i === sessionState.currentExerciseIdx;
         const done = isExerciseDone(sessionState, day, i);
         const loggedCount = sessionState.loggedSets[i].length;
+        const dotCount = ex.targets.length + sessionState.extraSetCounts[i];
         return (
           <Pressable
             key={i}
@@ -132,15 +134,16 @@ function ExerciseStrip({
               {ex.name}
             </Text>
             <View style={s.stripDots}>
-              {ex.targets.map((target, si) => {
+              {Array.from({ length: dotCount }).map((_, si) => {
                 const loggedSet = sessionState.loggedSets[i][si];
+                const target = ex.targets[si]; // undefined for extra sets
                 const isLogged = si < loggedCount;
                 const isActiveDot = si === loggedCount && isActive && !done;
 
                 let dotStyle;
                 if (isLogged && loggedSet) {
                   dotStyle =
-                    loggedSet.reps >= target.reps
+                    !target || loggedSet.reps >= target.reps
                       ? s.stripDotHit
                       : s.stripDotMiss;
                 } else if (isActiveDot) {
@@ -169,52 +172,80 @@ function SetList({
   day,
   sessionState,
   exIdx,
+  isCurrentExercise,
+  onAddSet,
 }: {
   day: ProgramDay;
   sessionState: SessionState;
   exIdx: number;
+  isCurrentExercise: boolean;
+  onAddSet: () => void;
 }) {
   const ex = day.exercises[exIdx];
   const logged = sessionState.loggedSets[exIdx];
+  const showAddSet = isCurrentExercise;
+
+  // Build a combined list: planned targets + extra set slots + any already-logged extras
+  const totalRows = Math.max(
+    ex.targets.length + sessionState.extraSetCounts[exIdx],
+    logged.length,
+  );
 
   return (
-    <View style={s.setList}>
-      {ex.targets.map((target, i) => {
-        const loggedSet = logged[i];
-        const isPast = i < logged.length;
-        const isActive = i === logged.length && !isExerciseDone(sessionState, day, exIdx);
+    // Option C layout: outer solid-border wrapper (setCard) contains the card
+    // rows (setList, card bg, overflow:hidden) and the dashed add-set button.
+    // overflow:hidden on setCard clips both to the 14px rounded corners.
+    <View style={s.setCard}>
+      <View style={[s.setList, showAddSet && s.setListOpen]}>
+        {Array.from({ length: totalRows }).map((_, i) => {
+          // Extra-set target: always use the last planned target so the
+          // hit/miss colour is stable regardless of how the previous set went.
+          // (Using logged[i-1] would penalise an exceptional set and lower the
+          // bar when the user is struggling.)
+          const target = i < ex.targets.length
+            ? ex.targets[i]
+            : ex.targets[ex.targets.length - 1];
+          const loggedSet = logged[i];
+          const isPast = i < logged.length;
+          const isActive = i === logged.length && !isExerciseDone(sessionState, day, exIdx);
 
-        if (isPast && loggedSet) {
-          const hitTarget = loggedSet.reps >= target.reps;
+          if (isPast && loggedSet) {
+            const hitTarget = loggedSet.reps >= target.reps;
+            return (
+              <View key={i} style={[s.setRow, s.setRowDone]}>
+                <View style={[s.setDot, s.setDotDone]} />
+                <Text style={s.setRowLabel}>Set {i + 1}</Text>
+                <Text style={[s.setRowResult, hitTarget ? s.setHit : s.setMiss]}>
+                  {loggedSet.reps} × {loggedSet.weight} kg
+                </Text>
+              </View>
+            );
+          }
+
+          if (isActive) {
+            return (
+              <View key={i} style={[s.setRow, s.setRowActive]}>
+                <View style={[s.setDot, s.setDotActive]} />
+                <Text style={s.setRowLabelActive}>Set {i + 1}</Text>
+                <Text style={s.setRowTarget}>{target.reps} × {target.weight ?? 0} kg</Text>
+              </View>
+            );
+          }
+
           return (
-            <View key={i} style={[s.setRow, s.setRowDone]}>
-              <View style={[s.setDot, s.setDotDone]} />
-              <Text style={s.setRowLabel}>Set {i + 1}</Text>
-              <Text style={[s.setRowResult, hitTarget ? s.setHit : s.setMiss]}>
-                {loggedSet.reps} × {loggedSet.weight} kg
-              </Text>
+            <View key={i} style={[s.setRow, s.setRowFuture]}>
+              <View style={s.setDot} />
+              <Text style={s.setRowLabelFuture}>Set {i + 1}</Text>
+              <Text style={s.setRowFutureVal}>{target.reps} × {target.weight ?? 0} kg</Text>
             </View>
           );
-        }
-
-        if (isActive) {
-          return (
-            <View key={i} style={[s.setRow, s.setRowActive]}>
-              <View style={[s.setDot, s.setDotActive]} />
-              <Text style={s.setRowLabelActive}>Set {i + 1}</Text>
-              <Text style={s.setRowTarget}>{target.reps} × {target.weight ?? 0} kg</Text>
-            </View>
-          );
-        }
-
-        return (
-          <View key={i} style={[s.setRow, s.setRowFuture]}>
-            <View style={s.setDot} />
-            <Text style={s.setRowLabelFuture}>Set {i + 1}</Text>
-            <Text style={s.setRowFutureVal}>{target.reps} × {target.weight ?? 0} kg</Text>
-          </View>
-        );
-      })}
+        })}
+      </View>
+      {showAddSet && (
+        <Pressable onPress={onAddSet} style={s.addSetRow}>
+          <Text style={s.addSetText}>+ Add set</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -249,7 +280,7 @@ function BottomAction({
   const exIdx = sessionState.currentExerciseIdx;
   const ex = day.exercises[exIdx];
   const logged = sessionState.loggedSets[exIdx].length;
-  const total = ex.targets.length;
+  const total = ex.targets.length + sessionState.extraSetCounts[exIdx];
 
   if (sessionState.isResting) {
     return <RestTimer onSkip={onSkipRest} />;
@@ -381,6 +412,13 @@ export default function LogSession() {
     setState({ status: 'ready', day: state.day, session: next, input: nextInput });
   }, [state]);
 
+  const handleAddSet = useCallback((exIdx: number) => {
+    if (state.status !== 'ready') return;
+    const next = addExtraSet(state.session, exIdx);
+    const nextInput = inputFromTarget(state.day, next);
+    setState({ status: 'ready', day: state.day, session: next, input: nextInput });
+  }, [state]);
+
   const handleFinish = useCallback(async () => {
     if (state.status !== 'ready') return;
     const { day, session } = state;
@@ -446,7 +484,13 @@ export default function LogSession() {
         <View style={s.exBlock}>
           <Text style={s.exName}>{ex.name}</Text>
         </View>
-        <SetList day={day} sessionState={session} exIdx={exIdx} />
+        <SetList
+          day={day}
+          sessionState={session}
+          exIdx={exIdx}
+          isCurrentExercise={true}
+          onAddSet={() => handleAddSet(exIdx)}
+        />
       </ScrollView>
 
       <View style={[s.bottom, { paddingBottom: insets.bottom + 16 }]}>
@@ -531,12 +575,21 @@ const s = StyleSheet.create({
   exBlock: { paddingTop: 8, gap: 4 },
   exName: { fontSize: 22, fontWeight: '700', color: C.text, letterSpacing: -0.4 },
 
-  setList: {
-    backgroundColor: C.card,
+  // Outer solid-border frame (card-c). overflow:hidden clips children to 14px corners.
+  setCard: {
     borderRadius: 14,
     borderWidth: 1,
     borderColor: C.border,
     overflow: 'hidden',
+  },
+  // Inner rows container (card-c-inner). No own border — setCard provides it.
+  setList: {
+    backgroundColor: C.card,
+  },
+  // Add hairline bottom separator when dashed add-set is attached.
+  setListOpen: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: C.border,
   },
   setRow: {
     flexDirection: 'row',
@@ -561,6 +614,21 @@ const s = StyleSheet.create({
   setMiss: { color: C.below },
   setRowTarget: { flex: 1, fontSize: 14, fontWeight: '600', color: C.text, textAlign: 'right' },
   setRowFutureVal: { flex: 1, fontSize: 13, color: C.muted, textAlign: 'right' },
+
+  // Dashed add-set button (add-flush-dashed). Full dashed border on all sides.
+  // setCard's overflow:hidden clips the bottom corners to 14px radius.
+  addSetRow: {
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    opacity: 0.5,
+    borderWidth: 1,
+    borderColor: C.muted,
+    borderStyle: 'dashed',
+  },
+  addSetText: { fontSize: 13, fontWeight: '500', color: C.muted },
 
   bottom: {
     paddingHorizontal: 18,
