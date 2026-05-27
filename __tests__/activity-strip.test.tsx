@@ -1,3 +1,4 @@
+import { Text } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 import { ActivityStrip } from '../components/spuddy/ActivityStrip';
 
@@ -30,7 +31,7 @@ describe('ActivityStrip', () => {
     jest.setSystemTime(new Date('2026-05-23T10:00:00'));
     render(<ActivityStrip sessions={[]} />);
     // 7 weekday narrow labels (some may share the same letter, so count total)
-    const labels = screen.UNSAFE_getAllByType(require('react-native').Text);
+    const labels = screen.UNSAFE_getAllByType(Text);
     expect(labels.length).toBe(7);
   });
 
