@@ -32,6 +32,8 @@ export async function importFromNotes(
         return { name: section.name, days: [day], activeDayIndex: 0 };
       });
 
+    if (programs.length === 0) return { success: true, programsCreated: 0 };
+
     await savePrograms(db, programs);
     return { success: true, programsCreated: programs.length };
   } catch (e) {

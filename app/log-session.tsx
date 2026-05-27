@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StatusBar,
@@ -425,9 +426,13 @@ export default function LogSession() {
     const { day, session } = state;
     const today = new Date().toISOString().slice(0, 10);
     const payload = buildSavePayload(session, day, today);
-    const db = await getDB();
-    await saveSession(db, payload);
-    router.replace(`/progress/${today}`);
+    try {
+      const db = await getDB();
+      await saveSession(db, payload);
+      router.replace(`/progress/${today}`);
+    } catch {
+      Alert.alert('Save failed', 'Could not save your session. Please try again.');
+    }
   }, [state, router]);
 
   if (state.status === 'loading') {

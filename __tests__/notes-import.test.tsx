@@ -60,4 +60,12 @@ describe('NotesImportScreen', () => {
     fireEvent.changeText(input, 'Push\n- Bench press - 80');
     expect(screen.getByText('Import 1 program')).toBeTruthy();
   });
+
+  it('CTA count excludes empty sections', () => {
+    render(<NotesImportScreen />);
+    const input = screen.getByPlaceholderText(/Upper body/);
+    // Two section headers, only one has exercises
+    fireEvent.changeText(input, 'Push\n- Bench press - 80\nPull');
+    expect(screen.getByText('Import 1 program')).toBeTruthy();
+  });
 });
