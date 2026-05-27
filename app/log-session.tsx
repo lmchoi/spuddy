@@ -176,55 +176,55 @@ function SetList({
   );
 
   return (
-    <>
-      <View style={s.setList}>
-        {Array.from({ length: totalRows }).map((_, i) => {
-          // For extra-set rows (beyond planned targets), pre-fill from last logged set
-          const target = i < ex.targets.length
-            ? ex.targets[i]
-            : (logged[logged.length - 1] ?? ex.targets[ex.targets.length - 1]);
-          const loggedSet = logged[i];
-          const isPast = i < logged.length;
-          const isActive = i === logged.length && !isExerciseDone(sessionState, day, exIdx);
+    <View style={s.setList}>
+      {Array.from({ length: totalRows }).map((_, i) => {
+        // Extra-set target: use the previous set's actual logged values so
+        // the hit/miss colour is relative to what the user just did, not an
+        // arbitrary plan target they may have fallen short of.
+        const target = i < ex.targets.length
+          ? ex.targets[i]
+          : (logged[i - 1] ?? ex.targets[ex.targets.length - 1]);
+        const loggedSet = logged[i];
+        const isPast = i < logged.length;
+        const isActive = i === logged.length && !isExerciseDone(sessionState, day, exIdx);
 
-          if (isPast && loggedSet) {
-            const hitTarget = loggedSet.reps >= target.reps;
-            return (
-              <View key={i} style={[s.setRow, s.setRowDone]}>
-                <View style={[s.setDot, s.setDotDone]} />
-                <Text style={s.setRowLabel}>Set {i + 1}</Text>
-                <Text style={[s.setRowResult, hitTarget ? s.setHit : s.setMiss]}>
-                  {loggedSet.reps} × {loggedSet.weight} kg
-                </Text>
-              </View>
-            );
-          }
-
-          if (isActive) {
-            return (
-              <View key={i} style={[s.setRow, s.setRowActive]}>
-                <View style={[s.setDot, s.setDotActive]} />
-                <Text style={s.setRowLabelActive}>Set {i + 1}</Text>
-                <Text style={s.setRowTarget}>{target.reps} × {target.weight ?? 0} kg</Text>
-              </View>
-            );
-          }
-
+        if (isPast && loggedSet) {
+          const hitTarget = loggedSet.reps >= target.reps;
           return (
-            <View key={i} style={[s.setRow, s.setRowFuture]}>
-              <View style={s.setDot} />
-              <Text style={s.setRowLabelFuture}>Set {i + 1}</Text>
-              <Text style={s.setRowFutureVal}>{target.reps} × {target.weight ?? 0} kg</Text>
+            <View key={i} style={[s.setRow, s.setRowDone]}>
+              <View style={[s.setDot, s.setDotDone]} />
+              <Text style={s.setRowLabel}>Set {i + 1}</Text>
+              <Text style={[s.setRowResult, hitTarget ? s.setHit : s.setMiss]}>
+                {loggedSet.reps} × {loggedSet.weight} kg
+              </Text>
             </View>
           );
-        })}
-      </View>
+        }
+
+        if (isActive) {
+          return (
+            <View key={i} style={[s.setRow, s.setRowActive]}>
+              <View style={[s.setDot, s.setDotActive]} />
+              <Text style={s.setRowLabelActive}>Set {i + 1}</Text>
+              <Text style={s.setRowTarget}>{target.reps} × {target.weight ?? 0} kg</Text>
+            </View>
+          );
+        }
+
+        return (
+          <View key={i} style={[s.setRow, s.setRowFuture]}>
+            <View style={s.setDot} />
+            <Text style={s.setRowLabelFuture}>Set {i + 1}</Text>
+            <Text style={s.setRowFutureVal}>{target.reps} × {target.weight ?? 0} kg</Text>
+          </View>
+        );
+      })}
       {showAddSet && (
         <Pressable onPress={onAddSet} style={s.addSetRow}>
           <Text style={s.addSetText}>+ Add set</Text>
         </Pressable>
       )}
-    </>
+    </View>
   );
 }
 
@@ -583,11 +583,11 @@ const s = StyleSheet.create({
   setRowFutureVal: { flex: 1, fontSize: 13, color: C.muted, textAlign: 'right' },
 
   addSetRow: {
+    margin: 8,
+    paddingVertical: 10,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    marginTop: 8,
-    borderRadius: 10,
     backgroundColor: C.card,
     opacity: 0.65,
     borderWidth: 1,

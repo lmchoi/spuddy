@@ -245,4 +245,25 @@ describe('add extra set', () => {
     const squat = payload.exercises.find((e: { name: string }) => e.name === 'Squat');
     expect(squat.sets).toHaveLength(3); // 2 planned + 1 extra
   });
+
+  it('extra set row shows the logged values (not a mismatched target)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log both Squat sets at 5×100
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Tap + Add set and log at same values (steppers pre-fill from last set)
+    await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/\+ Add set/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Extra set row should appear showing the logged values
+    await waitFor(() => {
+      const rows = screen.getAllByText(/5 × 100 kg/i);
+      expect(rows.length).toBe(3); // sets 1, 2, and the extra
+    });
+  });
 });
