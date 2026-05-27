@@ -167,56 +167,64 @@ function SetList({
 }) {
   const ex = day.exercises[exIdx];
   const logged = sessionState.loggedSets[exIdx];
-  const showAddSet = isCurrentExercise && isExerciseDone(sessionState, day, exIdx);
+  const showAddSet = isCurrentExercise;
 
-  // Build a combined list: planned targets + any extra logged sets
-  const totalRows = Math.max(ex.targets.length, logged.length);
+  // Build a combined list: planned targets + extra set slots + any already-logged extras
+  const totalRows = Math.max(
+    ex.targets.length + sessionState.extraSetCounts[exIdx],
+    logged.length,
+  );
 
   return (
-    <View style={s.setList}>
-      {Array.from({ length: totalRows }).map((_, i) => {
-        const target = ex.targets[i] ?? ex.targets[ex.targets.length - 1];
-        const loggedSet = logged[i];
-        const isPast = i < logged.length;
-        const isActive = i === logged.length && !isExerciseDone(sessionState, day, exIdx);
+    <>
+      <View style={s.setList}>
+        {Array.from({ length: totalRows }).map((_, i) => {
+          // For extra-set rows (beyond planned targets), pre-fill from last logged set
+          const target = i < ex.targets.length
+            ? ex.targets[i]
+            : (logged[logged.length - 1] ?? ex.targets[ex.targets.length - 1]);
+          const loggedSet = logged[i];
+          const isPast = i < logged.length;
+          const isActive = i === logged.length && !isExerciseDone(sessionState, day, exIdx);
 
-        if (isPast && loggedSet) {
-          const hitTarget = loggedSet.reps >= target.reps;
+          if (isPast && loggedSet) {
+            const hitTarget = loggedSet.reps >= target.reps;
+            return (
+              <View key={i} style={[s.setRow, s.setRowDone]}>
+                <View style={[s.setDot, s.setDotDone]} />
+                <Text style={s.setRowLabel}>Set {i + 1}</Text>
+                <Text style={[s.setRowResult, hitTarget ? s.setHit : s.setMiss]}>
+                  {loggedSet.reps} × {loggedSet.weight} kg
+                </Text>
+              </View>
+            );
+          }
+
+          if (isActive) {
+            return (
+              <View key={i} style={[s.setRow, s.setRowActive]}>
+                <View style={[s.setDot, s.setDotActive]} />
+                <Text style={s.setRowLabelActive}>Set {i + 1}</Text>
+                <Text style={s.setRowTarget}>{target.reps} × {target.weight ?? 0} kg</Text>
+              </View>
+            );
+          }
+
           return (
-            <View key={i} style={[s.setRow, s.setRowDone]}>
-              <View style={[s.setDot, s.setDotDone]} />
-              <Text style={s.setRowLabel}>Set {i + 1}</Text>
-              <Text style={[s.setRowResult, hitTarget ? s.setHit : s.setMiss]}>
-                {loggedSet.reps} × {loggedSet.weight} kg
-              </Text>
+            <View key={i} style={[s.setRow, s.setRowFuture]}>
+              <View style={s.setDot} />
+              <Text style={s.setRowLabelFuture}>Set {i + 1}</Text>
+              <Text style={s.setRowFutureVal}>{target.reps} × {target.weight ?? 0} kg</Text>
             </View>
           );
-        }
-
-        if (isActive) {
-          return (
-            <View key={i} style={[s.setRow, s.setRowActive]}>
-              <View style={[s.setDot, s.setDotActive]} />
-              <Text style={s.setRowLabelActive}>Set {i + 1}</Text>
-              <Text style={s.setRowTarget}>{target.reps} × {target.weight ?? 0} kg</Text>
-            </View>
-          );
-        }
-
-        return (
-          <View key={i} style={[s.setRow, s.setRowFuture]}>
-            <View style={s.setDot} />
-            <Text style={s.setRowLabelFuture}>Set {i + 1}</Text>
-            <Text style={s.setRowFutureVal}>{target.reps} × {target.weight ?? 0} kg</Text>
-          </View>
-        );
-      })}
+        })}
+      </View>
       {showAddSet && (
         <Pressable onPress={onAddSet} style={s.addSetRow}>
           <Text style={s.addSetText}>+ Add set</Text>
         </Pressable>
       )}
-    </View>
+    </>
   );
 }
 
@@ -578,9 +586,13 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    backgroundColor: C.cardSoft,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: C.muted,
+    marginTop: 8,
+    borderRadius: 10,
+    backgroundColor: C.card,
+    opacity: 0.65,
+    borderWidth: 1,
+    borderColor: C.muted,
+    borderStyle: 'dashed',
   },
   addSetText: { fontSize: 13, fontWeight: '500', color: C.muted },
 

@@ -180,15 +180,15 @@ describe('finish session', () => {
 // ─── Add extra set ────────────────────────────────────────────────────────────
 
 describe('add extra set', () => {
-  it('does NOT show "+ Add set" while planned sets remain', async () => {
+  it('shows "+ Add set" even while planned sets remain (always visible)', async () => {
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
 
-    // One set logged, one still remaining
+    // One set logged, one still remaining — row is still visible
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
     await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
 
-    expect(screen.queryByText(/\+ Add set/i)).toBeNull();
+    expect(screen.getByText(/\+ Add set/i)).toBeTruthy();
   });
 
   it('shows "+ Add set" after all planned sets for the current exercise are logged', async () => {
