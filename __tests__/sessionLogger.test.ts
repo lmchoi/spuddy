@@ -7,6 +7,7 @@ import {
   isSessionDone,
   getActiveTarget,
   buildSavePayload,
+  addExtraSet,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -181,5 +182,91 @@ describe('buildSavePayload', () => {
     const session = buildSavePayload(state, day, '2026-05-25');
     expect(session.exercises).toHaveLength(1);
     expect(session.exercises[0].name).toBe('Squat');
+  });
+
+  it('extra logged sets appear in the payload unchanged', () => {
+    let state = initSession(day);
+    // Log all 3 planned Squat sets
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    // Add an extra set and log it
+    state = addExtraSet(state, 0);
+    state = logSet(state, 0, 4, 100);
+
+    const session = buildSavePayload(state, day, '2026-05-25');
+    const squat = session.exercises[0];
+    expect(squat.sets).toHaveLength(4);
+    expect(squat.sets[3]).toMatchObject({ reps: 4, weight: 100 });
+  });
+});
+
+// ─── addExtraSet ──────────────────────────────────────────────────────────────
+
+describe('addExtraSet', () => {
+  it('increments extraSetCounts for the target exercise only', () => {
+    let state = initSession(day);
+    // Log all sets for exercise 0 so it is done
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = addExtraSet(state, 0);
+    expect(state.extraSetCounts[0]).toBe(1);
+    expect(state.extraSetCounts[1]).toBe(0);
+  });
+
+  it('clears isResting', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    // isResting is false after last set; set it manually to test
+    state = { ...state, isResting: true };
+    state = addExtraSet(state, 0);
+    expect(state.isResting).toBe(false);
+  });
+
+  it('makes isExerciseDone return false again', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    expect(isExerciseDone(state, day, 0)).toBe(true);
+    state = addExtraSet(state, 0);
+    expect(isExerciseDone(state, day, 0)).toBe(false);
+  });
+
+  it('isExerciseDone returns true again after logging the extra set', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = addExtraSet(state, 0);
+    state = logSet(state, 0, 4, 100);
+    expect(isExerciseDone(state, day, 0)).toBe(true);
+  });
+});
+
+// ─── initSession — extraSetCounts ─────────────────────────────────────────────
+
+describe('initSession extraSetCounts', () => {
+  it('initialises extraSetCounts to all zeros', () => {
+    const state = initSession(day);
+    expect(state.extraSetCounts).toEqual([0, 0]);
+  });
+});
+
+// ─── getActiveTarget — extra-set territory ────────────────────────────────────
+
+describe('getActiveTarget in extra-set territory', () => {
+  it('pre-fills from the last logged set when beyond planned targets', () => {
+    let state = initSession(day);
+    // Log all 3 planned sets (last at 4 reps instead of 5)
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 4, 100);
+    state = addExtraSet(state, 0);
+    const target = getActiveTarget(state, day, 0);
+    expect(target).toEqual({ reps: 4, weight: 100 });
   });
 });
