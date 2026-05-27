@@ -176,3 +176,73 @@ describe('finish session', () => {
     expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
   });
 });
+
+// ─── Add extra set ────────────────────────────────────────────────────────────
+
+describe('add extra set', () => {
+  it('does NOT show "+ Add set" while planned sets remain', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // One set logged, one still remaining
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    expect(screen.queryByText(/\+ Add set/i)).toBeNull();
+  });
+
+  it('shows "+ Add set" after all planned sets for the current exercise are logged', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log both Squat sets
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
+  });
+
+  it('tapping "+ Add set" brings back steppers and Done button (not "Next exercise")', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log both Squat sets
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/\+ Add set/i)); });
+
+    // Should see the Done button again (steppers + Done), not "Next: Bench"
+    expect(screen.queryByText(/Next:/i)).toBeNull();
+    expect(screen.getByText(/Done/i)).toBeTruthy();
+  });
+
+  it('saveSession receives the extra set in the payload on finish', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log both Squat sets
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Add an extra set and log it
+    await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/\+ Add set/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Now jump to Bench and finish
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    expect(saveSession).toHaveBeenCalledTimes(1);
+    const payload = (saveSession as jest.Mock).mock.calls[0][1];
+    const squat = payload.exercises.find((e: { name: string }) => e.name === 'Squat');
+    expect(squat.sets).toHaveLength(3); // 2 planned + 1 extra
+  });
+});

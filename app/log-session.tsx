@@ -23,6 +23,7 @@ import {
   isSessionDone,
   getActiveTarget,
   buildSavePayload,
+  addExtraSet,
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import type { ProgramDay } from '@/src/types';
@@ -108,6 +109,7 @@ function ExerciseStrip({
       {day.exercises.map((ex, i) => {
         const isActive = i === sessionState.currentExerciseIdx;
         const done = isExerciseDone(sessionState, day, i);
+        const dotCount = ex.targets.length + sessionState.extraSetCounts[i];
         return (
           <Pressable
             key={i}
@@ -130,7 +132,7 @@ function ExerciseStrip({
               {ex.name}
             </Text>
             <View style={s.stripDots}>
-              {ex.targets.map((_, si) => (
+              {Array.from({ length: dotCount }).map((_, si) => (
                 <View
                   key={si}
                   style={[
@@ -154,17 +156,26 @@ function SetList({
   day,
   sessionState,
   exIdx,
+  isCurrentExercise,
+  onAddSet,
 }: {
   day: ProgramDay;
   sessionState: SessionState;
   exIdx: number;
+  isCurrentExercise: boolean;
+  onAddSet: () => void;
 }) {
   const ex = day.exercises[exIdx];
   const logged = sessionState.loggedSets[exIdx];
+  const showAddSet = isCurrentExercise && isExerciseDone(sessionState, day, exIdx);
+
+  // Build a combined list: planned targets + any extra logged sets
+  const totalRows = Math.max(ex.targets.length, logged.length);
 
   return (
     <View style={s.setList}>
-      {ex.targets.map((target, i) => {
+      {Array.from({ length: totalRows }).map((_, i) => {
+        const target = ex.targets[i] ?? ex.targets[ex.targets.length - 1];
         const loggedSet = logged[i];
         const isPast = i < logged.length;
         const isActive = i === logged.length && !isExerciseDone(sessionState, day, exIdx);
@@ -200,6 +211,11 @@ function SetList({
           </View>
         );
       })}
+      {showAddSet && (
+        <Pressable onPress={onAddSet} style={s.addSetRow}>
+          <Text style={s.addSetText}>+ Add set</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -234,7 +250,7 @@ function BottomAction({
   const exIdx = sessionState.currentExerciseIdx;
   const ex = day.exercises[exIdx];
   const logged = sessionState.loggedSets[exIdx].length;
-  const total = ex.targets.length;
+  const total = ex.targets.length + sessionState.extraSetCounts[exIdx];
 
   if (sessionState.isResting) {
     return <RestTimer onSkip={onSkipRest} />;
@@ -366,6 +382,13 @@ export default function LogSession() {
     setState({ status: 'ready', day: state.day, session: next, input: nextInput });
   }, [state]);
 
+  const handleAddSet = useCallback((exIdx: number) => {
+    if (state.status !== 'ready') return;
+    const next = addExtraSet(state.session, exIdx);
+    const nextInput = inputFromTarget(state.day, next);
+    setState({ status: 'ready', day: state.day, session: next, input: nextInput });
+  }, [state]);
+
   const handleFinish = useCallback(async () => {
     if (state.status !== 'ready') return;
     const { day, session } = state;
@@ -431,7 +454,13 @@ export default function LogSession() {
         <View style={s.exBlock}>
           <Text style={s.exName}>{ex.name}</Text>
         </View>
-        <SetList day={day} sessionState={session} exIdx={exIdx} />
+        <SetList
+          day={day}
+          sessionState={session}
+          exIdx={exIdx}
+          isCurrentExercise={true}
+          onAddSet={() => handleAddSet(exIdx)}
+        />
       </ScrollView>
 
       <View style={[s.bottom, { paddingBottom: insets.bottom + 16 }]}>
@@ -544,6 +573,16 @@ const s = StyleSheet.create({
   setMiss: { color: C.below },
   setRowTarget: { flex: 1, fontSize: 14, fontWeight: '600', color: C.text, textAlign: 'right' },
   setRowFutureVal: { flex: 1, fontSize: 13, color: C.muted, textAlign: 'right' },
+
+  addSetRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    backgroundColor: C.cardSoft,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: C.muted,
+  },
+  addSetText: { fontSize: 13, fontWeight: '500', color: C.muted },
 
   bottom: {
     paddingHorizontal: 18,
