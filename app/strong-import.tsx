@@ -23,7 +23,7 @@ export default function StrongImportScreen() {
   const [csvText, setCsvText] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
 
-  async function pickFile() {
+  const pickFile = useCallback(async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: ['text/csv', '*/*'],
       copyToCacheDirectory: true,
@@ -48,7 +48,7 @@ export default function StrongImportScreen() {
       Alert.alert('Could not read file', 'Please select a valid Strong CSV export.');
       router.back();
     }
-  }
+  }, [router]);
 
   const hasFiredRef = useRef(false);
   useFocusEffect(useCallback(() => {
@@ -56,7 +56,7 @@ export default function StrongImportScreen() {
       hasFiredRef.current = true;
       pickFile();
     }
-  }, []));
+  }, [pickFile]));
 
   function toggleWorkout(name: string) {
     setSelected(prev => {
