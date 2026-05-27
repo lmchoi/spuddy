@@ -108,9 +108,11 @@ function ExerciseStrip({
       {day.exercises.map((ex, i) => {
         const isActive = i === sessionState.currentExerciseIdx;
         const done = isExerciseDone(sessionState, day, i);
+        const loggedCount = sessionState.loggedSets[i].length;
         return (
           <Pressable
             key={i}
+            testID={`strip-chip-${i}`}
             onPress={() => onSelect(i)}
             style={({ pressed }) => [
               s.stripChip,
@@ -130,16 +132,29 @@ function ExerciseStrip({
               {ex.name}
             </Text>
             <View style={s.stripDots}>
-              {ex.targets.map((_, si) => (
-                <View
-                  key={si}
-                  style={[
-                    s.stripDot,
-                    si < sessionState.loggedSets[i].length &&
-                      (isActive ? s.stripDotActiveHit : s.stripDotHit),
-                  ]}
-                />
-              ))}
+              {ex.targets.map((target, si) => {
+                const loggedSet = sessionState.loggedSets[i][si];
+                const isLogged = si < loggedCount;
+                const isActiveDot = si === loggedCount && isActive && !done;
+
+                let dotStyle;
+                if (isLogged && loggedSet) {
+                  dotStyle =
+                    loggedSet.reps >= target.reps
+                      ? s.stripDotHit
+                      : s.stripDotMiss;
+                } else if (isActiveDot) {
+                  dotStyle = s.stripDotActive;
+                }
+
+                return (
+                  <View
+                    key={si}
+                    testID={`strip-dot-${i}-${si}`}
+                    style={[s.stripDot, dotStyle]}
+                  />
+                );
+              })}
             </View>
           </Pressable>
         );
@@ -488,25 +503,27 @@ const s = StyleSheet.create({
     gap: 8,
   },
   stripChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    borderRadius: 999,
     borderWidth: 1,
     borderColor: C.border,
     backgroundColor: C.card,
-    gap: 6,
-    minWidth: 90,
+    gap: 7,
   },
   stripChipActive: { borderColor: C.hit, backgroundColor: C.hitBg },
-  stripChipDone: { borderColor: C.border, backgroundColor: 'transparent', opacity: 0.5 },
+  stripChipDone: { borderColor: C.border, backgroundColor: 'transparent', opacity: 0.6 },
   stripChipPressed: { opacity: 0.7 },
   stripChipName: { fontSize: 12, fontWeight: '600', color: C.text2 },
   stripChipNameActive: { color: C.hit },
   stripChipNameDone: { color: C.muted },
   stripDots: { flexDirection: 'row', gap: 4 },
   stripDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.border },
-  stripDotHit: { backgroundColor: C.muted },
-  stripDotActiveHit: { backgroundColor: C.hit },
+  stripDotHit: { backgroundColor: C.hit },
+  stripDotMiss: { backgroundColor: C.below },
+  stripDotActive: { backgroundColor: 'transparent', borderWidth: 1, borderColor: C.hit },
 
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 18, gap: 20 },
@@ -535,7 +552,7 @@ const s = StyleSheet.create({
   setRowFuture: { opacity: 0.35 },
   setDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.border, flexShrink: 0 },
   setDotDone: { backgroundColor: C.hit },
-  setDotActive: { backgroundColor: C.hit, shadowColor: C.hit, shadowOpacity: 0.8, shadowRadius: 4, elevation: 4 },
+  setDotActive: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: C.hit },
   setRowLabel: { fontSize: 12, color: C.sub, width: 44 },
   setRowLabelActive: { fontSize: 12, fontWeight: '600', color: C.text2, width: 44 },
   setRowLabelFuture: { fontSize: 12, color: C.muted, width: 44 },

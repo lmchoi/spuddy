@@ -2,6 +2,7 @@ import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-
 import LogSession from '../app/log-session';
 import { getProgramDay } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
+import { C } from '@/components/spuddy/palette';
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
@@ -174,5 +175,71 @@ describe('finish session', () => {
 
     expect(saveSession).toHaveBeenCalledTimes(1);
     expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+  });
+});
+
+// ─── Strip pill redesign ──────────────────────────────────────────────────────
+
+describe('strip pill redesign', () => {
+  it('strip chip has pill border-radius (999)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    const chip = screen.getByTestId('strip-chip-0');
+    expect(chip).toHaveStyle({ borderRadius: 999 });
+  });
+
+  it('done chip has opacity 0.6', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Complete all 2 Squat sets to make it done
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Jump away to Bench → Squat chip becomes done & not-active
+    await act(async () => { fireEvent.press(screen.getByText(/Next: Bench/i)); });
+
+    const chip = screen.getByTestId('strip-chip-0');
+    expect(chip).toHaveStyle({ opacity: 0.6 });
+  });
+
+  it('dot for a logged set that hit target renders with hit colour', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log set 0 for Squat at default reps (5 == target 5) → hit
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    // Strip dot (exercise 0, set 0) should show hit colour
+    const dot = screen.getByTestId('strip-dot-0-0');
+    expect(dot).toHaveStyle({ backgroundColor: C.hit });
+  });
+
+  it('dot for a logged set that missed target renders with miss colour', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Decrement reps once: 5 → 4 (below target of 5)
+    const decButtons = screen.getAllByText('−');
+    await act(async () => { fireEvent.press(decButtons[0]); }); // reps stepper
+
+    // Log set at 4 reps → miss
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    const dot = screen.getByTestId('strip-dot-0-0');
+    expect(dot).toHaveStyle({ backgroundColor: C.below });
+  });
+
+  it('active set dot renders with transparent background and hit border colour', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Before any logging: (exercise 0, set 0) is the active set
+    const dot = screen.getByTestId('strip-dot-0-0');
+    expect(dot).toHaveStyle({ backgroundColor: 'transparent' });
+    expect(dot).toHaveStyle({ borderColor: C.hit });
   });
 });
