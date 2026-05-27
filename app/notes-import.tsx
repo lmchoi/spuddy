@@ -31,6 +31,9 @@ export default function NotesImportScreen() {
   const totalExercises = parsed
     ? parsed.sections.reduce((sum, s) => sum + s.exercises.length, 0)
     : 0;
+  const importableCount = parsed
+    ? parsed.sections.filter(s => s.exercises.length > 0).length
+    : 0;
   const showUnitPicker = parsed != null && parsed.inferredUnit === null;
   const canImport = totalExercises > 0 && !importing;
 
@@ -136,7 +139,7 @@ export default function NotesImportScreen() {
             {importing
               ? 'Importing…'
               : totalExercises > 0
-                ? `Import ${parsed!.sections.length} program${parsed!.sections.length !== 1 ? 's' : ''}`
+                ? `Import ${importableCount} program${importableCount !== 1 ? 's' : ''}`
                 : 'Paste notes to import'}
           </Text>
         </Pressable>

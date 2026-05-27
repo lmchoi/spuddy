@@ -130,6 +130,20 @@ describe('header finish button', () => {
     expect(saveSession).toHaveBeenCalledTimes(1);
     expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
   });
+
+  it('shows an alert and does not navigate when saveSession throws', async () => {
+    (saveSession as jest.Mock).mockRejectedValueOnce(new Error('disk full'));
+    const { Alert } = require('react-native');
+    jest.spyOn(Alert, 'alert');
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText('Finish')); });
+
+    expect(Alert.alert).toHaveBeenCalledWith('Save failed', expect.any(String));
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
 });
 
 // ─── Finish session ───────────────────────────────────────────────────────────

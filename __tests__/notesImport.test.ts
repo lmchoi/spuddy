@@ -112,4 +112,29 @@ describe('importFromNotes', () => {
     expect(programs).toHaveLength(1);
     expect(programs[0].name).toBe('Pull');
   });
+
+  it('does not wipe existing programs when all parsed sections are empty', async () => {
+    // Seed an existing program
+    await importFromNotes(db, ONE_SECTION);
+    const before = await getPrograms(db);
+    expect(before).toHaveLength(1);
+
+    // Import notes with sections but no exercises
+    const allEmpty: ParsedNotes = {
+      sections: [
+        { name: 'Header only', exercises: [] },
+        { name: 'Also empty', exercises: [] },
+      ],
+      inferredUnit: null,
+      skippedLines: 0,
+    };
+    const result = await importFromNotes(db, allEmpty);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.programsCreated).toBe(0);
+
+    // Existing programs must be untouched
+    const after = await getPrograms(db);
+    expect(after).toHaveLength(1);
+    expect(after[0].name).toBe('Push');
+  });
 });
