@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react-native';
+import { KeyboardAvoidingView } from 'react-native';
 import NotesImportScreen from '../app/notes-import';
 
 const mockBack = jest.fn();
@@ -21,6 +22,11 @@ beforeEach(() => {
 });
 
 describe('NotesImportScreen', () => {
+  it('wraps content in KeyboardAvoidingView to keep Import button above keyboard', () => {
+    const { UNSAFE_getByType } = render(<NotesImportScreen />);
+    expect(UNSAFE_getByType(KeyboardAvoidingView)).toBeTruthy();
+  });
+
   it('renders the paste textarea', () => {
     render(<NotesImportScreen />);
     expect(screen.getByPlaceholderText(/Upper body/)).toBeTruthy();
