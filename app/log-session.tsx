@@ -26,6 +26,7 @@ import {
   buildSavePayload,
   addExtraSet,
   totalSetCount,
+  sessionProgress,
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import type { ProgramDay } from '@/src/types';
@@ -460,8 +461,7 @@ export default function LogSession() {
   const { day, session, input } = state;
   const exIdx = session.currentExerciseIdx;
   const ex = day.exercises[exIdx];
-  const doneSets = session.loggedSets.reduce((n, sets) => n + sets.length, 0);
-  const totalSets = day.exercises.reduce((n, e) => n + e.targets.length, 0);
+  const { done: doneSets, total: totalSets } = sessionProgress(session, day);
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>

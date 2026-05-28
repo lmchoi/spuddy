@@ -9,6 +9,7 @@ import {
   buildSavePayload,
   addExtraSet,
   totalSetCount,
+  sessionProgress,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -254,6 +255,28 @@ describe('initSession extraSetCounts', () => {
   it('initialises extraSetCounts to all zeros', () => {
     const state = initSession(day);
     expect(state.extraSetCounts).toEqual([0, 0]);
+  });
+});
+
+// ─── sessionProgress ─────────────────────────────────────────────────────────
+
+describe('sessionProgress', () => {
+  it('returns 0 done and full total at session start', () => {
+    const state = initSession(day);
+    expect(sessionProgress(state, day)).toEqual({ done: 0, total: 5 });
+  });
+
+  it('counts each logged set toward done', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    expect(sessionProgress(state, day)).toEqual({ done: 2, total: 5 });
+  });
+
+  it('includes extra sets in total', () => {
+    let state = initSession(day);
+    state = addExtraSet(state, 0);
+    expect(sessionProgress(state, day)).toEqual({ done: 0, total: 6 });
   });
 });
 
