@@ -13,7 +13,7 @@ echo "  checking test/source co-presence..."
 staged=$(git diff --cached --name-only)
 
 source_files=$(echo "$staged" | grep -E '\.(ts|tsx)$' \
-  | grep -vE '(\.test\.|\.spec\.|__tests__|\.config\.|jest\.setup|\.d\.ts)' \
+  | grep -vE '(\.test\.|\.spec\.|__tests__|\.config\.|jest\.setup|\.d\.ts|\.styles\.ts)' \
   | grep -vE '^(types/|constants/)' \
   || true)
 
