@@ -1,5 +1,4 @@
 import { View, Text } from 'react-native';
-import { C } from './palette';
 import { styles } from './HeroStat.styles';
 
 interface Props {

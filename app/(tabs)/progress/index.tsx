@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { getAllSessions } from '@/src/storage';
 import type { Session } from '@/src/types';
-import { C } from '@/components/spuddy/palette';
 import { ActivityStrip } from '@/components/spuddy/ActivityStrip';
 import { HeroStat } from '@/components/spuddy/HeroStat';
 import { SessionRow } from '@/components/spuddy/SessionRow';
