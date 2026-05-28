@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,9 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { styles } from '@/styles/notes-import.styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getDB } from '@/src/db';
 import { parseWorkoutNotes } from '@/src/notesParser';
-import { importFromNotes } from '@/src/notesImport';
 import { C } from '@/components/spuddy/palette';
 
 export default function NotesImportScreen() {
@@ -23,7 +20,6 @@ export default function NotesImportScreen() {
   const insets = useSafeAreaInsets();
   const [text, setText] = useState('');
   const [unit, setUnit] = useState<'kg' | 'lbs'>('kg');
-  const [importing, setImporting] = useState(false);
 
   const parsed = useMemo(
     () => (text.trim() ? parseWorkoutNotes(text) : null),
@@ -37,28 +33,14 @@ export default function NotesImportScreen() {
     ? parsed.sections.filter(s => s.exercises.length > 0).length
     : 0;
   const showUnitPicker = parsed != null && parsed.inferredUnit === null;
-  const canImport = totalExercises > 0 && !importing;
+  const canReview = totalExercises > 0;
 
-  async function handleImport() {
-    if (!canImport || !parsed) return;
-    setImporting(true);
-    try {
-      const db = await getDB();
-      const result = await importFromNotes(db, parsed);
-      if (result.success) {
-        Alert.alert(
-          'Import complete',
-          `${result.programsCreated} program${result.programsCreated !== 1 ? 's' : ''} created.`,
-          [{ text: 'OK', onPress: () => router.replace('/(tabs)/settings') }]
-        );
-      } else {
-        Alert.alert('Import failed', result.error);
-      }
-    } catch {
-      Alert.alert('Import failed', 'Something went wrong.');
-    } finally {
-      setImporting(false);
-    }
+  function handleReview() {
+    if (!canReview || !parsed) return;
+    router.push({
+      pathname: '/notes-import-review',
+      params: { parsedNotes: JSON.stringify(parsed) },
+    });
   }
 
   return (
@@ -89,7 +71,7 @@ export default function NotesImportScreen() {
           placeholderTextColor={C.muted}
           value={text}
           onChangeText={setText}
-          editable={!importing}
+          editable
           autoCorrect={false}
           autoCapitalize="none"
           textAlignVertical="top"
@@ -137,16 +119,14 @@ export default function NotesImportScreen() {
 
       <View style={[styles.stickyBar, { paddingBottom: insets.bottom + 18 }]}>
         <Pressable
-          onPress={handleImport}
-          disabled={!canImport}
-          style={[styles.importBtn, !canImport && styles.importBtnDisabled]}
+          onPress={handleReview}
+          disabled={!canReview}
+          style={[styles.importBtn, !canReview && styles.importBtnDisabled]}
         >
-          <Text style={[styles.importBtnText, !canImport && styles.importBtnTextDisabled]}>
-            {importing
-              ? 'Importing…'
-              : totalExercises > 0
-                ? `Import ${importableCount} program${importableCount !== 1 ? 's' : ''}`
-                : 'Paste notes to import'}
+          <Text style={[styles.importBtnText, !canReview && styles.importBtnTextDisabled]}>
+            {totalExercises > 0
+              ? `Review ${importableCount} program${importableCount !== 1 ? 's' : ''}`
+              : 'Paste notes to import'}
           </Text>
         </Pressable>
       </View>
