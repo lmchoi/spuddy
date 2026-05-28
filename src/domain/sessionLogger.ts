@@ -62,6 +62,15 @@ export function isExerciseDone(
   return state.loggedSets[exIdx].length >= totalSetCount(state, day, exIdx);
 }
 
+export function sessionProgress(
+  state: SessionState,
+  day: ProgramDay,
+): { done: number; total: number } {
+  const done = state.loggedSets.reduce((n, sets) => n + sets.length, 0);
+  const total = day.exercises.reduce((n, _, i) => n + totalSetCount(state, day, i), 0);
+  return { done, total };
+}
+
 export function isSessionDone(state: SessionState, day: ProgramDay): boolean {
   return day.exercises.every((_, i) => isExerciseDone(state, day, i));
 }
