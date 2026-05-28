@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { getSessionByDate } from '@/src/storage';
 import { getSetStatus, getEntryStatus } from '@/src/domain/status';
+import { workingSets } from '@/src/domain/exerciseEntry';
 import { computeStats, coachLine } from '@/src/domain/stats';
 import type { SessionStats } from '@/src/domain/stats';
 import type { Session, ExerciseEntry, Target } from '@/src/types';
@@ -104,7 +105,7 @@ function DistBar({ stats }: { stats: SessionStats }) {
 
 function ExerciseRow({ entry }: { entry: ExerciseEntry }) {
   const [open, setOpen] = useState(false);
-  const working = entry.sets.filter(s => !s.isWarmup);
+  const working = workingSets(entry);
   const status = getEntryStatus(entry);
   const statusColor = STATUS_COLOR[status];
   const statusBg = STATUS_BG[status];

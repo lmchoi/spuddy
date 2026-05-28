@@ -15,6 +15,7 @@ import { parseLiftohistoryTextDetailed } from '@/src/parser';
 import type { ParseLine, ParseResult } from '@/src/parser';
 import { saveSession, sessionExists } from '@/src/storage';
 import type { ExerciseEntry } from '@/src/types';
+import { workingSets, warmupSets } from '@/src/domain/exerciseEntry';
 import { C } from '@/components/spuddy/palette';
 
 // ─── Spuddy mascot ───────────────────────────────────────────────────────────
@@ -39,7 +40,7 @@ function formatWeight(kg: number): string {
 }
 
 function exerciseSummary(entry: ExerciseEntry): string {
-  const working = entry.sets.filter(s => !s.isWarmup);
+  const working = workingSets(entry);
   if (working.length === 0) return '—';
 
   const weights = working.map(s => s.weight);
@@ -59,8 +60,8 @@ function exerciseSummary(entry: ExerciseEntry): string {
 
 function ExercisePreviewRow({ entry }: { entry: ExerciseEntry }) {
   const [open, setOpen] = useState(false);
-  const working = entry.sets.filter(s => !s.isWarmup);
-  const warmups = entry.sets.filter(s => s.isWarmup);
+  const working = workingSets(entry);
+  const warmups = warmupSets(entry);
   const summary = exerciseSummary(entry);
 
   return (
