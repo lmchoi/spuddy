@@ -7,6 +7,7 @@
 Screen files are 40–50% `StyleSheet` boilerplate. Move style blocks into sibling files, then extract shared tokens. No logic or layout changes — pure reorganisation.
 
 ## Phase 1: ADR + CLAUDE.md ✅ done
+## Phase 2: StyleSheet extraction ✅ done (branch: refactor/stylesheet-extraction)
 
 - `docs/decisions/011-styling-approach.md` written
 - `CLAUDE.md` updated with Styling section (documents that `src/tw/` is intentionally unused)
