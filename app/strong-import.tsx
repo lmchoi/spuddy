@@ -7,7 +7,6 @@ import { getDB } from '@/src/db';
 import { parseStrongCsv } from '@/src/strongParser';
 import { importFromStrong } from '@/src/strongImport';
 import type { ImportedWorkoutGroup } from '@/src/types';
-import { C } from '@/components/spuddy/palette';
 
 const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 

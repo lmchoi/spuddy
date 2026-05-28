@@ -3,14 +3,13 @@ import {
   Pressable, ScrollView, StatusBar, Text,
   TextInput, View,
 } from 'react-native';
-import { styles, COL_SET, COL_REPS, COL_WEIGHT, COL_REST, COL_X } from './[dayIndex].styles';
+import { styles } from './[dayIndex].styles';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ProgramDay, ProgramExercise, Target } from '@/src/types';
 import { summaryLine } from '@/src/domain/programDay';
 import { getDB } from '@/src/db';
 import { getProgramDay, updateProgramDay } from '@/src/programStorage';
-import { C } from '@/components/spuddy/palette';
 
 // ─── Sample shown until real DB data arrives ─────────────────────────────────
 

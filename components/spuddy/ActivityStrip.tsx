@@ -1,5 +1,4 @@
 import { View, Text } from 'react-native';
-import { C } from './palette';
 import { styles } from './ActivityStrip.styles';
 
 interface Props {

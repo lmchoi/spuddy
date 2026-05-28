@@ -8,7 +8,6 @@ import { getDB } from '@/src/db';
 import { importProgramFromJson } from '@/src/programImport';
 import { getPrograms } from '@/src/programStorage';
 import type { Program } from '@/src/types';
-import { C } from '@/components/spuddy/palette';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
