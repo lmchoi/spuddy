@@ -5,10 +5,10 @@ import {
   Pressable,
   ScrollView,
   StatusBar,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { styles } from './log-session.styles';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';
@@ -52,16 +52,16 @@ function Stepper({
   format: (v: number) => string;
 }) {
   return (
-    <View style={s.stepper}>
-      <Pressable onPress={onDec} style={({ pressed }) => [s.stepBtn, pressed && s.stepBtnPressed]}>
-        <Text style={s.stepBtnText}>−</Text>
+    <View style={styles.stepper}>
+      <Pressable onPress={onDec} style={({ pressed }) => [styles.stepBtn, pressed && styles.stepBtnPressed]}>
+        <Text style={styles.stepBtnText}>−</Text>
       </Pressable>
-      <View style={s.stepValue}>
-        <Text style={s.stepNum}>{format(value)}</Text>
-        <Text style={s.stepLabel}>{label}</Text>
+      <View style={styles.stepValue}>
+        <Text style={styles.stepNum}>{format(value)}</Text>
+        <Text style={styles.stepLabel}>{label}</Text>
       </View>
-      <Pressable onPress={onInc} style={({ pressed }) => [s.stepBtn, pressed && s.stepBtnPressed]}>
-        <Text style={s.stepBtnText}>+</Text>
+      <Pressable onPress={onInc} style={({ pressed }) => [styles.stepBtn, pressed && styles.stepBtnPressed]}>
+        <Text style={styles.stepBtnText}>+</Text>
       </Pressable>
     </View>
   );
@@ -83,14 +83,14 @@ function RestTimer({ onSkip }: { onSkip: () => void }) {
   const pct = remaining / 90;
 
   return (
-    <View style={s.restBlock}>
-      <Text style={s.restLabel}>Rest</Text>
-      <Text style={s.restTime}>{mins}:{String(secs).padStart(2, '0')}</Text>
-      <View style={s.restBar}>
-        <View style={[s.restBarFill, { width: `${pct * 100}%` }]} />
+    <View style={styles.restBlock}>
+      <Text style={styles.restLabel}>Rest</Text>
+      <Text style={styles.restTime}>{mins}:{String(secs).padStart(2, '0')}</Text>
+      <View style={styles.restBar}>
+        <View style={[styles.restBarFill, { width: `${pct * 100}%` }]} />
       </View>
-      <Pressable onPress={onSkip} style={({ pressed }) => [s.skipBtn, pressed && s.skipBtnPressed]}>
-        <Text style={s.skipBtnText}>Skip rest</Text>
+      <Pressable onPress={onSkip} style={({ pressed }) => [styles.skipBtn, pressed && styles.skipBtnPressed]}>
+        <Text style={styles.skipBtnText}>Skip rest</Text>
       </Pressable>
     </View>
   );
@@ -108,7 +108,7 @@ function ExerciseStrip({
   onSelect: (idx: number) => void;
 }) {
   return (
-    <View style={s.strip}>
+    <View style={styles.strip}>
       {day.exercises.map((ex, i) => {
         const isActive = i === sessionState.currentExerciseIdx;
         const done = isExerciseDone(sessionState, day, i);
@@ -120,23 +120,23 @@ function ExerciseStrip({
             testID={`strip-chip-${i}`}
             onPress={() => onSelect(i)}
             style={({ pressed }) => [
-              s.stripChip,
-              isActive && s.stripChipActive,
-              done && !isActive && s.stripChipDone,
-              pressed && s.stripChipPressed,
+              styles.stripChip,
+              isActive && styles.stripChipActive,
+              done && !isActive && styles.stripChipDone,
+              pressed && styles.stripChipPressed,
             ]}
           >
             <Text
               style={[
-                s.stripChipName,
-                isActive && s.stripChipNameActive,
-                done && !isActive && s.stripChipNameDone,
+                styles.stripChipName,
+                isActive && styles.stripChipNameActive,
+                done && !isActive && styles.stripChipNameDone,
               ]}
               numberOfLines={1}
             >
               {ex.name}
             </Text>
-            <View style={s.stripDots}>
+            <View style={styles.stripDots}>
               {Array.from({ length: dotCount }).map((_, si) => {
                 const loggedSet = sessionState.loggedSets[i][si];
                 const target = ex.targets[si]; // undefined for extra sets
@@ -147,17 +147,17 @@ function ExerciseStrip({
                 if (isLogged && loggedSet) {
                   dotStyle =
                     !target || loggedSet.reps >= target.reps
-                      ? s.stripDotHit
-                      : s.stripDotMiss;
+                      ? styles.stripDotHit
+                      : styles.stripDotMiss;
                 } else if (isActiveDot) {
-                  dotStyle = s.stripDotActive;
+                  dotStyle = styles.stripDotActive;
                 }
 
                 return (
                   <View
                     key={si}
                     testID={`strip-dot-${i}-${si}`}
-                    style={[s.stripDot, dotStyle]}
+                    style={[styles.stripDot, dotStyle]}
                   />
                 );
               })}
@@ -198,8 +198,8 @@ function SetList({
     // Option C layout: outer solid-border wrapper (setCard) contains the card
     // rows (setList, card bg, overflow:hidden) and the dashed add-set button.
     // overflow:hidden on setCard clips both to the 14px rounded corners.
-    <View style={s.setCard}>
-      <View style={[s.setList, showAddSet && s.setListOpen]}>
+    <View style={styles.setCard}>
+      <View style={[styles.setList, showAddSet && styles.setListOpen]}>
         {Array.from({ length: totalRows }).map((_, i) => {
           // Extra-set target: always use the last planned target so the
           // hit/miss colour is stable regardless of how the previous set went.
@@ -215,10 +215,10 @@ function SetList({
           if (isPast && loggedSet) {
             const hitTarget = loggedSet.reps >= target.reps;
             return (
-              <View key={i} style={[s.setRow, s.setRowDone]}>
-                <View style={[s.setDot, s.setDotDone]} />
-                <Text style={s.setRowLabel}>Set {i + 1}</Text>
-                <Text style={[s.setRowResult, hitTarget ? s.setHit : s.setMiss]}>
+              <View key={i} style={[styles.setRow, styles.setRowDone]}>
+                <View style={[styles.setDot, styles.setDotDone]} />
+                <Text style={styles.setRowLabel}>Set {i + 1}</Text>
+                <Text style={[styles.setRowResult, hitTarget ? styles.setHit : styles.setMiss]}>
                   {loggedSet.reps} × {loggedSet.weight} kg
                 </Text>
               </View>
@@ -227,26 +227,26 @@ function SetList({
 
           if (isActive) {
             return (
-              <View key={i} style={[s.setRow, s.setRowActive]}>
-                <View style={[s.setDot, s.setDotActive]} />
-                <Text style={s.setRowLabelActive}>Set {i + 1}</Text>
-                <Text style={s.setRowTarget}>{target.reps} × {target.weight ?? 0} kg</Text>
+              <View key={i} style={[styles.setRow, styles.setRowActive]}>
+                <View style={[styles.setDot, styles.setDotActive]} />
+                <Text style={styles.setRowLabelActive}>Set {i + 1}</Text>
+                <Text style={styles.setRowTarget}>{target.reps} × {target.weight ?? 0} kg</Text>
               </View>
             );
           }
 
           return (
-            <View key={i} style={[s.setRow, s.setRowFuture]}>
-              <View style={s.setDot} />
-              <Text style={s.setRowLabelFuture}>Set {i + 1}</Text>
-              <Text style={s.setRowFutureVal}>{target.reps} × {target.weight ?? 0} kg</Text>
+            <View key={i} style={[styles.setRow, styles.setRowFuture]}>
+              <View style={styles.setDot} />
+              <Text style={styles.setRowLabelFuture}>Set {i + 1}</Text>
+              <Text style={styles.setRowFutureVal}>{target.reps} × {target.weight ?? 0} kg</Text>
             </View>
           );
         })}
       </View>
       {showAddSet && (
-        <Pressable onPress={onAddSet} style={s.addSetRow}>
-          <Text style={s.addSetText}>+ Add set</Text>
+        <Pressable onPress={onAddSet} style={styles.addSetRow}>
+          <Text style={styles.addSetText}>+ Add set</Text>
         </Pressable>
       )}
     </View>
@@ -290,8 +290,8 @@ function BottomAction({
 
   if (isSessionDone(sessionState, day)) {
     return (
-      <Pressable onPress={onFinish} style={({ pressed }) => [s.confirmBtn, pressed && s.confirmBtnPressed]}>
-        <Text style={s.confirmBtnText}>Finish session</Text>
+      <Pressable onPress={onFinish} style={({ pressed }) => [styles.confirmBtn, pressed && styles.confirmBtnPressed]}>
+        <Text style={styles.confirmBtnText}>Finish session</Text>
       </Pressable>
     );
   }
@@ -299,8 +299,8 @@ function BottomAction({
   if (isExerciseDone(sessionState, day, exIdx)) {
     const next = day.exercises[exIdx + 1];
     return (
-      <Pressable onPress={next ? onNextExercise : onFinish} style={({ pressed }) => [s.confirmBtn, pressed && s.confirmBtnPressed]}>
-        <Text style={s.confirmBtnText}>
+      <Pressable onPress={next ? onNextExercise : onFinish} style={({ pressed }) => [styles.confirmBtn, pressed && styles.confirmBtnPressed]}>
+        <Text style={styles.confirmBtnText}>
           {next ? `Next: ${next.name}` : 'Finish session'}
         </Text>
       </Pressable>
@@ -313,7 +313,7 @@ function BottomAction({
 
   return (
     <>
-      <View style={s.stepperRow}>
+      <View style={styles.stepperRow}>
         <Stepper
           value={input.reps}
           label="reps"
@@ -321,7 +321,7 @@ function BottomAction({
           onInc={onIncReps}
           format={v => String(v)}
         />
-        <View style={s.stepperDivider} />
+        <View style={styles.stepperDivider} />
         <Stepper
           value={input.weight}
           label="kg"
@@ -330,8 +330,8 @@ function BottomAction({
           format={v => v === 0 ? 'BW' : String(v)}
         />
       </View>
-      <Pressable onPress={onLogSet} style={({ pressed }) => [s.confirmBtn, pressed && s.confirmBtnPressed]}>
-        <Text style={s.confirmBtnText}>{label}</Text>
+      <Pressable onPress={onLogSet} style={({ pressed }) => [styles.confirmBtn, pressed && styles.confirmBtnPressed]}>
+        <Text style={styles.confirmBtnText}>{label}</Text>
       </Pressable>
     </>
   );
@@ -437,7 +437,7 @@ export default function LogSession() {
 
   if (state.status === 'loading') {
     return (
-      <View style={[s.container, s.centered]}>
+      <View style={[styles.container, styles.centered]}>
         <Stack.Screen options={{ headerShown: false }} />
         <ActivityIndicator color={C.hit} />
       </View>
@@ -446,12 +446,12 @@ export default function LogSession() {
 
   if (state.status === 'empty') {
     return (
-      <View style={[s.container, s.centered, { padding: 40 }]}>
+      <View style={[styles.container, styles.centered, { padding: 40 }]}>
         <Stack.Screen options={{ headerShown: false }} />
-        <Text style={s.emptyTitle}>No program found</Text>
-        <Text style={s.emptyText}>Import a program from Settings first.</Text>
-        <Pressable onPress={() => router.back()} style={[s.confirmBtn, { width: '100%', marginTop: 20 }]}>
-          <Text style={s.confirmBtnText}>Go Back</Text>
+        <Text style={styles.emptyTitle}>No program found</Text>
+        <Text style={styles.emptyText}>Import a program from Settings first.</Text>
+        <Pressable onPress={() => router.back()} style={[styles.confirmBtn, { width: '100%', marginTop: 20 }]}>
+          <Text style={styles.confirmBtnText}>Go Back</Text>
         </Pressable>
       </View>
     );
@@ -463,31 +463,31 @@ export default function LogSession() {
   const { done: doneSets, total: totalSets } = sessionProgress(session, day);
 
   return (
-    <View style={[s.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle="light-content" />
 
-      <View style={s.header}>
-        <Pressable onPress={() => router.back()} style={s.backBtn} hitSlop={12}>
-          <Text style={s.backArrow}>←</Text>
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+          <Text style={styles.backArrow}>←</Text>
         </Pressable>
-        <View style={s.headerMid}>
-          <Text style={s.headerDay}>{day.name}</Text>
-          <Text style={s.headerProgress}>{doneSets} of {totalSets} sets</Text>
+        <View style={styles.headerMid}>
+          <Text style={styles.headerDay}>{day.name}</Text>
+          <Text style={styles.headerProgress}>{doneSets} of {totalSets} sets</Text>
         </View>
         <Pressable onPress={handleFinish} hitSlop={12}>
-          <Text style={s.finishBtnText}>Finish</Text>
+          <Text style={styles.finishBtnText}>Finish</Text>
         </Pressable>
       </View>
 
       <ExerciseStrip day={day} sessionState={session} onSelect={handleJump} />
 
       <ScrollView
-        style={s.scroll}
-        contentContainerStyle={[s.scrollContent, { paddingBottom: insets.bottom + 180 }]}
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 180 }]}
       >
-        <View style={s.exBlock}>
-          <Text style={s.exName}>{ex.name}</Text>
+        <View style={styles.exBlock}>
+          <Text style={styles.exName}>{ex.name}</Text>
         </View>
         <SetList
           day={day}
@@ -498,7 +498,7 @@ export default function LogSession() {
         />
       </ScrollView>
 
-      <View style={[s.bottom, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.bottom, { paddingBottom: insets.bottom + 16 }]}>
         <BottomAction
           day={day}
           sessionState={session}
@@ -516,160 +516,3 @@ export default function LogSession() {
     </View>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  centered: { alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { fontSize: 20, fontWeight: '700', color: C.text, marginBottom: 8 },
-  emptyText: { fontSize: 15, color: C.sub, textAlign: 'center', lineHeight: 22 },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  backBtn: {
-    width: 36, height: 36, borderRadius: 12,
-    backgroundColor: C.card,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  backArrow: { fontSize: 18, color: C.text2 },
-  headerMid: { flex: 1 },
-  headerDay: { fontSize: 17, fontWeight: '700', color: C.text, letterSpacing: -0.3 },
-  headerProgress: { fontSize: 12, color: C.sub, marginTop: 1 },
-  finishBtnText: { fontSize: 14, fontWeight: '600', color: C.sub },
-
-  strip: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 18,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  stripChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 11,
-    paddingVertical: 7,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: C.border,
-    backgroundColor: C.card,
-    gap: 7,
-  },
-  stripChipActive: { borderColor: C.hit, backgroundColor: C.hitBg },
-  stripChipDone: { borderColor: C.border, backgroundColor: 'transparent', opacity: 0.6 },
-  stripChipPressed: { opacity: 0.7 },
-  stripChipName: { fontSize: 12, fontWeight: '600', color: C.text2 },
-  stripChipNameActive: { color: C.hit },
-  stripChipNameDone: { color: C.muted },
-  stripDots: { flexDirection: 'row', gap: 4 },
-  stripDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.border },
-  stripDotHit: { backgroundColor: C.hit },
-  stripDotMiss: { backgroundColor: C.below },
-  stripDotActive: { backgroundColor: 'transparent', borderWidth: 1, borderColor: C.hit },
-
-  scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 18, gap: 20 },
-
-  exBlock: { paddingTop: 8, gap: 4 },
-  exName: { fontSize: 22, fontWeight: '700', color: C.text, letterSpacing: -0.4 },
-
-  // Outer solid-border frame (card-c). overflow:hidden clips children to 14px corners.
-  setCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: C.border,
-    overflow: 'hidden',
-  },
-  // Inner rows container (card-c-inner). No own border — setCard provides it.
-  setList: {
-    backgroundColor: C.card,
-  },
-  // Add hairline bottom separator when dashed add-set is attached.
-  setListOpen: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: C.border,
-  },
-  setRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    gap: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: C.border,
-  },
-  setRowDone: { opacity: 0.7 },
-  setRowActive: { backgroundColor: C.surface },
-  setRowFuture: { opacity: 0.35 },
-  setDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.border, flexShrink: 0 },
-  setDotDone: { backgroundColor: C.hit },
-  setDotActive: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: C.hit },
-  setRowLabel: { fontSize: 12, color: C.sub, width: 44 },
-  setRowLabelActive: { fontSize: 12, fontWeight: '600', color: C.text2, width: 44 },
-  setRowLabelFuture: { fontSize: 12, color: C.muted, width: 44 },
-  setRowResult: { flex: 1, fontSize: 14, fontWeight: '600', textAlign: 'right' },
-  setHit: { color: C.hit },
-  setMiss: { color: C.below },
-  setRowTarget: { flex: 1, fontSize: 14, fontWeight: '600', color: C.text, textAlign: 'right' },
-  setRowFutureVal: { flex: 1, fontSize: 13, color: C.muted, textAlign: 'right' },
-
-  // Dashed add-set button (add-flush-dashed). Full dashed border on all sides.
-  // setCard's overflow:hidden clips the bottom corners to 14px radius.
-  addSetRow: {
-    paddingVertical: 11,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-    opacity: 0.5,
-    borderWidth: 1,
-    borderColor: C.muted,
-    borderStyle: 'dashed',
-  },
-  addSetText: { fontSize: 13, fontWeight: '500', color: C.muted },
-
-  bottom: {
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    backgroundColor: C.bg,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: C.border,
-    gap: 12,
-  },
-
-  stepperRow: { flexDirection: 'row', gap: 0 },
-  stepperDivider: { width: 12 },
-  stepper: {
-    flex: 1, flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: C.card,
-    borderRadius: 14, borderWidth: 1, borderColor: C.border,
-    overflow: 'hidden',
-  },
-  stepBtn: { width: 48, height: 56, alignItems: 'center', justifyContent: 'center', backgroundColor: C.card2 },
-  stepBtnPressed: { backgroundColor: C.cardSoft },
-  stepBtnText: { fontSize: 22, color: C.text, fontWeight: '300' },
-  stepValue: { flex: 1, alignItems: 'center', gap: 2 },
-  stepNum: { fontSize: 22, fontWeight: '700', color: C.text, letterSpacing: -0.5, fontVariant: ['tabular-nums'] },
-  stepLabel: { fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 },
-
-  restBlock: { alignItems: 'center', gap: 8, paddingVertical: 4 },
-  restLabel: { fontSize: 11, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 },
-  restTime: { fontSize: 48, fontWeight: '700', color: C.text, letterSpacing: -2, fontVariant: ['tabular-nums'] },
-  restBar: { width: '100%', height: 3, backgroundColor: C.faint, borderRadius: 2, overflow: 'hidden' },
-  restBarFill: { height: '100%', backgroundColor: C.hit, borderRadius: 2 },
-  skipBtn: { marginTop: 4, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: C.border },
-  skipBtnPressed: { backgroundColor: C.card },
-  skipBtnText: { fontSize: 13, fontWeight: '600', color: C.sub },
-
-  confirmBtn: { backgroundColor: C.hit, borderRadius: 14, paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
-  confirmBtnPressed: { opacity: 0.85 },
-  confirmBtnText: { fontSize: 16, fontWeight: '700', color: C.bg, letterSpacing: -0.2 },
-});
