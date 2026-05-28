@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { C } from '../../../../components/spuddy/palette';
+import { C } from '@/components/spuddy/palette';
 
 export const COL_SET = 32;
 export const COL_REPS = 80;
