@@ -7,7 +7,7 @@ import {
   View,
   StatusBar,
 } from 'react-native';
-import { styles } from './add.styles';
+import { styles } from '@/styles/tabs/add.styles';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';

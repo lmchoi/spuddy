@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { FlatList, View, Text, StatusBar } from 'react-native';
-import { styles } from './index.styles';
+import { styles } from '@/styles/tabs/progress/index.styles';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';

@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { styles } from './log-session.styles';
+import { styles } from '@/styles/log-session.styles';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';

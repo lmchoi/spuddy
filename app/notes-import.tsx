@@ -9,7 +9,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { styles } from './notes-import.styles';
+import { styles } from '@/styles/notes-import.styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { parseWorkoutNotes } from '@/src/notesParser';
