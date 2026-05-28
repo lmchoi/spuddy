@@ -7,6 +7,13 @@
 - **Pre-commit test hook** — wire up a git pre-commit hook (`npm test`) when the Expo app is first scaffolded. Until then, run tests manually before committing.
 - **Outside-in / walking skeleton** — build the full vertical slice first with stubs, so the app runs end-to-end early. UI → logic → data. Fill in real implementations one layer at a time, never building a layer in isolation before the layer above it exists.
 
+## Architecture
+
+- **Domain layer lives in `src/domain/`** — all logic that reasons about app state (set counts, completion, targets, splits) belongs there as pure functions, not in views or components.
+- **Views are dumb** — components and screens may call domain functions but must not re-implement domain logic inline (e.g. no `sets.filter(s => !s.isWarmup)`, no `targets.length + extraSetCounts[i]` in JSX). If you find yourself doing arithmetic or filtering over domain types in a view, extract a selector first.
+- **Selectors are testable** — every domain selector must have unit tests. This is the main mechanism for catching regressions without a running device.
+- **Custom hooks are wiring, not logic** — hooks are acceptable for connecting domain functions to React state (e.g. calling `useReducer` with a domain reducer, or bridging to a context), but must not contain domain logic themselves. Logic in a hook can only be tested via `renderHook`; logic in a pure function can be tested with a plain `jest` call.
+
 ## Docs structure
 
 ```
