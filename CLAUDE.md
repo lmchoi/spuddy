@@ -14,6 +14,14 @@
 - **Selectors are testable** — every domain selector must have unit tests. This is the main mechanism for catching regressions without a running device.
 - **Custom hooks are wiring, not logic** — hooks are acceptable for connecting domain functions to React state (e.g. calling `useReducer` with a domain reducer, or bridging to a context), but must not contain domain logic themselves. Logic in a hook can only be tested via `renderHook`; logic in a pure function can be tested with a plain `jest` call.
 
+## Styling
+
+- **Plain `StyleSheet` only** — all styles use `React Native StyleSheet.create()`. See ADR 011.
+- **Sibling style files** — `StyleSheet.create()` blocks live in `*.styles.ts` files co-located with their screen or component (e.g. `add.tsx` → `add.styles.ts`). Never inline a large style block in a screen file.
+- **Colors** — import `C` from `components/spuddy/palette.ts`. Do not hardcode hex values.
+- **Shared tokens** — spacing, border radius, and typography scale live in `src/theme.ts`.
+- **`src/tw/` is intentionally unused** — do not add `className` props, import from `src/tw`, or migrate to NativeWind/Tailwind without an explicit instruction from the user and a new ADR.
+
 ## Docs structure
 
 ```
