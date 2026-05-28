@@ -281,7 +281,6 @@ function BottomAction({
   onFinish: () => void;
 }) {
   const exIdx = sessionState.currentExerciseIdx;
-  const ex = day.exercises[exIdx];
   const logged = sessionState.loggedSets[exIdx].length;
   const total = totalSetCount(sessionState, day, exIdx);
 
