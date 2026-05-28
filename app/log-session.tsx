@@ -24,6 +24,7 @@ import {
   getActiveTarget,
   buildSavePayload,
   addExtraSet,
+  totalSetCount,
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import type { ProgramDay } from '@/src/types';
@@ -110,7 +111,7 @@ function ExerciseStrip({
         const isActive = i === sessionState.currentExerciseIdx;
         const done = isExerciseDone(sessionState, day, i);
         const loggedCount = sessionState.loggedSets[i].length;
-        const dotCount = ex.targets.length + sessionState.extraSetCounts[i];
+        const dotCount = totalSetCount(sessionState, day, i);
         return (
           <Pressable
             key={i}
@@ -187,7 +188,7 @@ function SetList({
 
   // Build a combined list: planned targets + extra set slots + any already-logged extras
   const totalRows = Math.max(
-    ex.targets.length + sessionState.extraSetCounts[exIdx],
+    totalSetCount(sessionState, day, exIdx),
     logged.length,
   );
 
@@ -280,7 +281,7 @@ function BottomAction({
   const exIdx = sessionState.currentExerciseIdx;
   const ex = day.exercises[exIdx];
   const logged = sessionState.loggedSets[exIdx].length;
-  const total = ex.targets.length + sessionState.extraSetCounts[exIdx];
+  const total = totalSetCount(sessionState, day, exIdx);
 
   if (sessionState.isResting) {
     return <RestTimer onSkip={onSkipRest} />;

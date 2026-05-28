@@ -8,6 +8,7 @@ import {
   getActiveTarget,
   buildSavePayload,
   addExtraSet,
+  totalSetCount,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -257,6 +258,21 @@ describe('initSession extraSetCounts', () => {
 });
 
 // ─── getActiveTarget — extra-set territory ────────────────────────────────────
+
+describe('totalSetCount', () => {
+  it('returns program set count when no extra sets added', () => {
+    const state = initSession(day);
+    expect(totalSetCount(state, day, 0)).toBe(3);
+    expect(totalSetCount(state, day, 1)).toBe(2);
+  });
+
+  it('includes extra sets', () => {
+    let state = initSession(day);
+    state = addExtraSet(state, 0);
+    expect(totalSetCount(state, day, 0)).toBe(4);
+    expect(totalSetCount(state, day, 1)).toBe(2);
+  });
+});
 
 describe('getActiveTarget in extra-set territory', () => {
   it('pre-fills from the last logged set when beyond planned targets', () => {
