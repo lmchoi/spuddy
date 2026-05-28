@@ -50,13 +50,16 @@ export function jumpToExercise(state: SessionState, idx: number): SessionState {
   return { ...state, currentExerciseIdx: idx, isResting: false };
 }
 
+export function totalSetCount(state: SessionState, day: ProgramDay, exIdx: number): number {
+  return day.exercises[exIdx].targets.length + state.extraSetCounts[exIdx];
+}
+
 export function isExerciseDone(
   state: SessionState,
   day: ProgramDay,
   exIdx: number
 ): boolean {
-  const total = day.exercises[exIdx].targets.length + state.extraSetCounts[exIdx];
-  return state.loggedSets[exIdx].length >= total;
+  return state.loggedSets[exIdx].length >= totalSetCount(state, day, exIdx);
 }
 
 export function isSessionDone(state: SessionState, day: ProgramDay): boolean {
