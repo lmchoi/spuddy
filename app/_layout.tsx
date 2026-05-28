@@ -51,6 +51,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="notes-import" options={{ headerShown: false }} />
+        <Stack.Screen name="notes-import-review" options={{ headerShown: false }} />
         <Stack.Screen name="strong-import" options={{ title: 'Import from Strong', headerShown: true }} />
       </Stack>
     </ThemeProvider>

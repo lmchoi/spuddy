@@ -43,4 +43,11 @@ describe('RootLayoutNav screen registration', () => {
     expect(screen).toBeDefined();
     expect(screen?.options?.headerShown).toBe(false);
   });
+
+  it('registers notes-import-review with headerShown: false', () => {
+    render(<RootLayout />);
+    const screen = capturedScreens.find((s) => s.name === 'notes-import-review');
+    expect(screen).toBeDefined();
+    expect(screen?.options?.headerShown).toBe(false);
+  });
 });
