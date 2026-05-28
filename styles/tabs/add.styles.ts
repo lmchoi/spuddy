@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { C } from '../../components/spuddy/palette';
+import { C } from '@/components/spuddy/palette';
 
 export const styles = StyleSheet.create({
   container: {
