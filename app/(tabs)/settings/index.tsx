@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Alert, Pressable, ScrollView, StatusBar, Text, View } from 'react-native';
-import { styles } from './index.styles';
+import { styles } from '@/styles/tabs/settings/index.styles';
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

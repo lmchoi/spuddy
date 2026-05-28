@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { styles } from './strong-import.styles';
+import { styles } from '@/styles/strong-import.styles';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getDB } from '@/src/db';

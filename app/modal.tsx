@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
-import { styles } from './modal.styles';
+import { styles } from '@/styles/modal.styles';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';

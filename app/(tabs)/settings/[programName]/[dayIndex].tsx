@@ -3,7 +3,7 @@ import {
   Pressable, ScrollView, StatusBar, Text,
   TextInput, View,
 } from 'react-native';
-import { styles } from './[dayIndex].styles';
+import { styles } from '@/styles/tabs/settings/programName/dayIndex.styles';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ProgramDay, ProgramExercise, Target } from '@/src/types';

@@ -6,7 +6,7 @@ import {
   View,
   StatusBar,
 } from 'react-native';
-import { styles } from './[date].styles';
+import { styles } from '@/styles/tabs/progress/date.styles';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
