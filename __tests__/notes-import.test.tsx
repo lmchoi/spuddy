@@ -4,15 +4,11 @@ import NotesImportScreen from '../app/notes-import';
 
 const mockBack = jest.fn();
 const mockPush = jest.fn();
-const mockImportFromNotes = jest.fn();
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
-jest.mock('@/src/notesImport', () => ({
-  importFromNotes: (...args: any[]) => mockImportFromNotes(...args),
-}));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: mockBack, push: mockPush }),
 }));
@@ -32,7 +28,7 @@ describe('NotesImportScreen', () => {
     expect(screen.getByPlaceholderText(/Upper body/)).toBeTruthy();
   });
 
-  it('Import button is disabled with no text', () => {
+  it('CTA is disabled with no text', () => {
     render(<NotesImportScreen />);
     expect(screen.getByText('Paste notes to import')).toBeTruthy();
   });
@@ -60,18 +56,27 @@ describe('NotesImportScreen', () => {
     expect(screen.queryByText('lbs')).toBeNull();
   });
 
-  it('shows "Import N programs" CTA when exercises are present', () => {
+  it('shows "Review N programs" CTA when exercises are present', () => {
     render(<NotesImportScreen />);
     const input = screen.getByPlaceholderText(/Upper body/);
     fireEvent.changeText(input, 'Push\n- Bench press - 80');
-    expect(screen.getByText('Import 1 program')).toBeTruthy();
+    expect(screen.getByText('Review 1 program')).toBeTruthy();
   });
 
   it('CTA count excludes empty sections', () => {
     render(<NotesImportScreen />);
     const input = screen.getByPlaceholderText(/Upper body/);
-    // Two section headers, only one has exercises
     fireEvent.changeText(input, 'Push\n- Bench press - 80\nPull');
-    expect(screen.getByText('Import 1 program')).toBeTruthy();
+    expect(screen.getByText('Review 1 program')).toBeTruthy();
+  });
+
+  it('tapping Review pushes to review screen with serialised ParsedNotes', () => {
+    render(<NotesImportScreen />);
+    const input = screen.getByPlaceholderText(/Upper body/);
+    fireEvent.changeText(input, 'Push\n- Bench press - 80');
+    fireEvent.press(screen.getByText('Review 1 program'));
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.objectContaining({ pathname: '/notes-import-review' })
+    );
   });
 });
