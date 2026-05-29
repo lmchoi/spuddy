@@ -80,11 +80,6 @@ export default function NotesImportReviewScreen() {
           </View>
         ))}
 
-        {parsed.skippedLines > 0 && (
-          <Text style={styles.skippedNote}>
-            {parsed.skippedLines} line{parsed.skippedLines !== 1 ? 's' : ''} skipped — format not recognised
-          </Text>
-        )}
       </ScrollView>
 
       <View style={[styles.stickyBar, { paddingBottom: insets.bottom + 18 }]}>

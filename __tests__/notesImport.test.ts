@@ -12,7 +12,6 @@ function makeInMemoryDB(): DB {
 const EMPTY_PARSED: ParsedNotes = {
   sections: [],
   inferredUnit: null,
-  skippedLines: 0,
 };
 
 const ONE_SECTION: ParsedNotes = {
@@ -26,7 +25,6 @@ const ONE_SECTION: ParsedNotes = {
     },
   ],
   inferredUnit: 'kg',
-  skippedLines: 0,
 };
 
 const TWO_SECTIONS: ParsedNotes = {
@@ -45,7 +43,6 @@ const TWO_SECTIONS: ParsedNotes = {
     },
   ],
   inferredUnit: 'kg',
-  skippedLines: 0,
 };
 
 const EMPTY_SECTION: ParsedNotes = {
@@ -57,7 +54,6 @@ const EMPTY_SECTION: ParsedNotes = {
     },
   ],
   inferredUnit: 'kg',
-  skippedLines: 0,
 };
 
 describe('importFromNotes', () => {
@@ -126,7 +122,6 @@ describe('importFromNotes', () => {
         { name: 'Also empty', exercises: [] },
       ],
       inferredUnit: null,
-      skippedLines: 0,
     };
     const result = await importFromNotes(db, allEmpty);
     expect(result.success).toBe(true);
