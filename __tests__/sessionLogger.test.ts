@@ -12,6 +12,7 @@ import {
   sessionProgress,
   detectSessionChanges,
   buildNewDay,
+  resolvePostSessionAction,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -426,5 +427,27 @@ describe('buildNewDay', () => {
     const newDay = buildNewDay(state, day, 'Partial');
     // Squat still has 3 targets (not reduced to 1)
     expect(newDay.exercises[0].targets).toHaveLength(3);
+  });
+});
+
+// ─── resolvePostSessionAction ─────────────────────────────────────────────────
+
+describe('resolvePostSessionAction', () => {
+  it('returns "prompt" when changes are detected', () => {
+    let state = initSession(day);
+    // Skipped exercise → changes detected
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    expect(resolvePostSessionAction(state, day)).toBe('prompt');
+  });
+
+  it('returns "navigate" when no changes are detected', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    expect(resolvePostSessionAction(state, day)).toBe('navigate');
   });
 });
