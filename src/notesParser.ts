@@ -30,98 +30,60 @@ export type ParsedNotes = {
 
 const BULLET_RE = /^[-•*]\s*/;
 
-// NxM weight[unit] — x directly between two numbers, then weight: "3x10 80kg"
-const NXM_WEIGHT_RE = /^(.+?)\s+(\d+)[xX](\d+)\s+(\d+\.?\d*)\s*(kg|lbs)?$/i;
+// Extracts one number token: optional leading x (set/rep marker), number, optional unit.
+const TOKEN_RE = /([xX])?\s*(\d+\.?\d*)\s*(kg|lbs)?/gi;
 
-// NxM — sets × reps but no weight: "3x12"
-const NXM_NO_WEIGHT_RE = /^(.+?)\s+(\d+)[xX](\d+)$/i;
-
-// weight[unit] x N — unit on the left of x makes weight unambiguous: "80kg x 3"
-const WEIGHT_UNIT_X_REPS_RE = /^(.+?)\s+(\d+\.?\d*)\s*(kg|lbs)\s+[xX]\s*(\d+)$/i;
-
-// N x weight[unit] or N x N — reps × weight or heuristic: "3x 80kg", "3 x 80", "80 x 3"
-// For no-unit case apply smaller=reps / larger=weight heuristic.
-const N_X_WEIGHT_RE = /^(.+?)\s+(\d+\.?\d*)\s*[xX]\s+(\d+\.?\d*)\s*(kg|lbs)?$/i;
-
-// name - weight[unit]: "Bench press - 80kg"
-const NAME_DASH_WEIGHT_RE = /^(.+?)\s*-\s*(\d+\.?\d*)\s*(kg|lbs)?$/i;
-
-// name weight[unit] with explicit unit: "Bench 80kg"
-const NAME_WEIGHT_UNIT_RE = /^(.+?)\s+(\d+\.?\d*)\s*(kg|lbs)$/i;
-
-// Two bare numbers — smaller=reps, larger=weight: "10 80", "80 10"
-const TWO_NUMBERS_RE = /^(.+?)\s+(\d+\.?\d*)\s+(\d+\.?\d*)$/;
-
-// Single bare number — treat as weight: "Bench 80"
-const SINGLE_NUMBER_RE = /^(.+?)\s+(\d+\.?\d*)$/;
+// Detects compact NxM with no spaces (e.g. "3x12") — distinguishes sets×reps from two bare numbers.
+const COMPACT_NXM_RE = /\d+[xX]\d+/i;
 
 function parseUnit(raw: string | undefined): 'kg' | 'lbs' | null {
   if (!raw) return null;
   return raw.toLowerCase() === 'lbs' ? 'lbs' : 'kg';
 }
 
-function cleanName(raw: string): string {
-  return raw.replace(/[-\s]+$/, '').trim();
-}
-
 function parseBulletLine(stripped: string): ParsedExercise {
-  // NxM weight — sets × reps × weight
-  const nxmW = stripped.match(NXM_WEIGHT_RE);
-  if (nxmW) {
-    return { name: cleanName(nxmW[1]), sets: parseInt(nxmW[2]), reps: parseInt(nxmW[3]), weight: parseFloat(nxmW[4]), explicitUnit: parseUnit(nxmW[5]) };
+  type Token = { value: number; unit: 'kg' | 'lbs' | null; hasX: boolean };
+
+  const tokens: Token[] = [];
+  for (const m of stripped.matchAll(TOKEN_RE)) {
+    if (!m[2]) continue;
+    tokens.push({ value: parseFloat(m[2]), unit: parseUnit(m[3]), hasX: !!m[1] });
   }
 
-  // NxM (no weight) — sets × reps, weight unknown
-  const nxm = stripped.match(NXM_NO_WEIGHT_RE);
-  if (nxm) {
-    return { name: cleanName(nxm[1]), sets: parseInt(nxm[2]), reps: parseInt(nxm[3]), weight: 0, explicitUnit: null };
+  // Name = strip all tokens (numbers, units, x markers) then clean trailing punctuation.
+  const name = stripped.replace(TOKEN_RE, ' ').replace(/\s+/g, ' ').replace(/[-\s]+$/, '').trim();
+
+  if (tokens.length === 0) {
+    return { name: stripped.trim(), sets: null, reps: null, weight: 0, explicitUnit: null };
   }
 
-  // weight[unit] x N — unit disambiguates which side is weight
-  const wXn = stripped.match(WEIGHT_UNIT_X_REPS_RE);
-  if (wXn) {
-    return { name: cleanName(wXn[1]), sets: null, reps: parseInt(wXn[4]), weight: parseFloat(wXn[2]), explicitUnit: parseUnit(wXn[3]) };
+  if (tokens.length === 1) {
+    const [t] = tokens;
+    return { name, sets: null, reps: null, weight: t.value, explicitUnit: t.unit };
   }
 
-  // N x weight[unit] or N x N — if unit present it's on weight; otherwise heuristic
-  const nXw = stripped.match(N_X_WEIGHT_RE);
-  if (nXw) {
-    const a = parseFloat(nXw[2]);
-    const b = parseFloat(nXw[3]);
-    const explicitUnit = parseUnit(nXw[4]);
-    const weight = explicitUnit ? b : Math.max(a, b);
-    const reps = explicitUnit ? a : Math.min(a, b);
-    return { name: cleanName(nXw[1]), sets: null, reps, weight, explicitUnit };
+  if (tokens.length === 2) {
+    const [a, b] = tokens;
+    // Compact NxM with no following weight (e.g. "3x12") — sets × reps, weight unknown.
+    if (!a.unit && !b.unit && COMPACT_NXM_RE.test(stripped)) {
+      return { name, sets: a.value, reps: b.value, weight: 0, explicitUnit: null };
+    }
+    // Unit identifies which side is weight.
+    if (a.unit) return { name, sets: null, reps: b.value, weight: a.value, explicitUnit: a.unit };
+    if (b.unit) return { name, sets: null, reps: a.value, weight: b.value, explicitUnit: b.unit };
+    // Two bare numbers — smaller=reps, larger=weight.
+    return { name, sets: null, reps: Math.min(a.value, b.value), weight: Math.max(a.value, b.value), explicitUnit: null };
   }
 
-  // name - weight[unit]
-  const nd = stripped.match(NAME_DASH_WEIGHT_RE);
-  if (nd) {
-    return { name: nd[1].trim(), sets: null, reps: null, weight: parseFloat(nd[2]), explicitUnit: parseUnit(nd[3]) };
+  // 3 tokens: second has x → NxM weight (sets × reps × weight).
+  if (tokens[1].hasX) {
+    const [s, r, w] = tokens;
+    return { name, sets: s.value, reps: r.value, weight: w.value, explicitUnit: w.unit };
   }
 
-  // name weight[unit] (explicit unit required)
-  const nw = stripped.match(NAME_WEIGHT_UNIT_RE);
-  if (nw) {
-    return { name: nw[1].trim(), sets: null, reps: null, weight: parseFloat(nw[2]), explicitUnit: parseUnit(nw[3]) };
-  }
-
-  // Two bare numbers — smaller=reps, larger=weight
-  const two = stripped.match(TWO_NUMBERS_RE);
-  if (two) {
-    const a = parseFloat(two[2]);
-    const b = parseFloat(two[3]);
-    return { name: cleanName(two[1]), sets: null, reps: Math.min(a, b), weight: Math.max(a, b), explicitUnit: null };
-  }
-
-  // Single bare number — weight
-  const one = stripped.match(SINGLE_NUMBER_RE);
-  if (one) {
-    return { name: cleanName(one[1]), sets: null, reps: null, weight: parseFloat(one[2]), explicitUnit: null };
-  }
-
-  // No numbers at all — weight=0
-  return { name: stripped.trim(), sets: null, reps: null, weight: 0, explicitUnit: null };
+  // 3 bare numbers fallback — smallest=sets, middle=reps, largest=weight.
+  const [small, mid, large] = [...tokens].sort((a, b) => a.value - b.value);
+  return { name, sets: small.value, reps: mid.value, weight: large.value, explicitUnit: large.unit };
 }
 
 export function parseWorkoutNotes(text: string): ParsedNotes {
