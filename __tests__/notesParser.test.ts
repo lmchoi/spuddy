@@ -4,12 +4,12 @@ describe('parseWorkoutNotes', () => {
   describe('empty / whitespace input', () => {
     it('returns empty sections for empty string', () => {
       const result = parseWorkoutNotes('');
-      expect(result).toEqual({ sections: [], inferredUnit: null, skippedLines: 0 });
+      expect(result).toEqual({ sections: [], inferredUnit: null });
     });
 
     it('returns empty sections for whitespace-only input', () => {
       const result = parseWorkoutNotes('   \n\n  ');
-      expect(result).toEqual({ sections: [], inferredUnit: null, skippedLines: 0 });
+      expect(result).toEqual({ sections: [], inferredUnit: null });
     });
   });
 
@@ -102,7 +102,6 @@ describe('parseWorkoutNotes', () => {
       expect(ex.sets).toBe(3);
       expect(ex.reps).toBe(12);
       expect(ex.weight).toBe(0);
-      expect(result.skippedLines).toBe(0);
     });
   });
 
@@ -147,12 +146,6 @@ describe('parseWorkoutNotes', () => {
     });
   });
 
-  describe('skippedLines', () => {
-    it('does not count non-bullet lines as skipped', () => {
-      const result = parseWorkoutNotes('Upper body\n- Bench press - 80');
-      expect(result.skippedLines).toBe(0);
-    });
-  });
 });
 
 describe('parseBulletLine — reps heuristic', () => {
@@ -191,6 +184,5 @@ describe('parseBulletLine — reps heuristic', () => {
     const result = parseWorkoutNotes('- just some notes here');
     expect(result.sections[0].exercises).toHaveLength(1);
     expect(result.sections[0].exercises[0]).toMatchObject({ sets: null, reps: null, weight: 0 });
-    expect(result.skippedLines).toBe(0);
   });
 });

@@ -18,7 +18,6 @@ const PARSED_NOTES: ParsedNotes = {
     },
   ],
   inferredUnit: 'kg',
-  skippedLines: 0,
 };
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -63,13 +62,6 @@ describe('NotesImportReviewScreen', () => {
   it('shows Import button with correct program count', () => {
     render(<NotesImportReviewScreen />);
     expect(screen.getByText('Import 1 program')).toBeTruthy();
-  });
-
-  it('shows skipped lines warning when skippedLines > 0', () => {
-    const withSkipped: ParsedNotes = { ...PARSED_NOTES, skippedLines: 2 };
-    mockUseLocalSearchParams.mockReturnValue({ parsedNotes: JSON.stringify(withSkipped) });
-    render(<NotesImportReviewScreen />);
-    expect(screen.getByText(/2 lines skipped/)).toBeTruthy();
   });
 
   it('calls importFromNotes and navigates to settings on success', async () => {

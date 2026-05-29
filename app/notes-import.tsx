@@ -88,11 +88,6 @@ export default function NotesImportScreen() {
                 </Text>
               </View>
             ))}
-            {parsed.skippedLines > 0 && (
-              <Text style={styles.skippedNote}>
-                {parsed.skippedLines} line{parsed.skippedLines !== 1 ? 's' : ''} skipped — format not recognised
-              </Text>
-            )}
           </View>
         )}
 

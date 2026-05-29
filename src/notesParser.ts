@@ -25,7 +25,6 @@ export type ParsedSection = {
 export type ParsedNotes = {
   sections: ParsedSection[];
   inferredUnit: 'kg' | 'lbs' | null; // set when all explicit units in the notes agree
-  skippedLines: number;
 };
 
 const BULLET_RE = /^[-•*]\s*/;
@@ -90,7 +89,7 @@ export function parseWorkoutNotes(text: string): ParsedNotes {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
   if (lines.length === 0) {
-    return { sections: [], inferredUnit: null, skippedLines: 0 };
+    return { sections: [], inferredUnit: null };
   }
 
   const sections: ParsedSection[] = [];
@@ -118,5 +117,5 @@ export function parseWorkoutNotes(text: string): ParsedNotes {
     inferredUnit = Array.from(units)[0];
   }
 
-  return { sections, inferredUnit, skippedLines: 0 };
+  return { sections, inferredUnit };
 }
