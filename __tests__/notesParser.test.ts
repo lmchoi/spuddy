@@ -144,6 +144,16 @@ describe('parseWorkoutNotes', () => {
       const result = parseWorkoutNotes('- Circuit A - 3 x 80');
       expect(result.sections[0].exercises[0].name).toBe('Circuit A');
     });
+
+    it('does not leave orphan x when set count has trailing x ("3x bench - 10 x 80")', () => {
+      const result = parseWorkoutNotes('- 3x bench - 10 x 80');
+      expect(result.sections[0].exercises[0].name).toBe('bench');
+    });
+
+    it('does not leave orphan x when trailing set marker before dash ("Squat 3x - 10x80")', () => {
+      const result = parseWorkoutNotes('- Squat 3x - 10x80');
+      expect(result.sections[0].exercises[0].name).toBe('Squat');
+    });
   });
 
 });
