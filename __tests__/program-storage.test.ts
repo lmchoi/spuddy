@@ -1,6 +1,6 @@
 import BetterSqlite from 'better-sqlite3';
 import { initSchema, makeTestDB, type DB } from '../src/storage';
-import { savePrograms, getPrograms, getProgramDay, updateActiveDayIndex, updateProgramDay } from '../src/programStorage';
+import { savePrograms, getPrograms, getProgramDay, updateActiveDayIndex, updateProgramDay, addProgramDay } from '../src/programStorage';
 import type { Program } from '../src/types';
 
 function makeInMemoryDB(): DB {
@@ -167,5 +167,43 @@ describe('program storage', () => {
     await updateProgramDay(db, 'v1', 0, updatedDay);
     const b = await getProgramDay(db, 'v2', 0);
     expect(b!.name).toBe('Full Body'); // unchanged
+  });
+});
+
+describe('addProgramDay', () => {
+  let db: DB;
+
+  beforeEach(async () => {
+    db = makeInMemoryDB();
+    await initSchema(db);
+  });
+
+  it('appends a new day to the correct program', async () => {
+    await savePrograms(db, [PROGRAM_A]);
+    const newDay = { name: 'Day 3', exercises: [{ name: 'Pull-up', targets: [{ reps: 8, weight: 0 }] }] };
+    await addProgramDay(db, 'v1', newDay);
+    const programs = await getPrograms(db);
+    expect(programs[0].days).toHaveLength(3);
+    expect(programs[0].days[2].name).toBe('Day 3');
+    expect(programs[0].days[2].exercises[0].name).toBe('Pull-up');
+  });
+
+  it('does not affect other programs', async () => {
+    await savePrograms(db, [PROGRAM_A, PROGRAM_B]);
+    const newDay = { name: 'Extra', exercises: [] };
+    await addProgramDay(db, 'v1', newDay);
+    const programs = await getPrograms(db);
+    const b = programs.find(p => p.name === 'v2')!;
+    expect(b.days).toHaveLength(1);
+  });
+
+  it('does not affect existing days in the target program', async () => {
+    await savePrograms(db, [PROGRAM_A]);
+    const newDay = { name: 'Extra', exercises: [] };
+    await addProgramDay(db, 'v1', newDay);
+    const day0 = await getProgramDay(db, 'v1', 0);
+    expect(day0!.name).toBe('Day 1');
+    const day1 = await getProgramDay(db, 'v1', 1);
+    expect(day1!.name).toBe('Day 2');
   });
 });

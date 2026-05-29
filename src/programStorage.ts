@@ -112,6 +112,14 @@ export async function updateActiveDayIndex(
   );
 }
 
+export async function addProgramDay(db: DB, programName: string, day: ProgramDay): Promise<void> {
+  const programs = await getPrograms(db);
+  const target = programs.find(p => p.name === programName);
+  if (!target) throw new Error(`Program not found: ${programName}`);
+  target.days.push(day);
+  await savePrograms(db, programs);
+}
+
 async function loadExercises(db: DB, dayId: number): Promise<ProgramExercise[]> {
   const rows = await db.all<ExerciseRow>(
     'SELECT name, exercise_index, targets_json FROM program_exercises WHERE program_day_id = ? ORDER BY exercise_index ASC',
