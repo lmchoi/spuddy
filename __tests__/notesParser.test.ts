@@ -185,4 +185,13 @@ describe('parseBulletLine — reps heuristic', () => {
     expect(result.sections[0].exercises).toHaveLength(1);
     expect(result.sections[0].exercises[0]).toMatchObject({ sets: null, reps: null, weight: 0 });
   });
+
+  // Regression guard: shared /g regex lastIndex would cause the second parse to skip leading
+  // tokens, producing wrong results. Both calls must return identical output.
+  it('produces identical results when called twice in succession', () => {
+    const input = '- Bench press 3x10 80kg\n- Squat 5 100';
+    const first = parseWorkoutNotes(input);
+    const second = parseWorkoutNotes(input);
+    expect(second).toEqual(first);
+  });
 });
