@@ -91,6 +91,20 @@ export function getActiveTarget(
   return raw;
 }
 
+export function buildNewDay(state: SessionState, day: ProgramDay, name: string): ProgramDay {
+  const exercises = day.exercises
+    .filter((_, i) => state.loggedSets[i].length > 0)
+    .map((ex) => {
+      const i = day.exercises.indexOf(ex);
+      const extra = state.extraSetCounts[i];
+      const extraTargets = extra > 0
+        ? Array.from({ length: extra }, () => ex.targets[ex.targets.length - 1])
+        : [];
+      return { name: ex.name, targets: [...ex.targets, ...extraTargets] };
+    });
+  return { name, exercises };
+}
+
 export function detectSessionChanges(state: SessionState, day: ProgramDay): boolean {
   return state.loggedSets.some((sets, i) => sets.length === 0) ||
     state.extraSetCounts.some(c => c > 0);

@@ -11,6 +11,7 @@ import {
   totalSetCount,
   sessionProgress,
   detectSessionChanges,
+  buildNewDay,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -372,5 +373,58 @@ describe('detectSessionChanges', () => {
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
     expect(detectSessionChanges(state, day)).toBe(false);
+  });
+});
+
+// ─── buildNewDay ──────────────────────────────────────────────────────────────
+
+describe('buildNewDay', () => {
+  it('only includes exercises with at least 1 set logged', () => {
+    let state = initSession(day);
+    // Squat logged, Bench skipped
+    state = logSet(state, 0, 5, 100);
+    const newDay = buildNewDay(state, day, 'New Day');
+    expect(newDay.name).toBe('New Day');
+    expect(newDay.exercises).toHaveLength(1);
+    expect(newDay.exercises[0].name).toBe('Squat');
+  });
+
+  it('preserves original targets (reps and weight) from the program', () => {
+    let state = initSession(day);
+    // Log with different reps/weight — targets should still come from the program
+    state = logSet(state, 0, 3, 90);
+    state = logSet(state, 0, 3, 90);
+    state = logSet(state, 0, 3, 90);
+    state = logSet(state, 1, 6, 50);
+    state = logSet(state, 1, 6, 50);
+    const newDay = buildNewDay(state, day, 'Adjusted');
+    expect(newDay.exercises[0].targets[0]).toMatchObject({ reps: 5, weight: 100 });
+    expect(newDay.exercises[1].targets[0]).toMatchObject({ reps: 8, weight: 60 });
+  });
+
+  it('increases set count when extra sets were added', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = addExtraSet(state, 0);
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    const newDay = buildNewDay(state, day, 'Extra');
+    // Squat had 3 targets + 1 extra = 4 targets
+    expect(newDay.exercises[0].targets).toHaveLength(4);
+    // Bench unchanged
+    expect(newDay.exercises[1].targets).toHaveLength(2);
+  });
+
+  it('does not reduce set count for partial completion', () => {
+    let state = initSession(day);
+    // Log only 1 of 3 Squat sets
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    const newDay = buildNewDay(state, day, 'Partial');
+    // Squat still has 3 targets (not reduced to 1)
+    expect(newDay.exercises[0].targets).toHaveLength(3);
   });
 });
