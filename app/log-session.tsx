@@ -13,7 +13,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';
 import { getDB } from '@/src/db';
-import { getProgramDay, getPrograms } from '@/src/programStorage';
+import { addProgramDay, getProgramDay, getPrograms } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
 import {
   initSession,
@@ -27,6 +27,8 @@ import {
   addExtraSet,
   totalSetCount,
   sessionProgress,
+  resolvePostSessionAction,
+  buildNewDay,
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import type { ProgramDay } from '@/src/types';
@@ -342,7 +344,7 @@ function BottomAction({
 type ScreenState =
   | { status: 'loading' }
   | { status: 'empty' }
-  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState };
+  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string };
 
 function inputFromTarget(day: ProgramDay, session: SessionState): InputState {
   const exIdx = session.currentExerciseIdx;
@@ -376,7 +378,7 @@ export default function LogSession() {
         if (!day) { setState({ status: 'empty' }); return; }
         const session = initSession(day);
         const input = inputFromTarget(day, session);
-        setState({ status: 'ready', day, session, input });
+        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName });
       } catch {
         setState({ status: 'empty' });
       }
@@ -390,49 +392,68 @@ export default function LogSession() {
     const exIdx = session.currentExerciseIdx;
     const next = logSet(session, exIdx, input.reps, input.weight);
     const nextInput = inputFromTarget(day, next);
-    setState({ status: 'ready', day, session: next, input: nextInput });
+    setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
   const handleSkipRest = useCallback(() => {
     if (state.status !== 'ready') return;
     const next = skipRest(state.session);
     const nextInput = inputFromTarget(state.day, next);
-    setState({ status: 'ready', day: state.day, session: next, input: nextInput });
+    setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
   const handleJump = useCallback((idx: number) => {
     if (state.status !== 'ready') return;
     const next = jumpToExercise(state.session, idx);
     const nextInput = inputFromTarget(state.day, next);
-    setState({ status: 'ready', day: state.day, session: next, input: nextInput });
+    setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
   const handleNextExercise = useCallback(() => {
     if (state.status !== 'ready') return;
     const next = jumpToExercise(state.session, state.session.currentExerciseIdx + 1);
     const nextInput = inputFromTarget(state.day, next);
-    setState({ status: 'ready', day: state.day, session: next, input: nextInput });
+    setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
   const handleAddSet = useCallback((exIdx: number) => {
     if (state.status !== 'ready') return;
     const next = addExtraSet(state.session, exIdx);
     const nextInput = inputFromTarget(state.day, next);
-    setState({ status: 'ready', day: state.day, session: next, input: nextInput });
+    setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
   const handleFinish = useCallback(async () => {
     if (state.status !== 'ready') return;
-    const { day, session } = state;
+    const { day, session, resolvedProgramName } = state;
     const today = new Date().toISOString().slice(0, 10);
     const payload = buildSavePayload(session, day, today);
+    let db;
     try {
-      const db = await getDB();
+      db = await getDB();
       await saveSession(db, payload);
-      router.replace(`/progress/${today}`);
     } catch {
       Alert.alert('Save failed', 'Could not save your session. Please try again.');
+      return;
     }
+    if (resolvePostSessionAction(session, day) === 'navigate') {
+      router.replace(`/progress/${today}`);
+      return;
+    }
+    Alert.prompt(
+      'Save as new program day?',
+      'Your session differed from the program. Enter a name to save it as a new day.',
+      async (name: string | null) => {
+        if (name) {
+          try {
+            await addProgramDay(db!, resolvedProgramName, buildNewDay(session, day, name));
+          } catch {
+            // navigate anyway — saving the new day is best-effort
+          }
+        }
+        router.replace(`/progress/${today}`);
+      },
+    );
   }, [state, router]);
 
   if (state.status === 'loading') {
