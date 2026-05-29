@@ -1,7 +1,7 @@
 import { Alert } from 'react-native';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
-import { getProgramDay } from '@/src/programStorage';
+import { getProgramDay, addProgramDay } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
 import { C } from '@/components/spuddy/palette';
 
@@ -22,6 +22,7 @@ jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 
 jest.mock('@/src/programStorage', () => ({
   getProgramDay: jest.fn(),
+  addProgramDay: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/src/storage', () => ({
@@ -49,6 +50,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   (getProgramDay as jest.Mock).mockResolvedValue(mockDay);
   (saveSession as jest.Mock).mockResolvedValue(undefined);
+  (addProgramDay as jest.Mock).mockResolvedValue(undefined);
+  jest.spyOn(Alert, 'prompt').mockImplementation(() => {});
 });
 
 // ─── Render ───────────────────────────────────────────────────────────────────
@@ -122,14 +125,15 @@ describe('header finish button', () => {
     expect(screen.getByText('Finish')).toBeTruthy();
   });
 
-  it('calls saveSession and navigates when tapped mid-session', async () => {
+  it('calls saveSession and shows change prompt when tapped mid-session', async () => {
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
 
     await act(async () => { fireEvent.press(screen.getByText('Finish')); });
 
     expect(saveSession).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+    // No sets logged → both exercises skipped → changes detected → prompt shown
+    expect(Alert.prompt).toHaveBeenCalled();
   });
 
   it('shows an alert and does not navigate when saveSession throws', async () => {
@@ -149,7 +153,7 @@ describe('header finish button', () => {
 // ─── Finish session ───────────────────────────────────────────────────────────
 
 describe('finish session', () => {
-  it('finish session button calls saveSession when reached by completing last exercise first', async () => {
+  it('finish session button shows change prompt when an exercise was skipped', async () => {
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
 
@@ -159,13 +163,13 @@ describe('finish session', () => {
     // Log the single Bench set
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
 
-    // isExerciseDone(Bench)=true, isSessionDone=false (Squat not done)
-    // The button should show "Finish session" and route to onFinish, not onNextExercise
+    // isExerciseDone(Bench)=true, isSessionDone=false (Squat skipped)
+    // Squat has 0 logged sets → detectSessionChanges = true → prompt shown
     await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
     await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
 
     expect(saveSession).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+    expect(Alert.prompt).toHaveBeenCalled();
   });
 
   it('calls saveSession and navigates to progress on finish', async () => {
@@ -407,5 +411,86 @@ describe('add extra set — plan target comparison', () => {
     // Outcome: "3 × 100 kg" appears exactly once — Set 2's done row only.
     // The extra set active row target must be "5 × 100 kg" (plan), not "3 × 100 kg".
     expect(screen.getAllByText(/3 × 100 kg/i).length).toBe(1);
+  });
+});
+
+// ─── Post-session prompt ──────────────────────────────────────────────────────
+
+describe('post-session prompt', () => {
+  it('navigates without prompt when session is fully completed with no changes', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log both Squat sets
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Jump to Bench and log the single set
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    expect(Alert.prompt).not.toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+  });
+
+  it('shows Alert.prompt when extra sets were added', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log both Squat sets, then add an extra set and log it
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/\+ Add set/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Log Bench
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    expect(Alert.prompt).toHaveBeenCalled();
+  });
+
+  it('calls addProgramDay and navigates when name is entered', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Skip Squat; log Bench only
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    // Simulate user entering a name in the Alert.prompt callback
+    const promptCallback = (Alert.prompt as jest.Mock).mock.calls[0][2];
+    await act(async () => { promptCallback('My Custom Day'); });
+
+    expect(addProgramDay).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+  });
+
+  it('navigates without saving when prompt is cancelled (null name)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Skip Squat; log Bench only
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    const promptCallback = (Alert.prompt as jest.Mock).mock.calls[0][2];
+    await act(async () => { promptCallback(null); });
+
+    expect(addProgramDay).not.toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
   });
 });
