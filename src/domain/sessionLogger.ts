@@ -91,6 +91,11 @@ export function getActiveTarget(
   return raw;
 }
 
+export function detectSessionChanges(state: SessionState, day: ProgramDay): boolean {
+  return state.loggedSets.some((sets, i) => sets.length === 0) ||
+    state.extraSetCounts.some(c => c > 0);
+}
+
 export function buildSavePayload(
   state: SessionState,
   day: ProgramDay,
