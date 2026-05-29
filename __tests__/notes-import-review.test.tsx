@@ -59,6 +59,19 @@ describe('NotesImportReviewScreen', () => {
     expect(screen.getByText('OHP')).toBeTruthy();
   });
 
+  it('shows "1 set" when sets is null (falls back to default)', () => {
+    const withNullSets: ParsedNotes = {
+      ...PARSED_NOTES,
+      sections: [{
+        name: 'Push',
+        exercises: [{ name: 'Bench press', sets: null, reps: null, weight: 80, explicitUnit: 'kg' }],
+      }],
+    };
+    mockUseLocalSearchParams.mockReturnValue({ parsedNotes: JSON.stringify(withNullSets) });
+    render(<NotesImportReviewScreen />);
+    expect(screen.getByText(/1 set ·/)).toBeTruthy();
+  });
+
   it('shows Import button with correct program count', () => {
     render(<NotesImportReviewScreen />);
     expect(screen.getByText('Import 1 program')).toBeTruthy();

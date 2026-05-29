@@ -73,7 +73,7 @@ export default function NotesImportReviewScreen() {
                 <Text style={styles.exerciseDot}>·</Text>
                 <Text style={styles.exerciseName}>{ex.name}</Text>
                 <Text style={styles.exerciseMeta}>
-                  {ex.sets} set{ex.sets !== 1 ? 's' : ''} · {ex.weight}{ex.explicitUnit ?? ''}
+                  {ex.sets ?? 1} set{(ex.sets ?? 1) !== 1 ? 's' : ''} · {ex.weight}{ex.explicitUnit ?? ''}
                 </Text>
               </View>
             ))}
