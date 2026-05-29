@@ -38,7 +38,7 @@ export default function NotesImportScreen() {
   function handleReview() {
     if (!canReview || !parsed) return;
     router.push({
-      pathname: '/notes-import-review',
+      pathname: '/notes-import-review' as any,
       params: { parsedNotes: JSON.stringify(parsed) },
     });
   }
