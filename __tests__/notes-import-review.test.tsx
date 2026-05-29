@@ -12,7 +12,7 @@ const PARSED_NOTES: ParsedNotes = {
     {
       name: 'Push',
       exercises: [
-        { name: 'Bench press', sets: 3, reps: null, weight: 80, explicitUnit: 'kg' },
+        { name: 'Bench press', sets: 3, reps: 10, weight: 80, explicitUnit: 'kg' },
         { name: 'OHP', sets: 1, reps: null, weight: 50, explicitUnit: null },
       ],
     },
@@ -59,6 +59,16 @@ describe('NotesImportReviewScreen', () => {
     expect(screen.getByText('OHP')).toBeTruthy();
   });
 
+  it('shows sets×reps · weight when both sets and reps are present', () => {
+    render(<NotesImportReviewScreen />);
+    expect(screen.getByText('3×10 · 80kg')).toBeTruthy();
+  });
+
+  it('shows sets-only label when reps is null', () => {
+    render(<NotesImportReviewScreen />);
+    expect(screen.getByText('1 set · 50kg')).toBeTruthy();
+  });
+
   it('shows "1 set" when sets is null (falls back to default)', () => {
     const withNullSets: ParsedNotes = {
       ...PARSED_NOTES,
@@ -75,6 +85,11 @@ describe('NotesImportReviewScreen', () => {
   it('shows Import button with correct program count', () => {
     render(<NotesImportReviewScreen />);
     expect(screen.getByText('Import 1 program')).toBeTruthy();
+  });
+
+  it('does not show skipped lines warning when skippedLines is 0', () => {
+    render(<NotesImportReviewScreen />);
+    expect(screen.queryByText(/skipped/)).toBeNull();
   });
 
   it('calls importFromNotes and navigates to settings on success', async () => {

@@ -13,6 +13,7 @@ import { styles } from '@/styles/notes-import-review.styles';
 import { getDB } from '@/src/db';
 import { importFromNotes } from '@/src/notesImport';
 import type { ParsedNotes } from '@/src/notesParser';
+import { formatExerciseMeta } from '@/src/domain/notesReview';
 
 export default function NotesImportReviewScreen() {
   const router = useRouter();
@@ -73,7 +74,7 @@ export default function NotesImportReviewScreen() {
                 <Text style={styles.exerciseDot}>·</Text>
                 <Text style={styles.exerciseName}>{ex.name}</Text>
                 <Text style={styles.exerciseMeta}>
-                  {ex.sets ?? 1} set{(ex.sets ?? 1) !== 1 ? 's' : ''} · {ex.weight}{ex.explicitUnit ?? ''}
+                  {formatExerciseMeta(ex, parsed.inferredUnit)}
                 </Text>
               </View>
             ))}
