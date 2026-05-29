@@ -1,4 +1,4 @@
-import type { DB } from './storage';
+import { resolveOrCreateExercise, type DB } from './storage';
 import type { Program, ProgramDay, ProgramExercise, Target } from './types';
 
 export async function savePrograms(db: DB, programs: Program[]): Promise<void> {
@@ -27,9 +27,10 @@ export async function savePrograms(db: DB, programs: Program[]): Promise<void> {
 
         for (let ei = 0; ei < day.exercises.length; ei++) {
           const exercise = day.exercises[ei];
+          const exerciseId = await resolveOrCreateExercise(db, exercise.name);
           await db.run(
-            'INSERT INTO program_exercises (program_day_id, exercise_index, name, targets_json) VALUES (?, ?, ?, ?)',
-            [dayId, ei, exercise.name, JSON.stringify(exercise.targets)]
+            'INSERT INTO program_exercises (program_day_id, exercise_index, exercise_id, targets_json) VALUES (?, ?, ?, ?)',
+            [dayId, ei, exerciseId, JSON.stringify(exercise.targets)]
           );
         }
       }
@@ -44,7 +45,7 @@ export async function savePrograms(db: DB, programs: Program[]): Promise<void> {
 
 type ProgramRow = { id: number; name: string; active_day_index: number };
 type DayRow = { id: number; program_id: number; day_index: number; name: string };
-type ExerciseRow = { name: string; exercise_index: number; targets_json: string };
+type ExerciseRow = { name: string; exercise_id: number; exercise_index: number; targets_json: string };
 
 export async function getPrograms(db: DB): Promise<Program[]> {
   const programRows = await db.all<ProgramRow>(
@@ -122,10 +123,14 @@ export async function addProgramDay(db: DB, programName: string, day: ProgramDay
 
 async function loadExercises(db: DB, dayId: number): Promise<ProgramExercise[]> {
   const rows = await db.all<ExerciseRow>(
-    'SELECT name, exercise_index, targets_json FROM program_exercises WHERE program_day_id = ? ORDER BY exercise_index ASC',
+    `SELECT e.name, pe.exercise_id, pe.exercise_index, pe.targets_json
+     FROM program_exercises pe
+     JOIN exercises e ON pe.exercise_id = e.id
+     WHERE pe.program_day_id = ? ORDER BY pe.exercise_index ASC`,
     [dayId]
   );
   return rows.map(row => ({
+    exerciseId: row.exercise_id,
     name: row.name,
     targets: JSON.parse(row.targets_json) as Target[],
   }));
