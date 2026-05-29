@@ -46,7 +46,7 @@ describe('parseWorkoutNotes', () => {
       const ex = result.sections[0].exercises[0];
       expect(ex.name).toBe('Bench press');
       expect(ex.weight).toBe(80);
-      expect(ex.sets).toBe(1);
+      expect(ex.sets).toBeNull();
       expect(ex.explicitUnit).toBeNull();
     });
 
@@ -77,27 +77,32 @@ describe('parseWorkoutNotes', () => {
     });
   });
 
-  describe('Nx weight pattern', () => {
-    it('parses "2x 15kg"', () => {
+  describe('Nx weight / NxM weight patterns', () => {
+    it('parses "2x 15kg" as reps=2 sets=null', () => {
       const result = parseWorkoutNotes('- Bench press 2x 15kg');
       const ex = result.sections[0].exercises[0];
       expect(ex.name).toBe('Bench press');
-      expect(ex.sets).toBe(2);
+      expect(ex.sets).toBeNull();
+      expect(ex.reps).toBe(2);
       expect(ex.weight).toBe(15);
       expect(ex.explicitUnit).toBe('kg');
     });
 
-    it('parses "3 x 80" (spaces around x)', () => {
+    it('parses "3 x 80" as reps=3 sets=null', () => {
       const result = parseWorkoutNotes('- Squat 3 x 80');
       const ex = result.sections[0].exercises[0];
-      expect(ex.sets).toBe(3);
+      expect(ex.sets).toBeNull();
+      expect(ex.reps).toBe(3);
       expect(ex.weight).toBe(80);
     });
 
-    it('skips reps-only entry like "3x12" (no weight)', () => {
+    it('parses "3x12" (no weight) as sets=3 reps=12 weight=0', () => {
       const result = parseWorkoutNotes('- Bench press 3x12');
-      expect(result.sections[0]?.exercises).toHaveLength(0);
-      expect(result.skippedLines).toBe(1);
+      const ex = result.sections[0].exercises[0];
+      expect(ex.sets).toBe(3);
+      expect(ex.reps).toBe(12);
+      expect(ex.weight).toBe(0);
+      expect(result.skippedLines).toBe(0);
     });
   });
 
@@ -143,14 +148,49 @@ describe('parseWorkoutNotes', () => {
   });
 
   describe('skippedLines', () => {
-    it('increments skippedLines for unrecognised bullet lines', () => {
-      const result = parseWorkoutNotes('- just some notes here');
-      expect(result.skippedLines).toBe(1);
-    });
-
     it('does not count non-bullet lines as skipped', () => {
       const result = parseWorkoutNotes('Upper body\n- Bench press - 80');
       expect(result.skippedLines).toBe(0);
     });
+  });
+});
+
+describe('parseBulletLine — reps heuristic', () => {
+  function parse(line: string) {
+    const result = parseWorkoutNotes(`- Bench press ${line}`);
+    return result.sections[0].exercises[0];
+  }
+
+  test.each([
+    // sets × reps × weight (x connects two numbers directly)
+    ['3x10 80kg',  { sets: 3,    reps: 10,   weight: 80, explicitUnit: 'kg'  }],
+    ['3x10 80',    { sets: 3,    reps: 10,   weight: 80, explicitUnit: null  }],
+    ['3x10 80lbs', { sets: 3,    reps: 10,   weight: 80, explicitUnit: 'lbs' }],
+    // reps × weight (x = "times", sets not specified)
+    ['2x 15kg',    { sets: null, reps: 2,    weight: 15 }],
+    ['3x 80kg',    { sets: null, reps: 3,    weight: 80 }],
+    ['3 x 80kg',   { sets: null, reps: 3,    weight: 80 }],
+    ['3 x 80',     { sets: null, reps: 3,    weight: 80 }],
+    // weight × reps (weight first)
+    ['80kg x 3',   { sets: null, reps: 3,    weight: 80 }],
+    ['80 x 3',     { sets: null, reps: 3,    weight: 80 }],
+    // two bare numbers — smaller=reps, larger=weight, order doesn't matter
+    ['10 80',      { sets: null, reps: 10,   weight: 80  }],
+    ['80 10',      { sets: null, reps: 10,   weight: 80  }],
+    ['5 100',      { sets: null, reps: 5,    weight: 100 }],
+    // weight only
+    ['80kg',       { sets: null, reps: null, weight: 80 }],
+    ['- 80',       { sets: null, reps: null, weight: 80 }],
+    ['80lbs',      { sets: null, reps: null, weight: 80 }],
+  ])('%s', (line, expected) => {
+    expect(parse(line)).toMatchObject(expected);
+  });
+
+  // No weight found — weight=0, sets and reps null, no line skipped
+  it('no weight: produces an exercise with weight=0 rather than skipping', () => {
+    const result = parseWorkoutNotes('- just some notes here');
+    expect(result.sections[0].exercises).toHaveLength(1);
+    expect(result.sections[0].exercises[0]).toMatchObject({ sets: null, reps: null, weight: 0 });
+    expect(result.skippedLines).toBe(0);
   });
 });
