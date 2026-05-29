@@ -20,8 +20,8 @@ const ONE_SECTION: ParsedNotes = {
     {
       name: 'Push',
       exercises: [
-        { name: 'Bench press', sets: 3, weight: 80, explicitUnit: 'kg' },
-        { name: 'Overhead press', sets: 2, weight: 50, explicitUnit: null },
+        { name: 'Bench press', sets: 3, reps: null, weight: 80, explicitUnit: 'kg' },
+        { name: 'Overhead press', sets: 2, reps: null, weight: 50, explicitUnit: null },
       ],
     },
   ],
@@ -34,13 +34,13 @@ const TWO_SECTIONS: ParsedNotes = {
     {
       name: 'Push',
       exercises: [
-        { name: 'Bench press', sets: 3, weight: 80, explicitUnit: 'kg' },
+        { name: 'Bench press', sets: 3, reps: null, weight: 80, explicitUnit: 'kg' },
       ],
     },
     {
       name: 'Pull',
       exercises: [
-        { name: 'Row', sets: 3, weight: 60, explicitUnit: 'kg' },
+        { name: 'Row', sets: 3, reps: null, weight: 60, explicitUnit: 'kg' },
       ],
     },
   ],
@@ -53,7 +53,7 @@ const EMPTY_SECTION: ParsedNotes = {
     { name: 'Push', exercises: [] },
     {
       name: 'Pull',
-      exercises: [{ name: 'Row', sets: 3, weight: 60, explicitUnit: 'kg' }],
+      exercises: [{ name: 'Row', sets: 3, reps: null, weight: 60, explicitUnit: 'kg' }],
     },
   ],
   inferredUnit: 'kg',

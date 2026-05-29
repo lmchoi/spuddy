@@ -12,8 +12,8 @@ const PARSED_NOTES: ParsedNotes = {
     {
       name: 'Push',
       exercises: [
-        { name: 'Bench press', sets: 3, weight: 80, explicitUnit: 'kg' },
-        { name: 'OHP', sets: 1, weight: 50, explicitUnit: null },
+        { name: 'Bench press', sets: 3, reps: null, weight: 80, explicitUnit: 'kg' },
+        { name: 'OHP', sets: 1, reps: null, weight: 50, explicitUnit: null },
       ],
     },
   ],

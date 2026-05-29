@@ -7,9 +7,17 @@ export type NotesImportResult =
   | { success: true; programsCreated: number }
   | { success: false; error: string };
 
+// Defaults applied here — this is the only place ParsedExercise nulls become concrete values.
+// To make these user-configurable, add an optional defaults param to importFromNotes and thread
+// it through to exerciseToProgram. No other files need to change.
+const DEFAULT_SETS = 1;
+const DEFAULT_REPS = 10;
+
 function exerciseToProgram(ex: ParsedExercise): ProgramExercise {
-  const targets = Array.from({ length: ex.sets }, () => ({
-    reps: 10,
+  const sets = ex.sets ?? DEFAULT_SETS;
+  const reps = ex.reps ?? DEFAULT_REPS;
+  const targets = Array.from({ length: sets }, () => ({
+    reps,
     weight: ex.weight,
   }));
   return { name: ex.name, targets };
