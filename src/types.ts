@@ -18,6 +18,7 @@ export type Target = {
 
 export type ExerciseEntry = {
   id?: string;
+  exerciseId?: number;
   name: string;
   sets: WorkingSet[];
   targets: Target[];
@@ -29,6 +30,7 @@ export type Session = {
 };
 
 export type ProgramExercise = {
+  exerciseId?: number;
   name: string;
   targets: Target[];
 };
