@@ -69,7 +69,7 @@ describe('NotesImportReviewScreen', () => {
     expect(screen.getByText('1 set · 50kg')).toBeTruthy();
   });
 
-  it('shows "1 set" when sets is null (falls back to default)', () => {
+  it('shows only weight when sets and reps are null', () => {
     const withNullSets: ParsedNotes = {
       ...PARSED_NOTES,
       sections: [{
@@ -79,7 +79,7 @@ describe('NotesImportReviewScreen', () => {
     };
     mockUseLocalSearchParams.mockReturnValue({ parsedNotes: JSON.stringify(withNullSets) });
     render(<NotesImportReviewScreen />);
-    expect(screen.getByText(/1 set ·/)).toBeTruthy();
+    expect(screen.getByText('80kg')).toBeTruthy();
   });
 
   it('shows Import button with correct program count', () => {
