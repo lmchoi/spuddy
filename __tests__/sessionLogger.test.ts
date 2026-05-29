@@ -10,6 +10,7 @@ import {
   addExtraSet,
   totalSetCount,
   sessionProgress,
+  detectSessionChanges,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -307,5 +308,69 @@ describe('getActiveTarget in extra-set territory', () => {
     state = addExtraSet(state, 0);
     const target = getActiveTarget(state, day, 0);
     expect(target).toEqual({ reps: 4, weight: 100 });
+  });
+});
+
+// ─── detectSessionChanges ─────────────────────────────────────────────────────
+
+describe('detectSessionChanges', () => {
+  it('returns true when an exercise was skipped entirely', () => {
+    let state = initSession(day);
+    // Log all sets for Bench only; Squat has 0 logged sets
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    expect(detectSessionChanges(state, day)).toBe(true);
+  });
+
+  it('returns true when extra sets were added', () => {
+    let state = initSession(day);
+    // Complete all sets normally
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    state = addExtraSet(state, 0);
+    expect(detectSessionChanges(state, day)).toBe(true);
+  });
+
+  it('returns false for partial completion (fewer sets, no extras, no skips)', () => {
+    let state = initSession(day);
+    // Log only 2 of 3 Squat sets and both Bench sets
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    expect(detectSessionChanges(state, day)).toBe(false);
+  });
+
+  it('returns false when different reps were logged', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 3, 100); // different reps
+    state = logSet(state, 0, 3, 100);
+    state = logSet(state, 0, 3, 100);
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    expect(detectSessionChanges(state, day)).toBe(false);
+  });
+
+  it('returns false when different weight was logged', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 5, 90); // different weight
+    state = logSet(state, 0, 5, 90);
+    state = logSet(state, 0, 5, 90);
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    expect(detectSessionChanges(state, day)).toBe(false);
+  });
+
+  it('returns false for a clean complete session', () => {
+    let state = initSession(day);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 0, 5, 100);
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    expect(detectSessionChanges(state, day)).toBe(false);
   });
 });
