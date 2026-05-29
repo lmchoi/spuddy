@@ -3,9 +3,9 @@ import {
   initSchema,
   makeTestDB,
   saveSession,
+  resolveOrCreateExercise,
   getAllSessions,
   getSessionsForExercise,
-  getUniqueExerciseNames,
   getSessionByDate,
   type DB,
 } from '../src/storage';
@@ -90,18 +90,6 @@ describe('SQLite storage', () => {
     expect(sessions).toHaveLength(0);
   });
 
-  it('returns unique exercise names alphabetically', async () => {
-    await saveSession(db, SESSION_A); // Squat, Deadlift
-    await saveSession(db, SESSION_B); // Squat (again)
-    const names = await getUniqueExerciseNames(db);
-    expect(names).toEqual(['Deadlift', 'Squat']);
-  });
-
-  it('returns empty array for exercise names when no sessions', async () => {
-    const names = await getUniqueExerciseNames(db);
-    expect(names).toHaveLength(0);
-  });
-
   it('preserves set and target data through serialisation round-trip', async () => {
     await saveSession(db, SESSION_A);
     const sessions = await getAllSessions(db);
@@ -175,9 +163,10 @@ describe('SQLite storage', () => {
     });
 
     it('exercises loaded from old data without id field have id undefined', async () => {
+      const exId = await resolveOrCreateExercise(db, 'Bench');
       await db.run(
-        `INSERT INTO sessions (date, exercise_name, sets_json, targets_json) VALUES (?, ?, ?, ?)`,
-        ['2026-05-26', 'Bench', '[{"reps":5,"weight":60,"isWarmup":false,"isBodyweight":false}]', '[]']
+        `INSERT INTO sessions (date, exercise_id, sets_json, targets_json) VALUES (?, ?, ?, ?)`,
+        ['2026-05-26', exId, '[{"reps":5,"weight":60,"isWarmup":false,"isBodyweight":false}]', '[]']
       );
       const session = await getSessionByDate(db, '2026-05-26');
       expect(session?.exercises[0].id).toBeUndefined();
@@ -186,16 +175,17 @@ describe('SQLite storage', () => {
 
   describe('deduplication safeguard', () => {
     it('skips duplicate exercise entries for the same date/name', async () => {
+      const exId = await resolveOrCreateExercise(db, 'Bench');
       // Manually insert duplicate rows to simulate legacy bad data
       await db.run(
-        `INSERT INTO sessions (date, exercise_name, sets_json, targets_json)
+        `INSERT INTO sessions (date, exercise_id, sets_json, targets_json)
          VALUES (?, ?, ?, ?)`,
-        ['2026-06-01', 'Bench', '[]', '[]']
+        ['2026-06-01', exId, '[]', '[]']
       );
       await db.run(
-        `INSERT INTO sessions (date, exercise_name, sets_json, targets_json)
+        `INSERT INTO sessions (date, exercise_id, sets_json, targets_json)
          VALUES (?, ?, ?, ?)`,
-        ['2026-06-01', 'Bench', '[{"reps":10,"weight":60}]', '[]']
+        ['2026-06-01', exId, '[{"reps":10,"weight":60}]', '[]']
       );
 
       const sessions = await getAllSessions(db);
@@ -204,6 +194,62 @@ describe('SQLite storage', () => {
       // We pick the first row found for a given exercise on a given date.
       // This is a simple safeguard against duplicate entries from legacy bugs.
       expect(sessions[0].exercises[0].sets).toHaveLength(0);
+    });
+  });
+
+  describe('migration to exercise IDs', () => {
+    it('migrates legacy name-based data to ID-based data', async () => {
+      const sqlite = new BetterSqlite(':memory:');
+      const db = makeTestDB(sqlite);
+
+      // Manually create legacy schema
+      await db.run(`CREATE TABLE sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        exercise_name TEXT NOT NULL,
+        sets_json TEXT NOT NULL,
+        targets_json TEXT NOT NULL
+      )`);
+      await db.run(`CREATE TABLE programs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        active_day_index INTEGER NOT NULL DEFAULT 0
+      )`);
+      await db.run(`CREATE TABLE program_days (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        program_id INTEGER NOT NULL REFERENCES programs(id),
+        day_index INTEGER NOT NULL,
+        name TEXT NOT NULL
+      )`);
+      await db.run(`CREATE TABLE program_exercises (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        program_day_id INTEGER NOT NULL REFERENCES program_days(id),
+        exercise_index INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        targets_json TEXT NOT NULL
+      )`);
+
+      // Seed legacy data
+      await db.run(`INSERT INTO sessions (date, exercise_name, sets_json, targets_json) VALUES (?, ?, ?, ?)`,
+        ['2026-05-01', 'Squat', '[]', '[]']);
+      await db.run(`INSERT INTO programs (name) VALUES (?)`, ['PPL']);
+      await db.run(`INSERT INTO program_days (program_id, day_index, name) VALUES (?, ?, ?)`, [1, 0, 'Legs']);
+      await db.run(`INSERT INTO program_exercises (program_day_id, exercise_index, name, targets_json) VALUES (?, ?, ?, ?)`,
+        [1, 0, 'Squat', '[]']);
+
+      // Run initSchema which calls migrate
+      await initSchema(db);
+
+      // Verify migration
+      const exercises = await db.all<{ id: number, name: string }>(`SELECT * FROM exercises`);
+      expect(exercises).toHaveLength(1);
+      expect(exercises[0].name).toBe('Squat');
+
+      const sessions = await db.all<{ exercise_id: number }>(`SELECT exercise_id FROM sessions`);
+      expect(sessions[0].exercise_id).toBe(exercises[0].id);
+
+      const progEx = await db.all<{ exercise_id: number }>(`SELECT exercise_id FROM program_exercises`);
+      expect(progEx[0].exercise_id).toBe(exercises[0].id);
     });
   });
 

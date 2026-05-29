@@ -7,7 +7,6 @@ import { getPrograms } from '@/src/programStorage';
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({
   getAllSessions: jest.fn().mockResolvedValue([]),
-  getUniqueExerciseNames: jest.fn().mockResolvedValue([]),
   sessionExists: jest.fn().mockResolvedValue(false),
   saveSession: jest.fn().mockResolvedValue(undefined),
 }));
