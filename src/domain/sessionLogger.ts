@@ -110,6 +110,13 @@ export function detectSessionChanges(state: SessionState, day: ProgramDay): bool
     state.extraSetCounts.some(c => c > 0);
 }
 
+export function resolvePostSessionAction(
+  state: SessionState,
+  day: ProgramDay,
+): 'prompt' | 'navigate' {
+  return detectSessionChanges(state, day) ? 'prompt' : 'navigate';
+}
+
 export function buildSavePayload(
   state: SessionState,
   day: ProgramDay,
