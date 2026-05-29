@@ -1,6 +1,6 @@
 # Plan: Freeform notes import follow-up
 
-**Status:** Proposed
+**Status:** In progress
 
 ## Goal
 
@@ -9,7 +9,18 @@ Refine the freeform notes import experience by addressing destructive behavior a
 ## Scope
 
 - **Non-destructive import:** Move away from "wipe everything" imports.
-- **Reps-only heuristic:** Improve parser accuracy by skipping lines that look like reps-only entries (e.g., `3 x 12`).
+- **Parse reps from notes input:** Extend the parser to understand reps and sets from a wider range of natural note formats, and thread them through to program targets.
+
+## Parsing heuristic (implemented)
+
+`x` at end of a number = reps marker (`3x 80kg` → 1 set × 3 reps × 80kg).
+`NxM` (compact, no spaces) = sets × reps (`3x10 80kg` → 3 sets × 10 reps × 80kg).
+Two bare numbers: smaller = reps, larger = weight.
+No lines are ever skipped — every bullet produces a `ParsedExercise` (weight=0 if no number found).
+
+`ParsedExercise.sets` and `.reps` are `number | null` — null means the user didn't write that value.
+Defaults (`DEFAULT_SETS = 1`, `DEFAULT_REPS = 10`) are applied only in `notesImport.ts`.
+User-configurable defaults can be added later by adding an optional param to `importFromNotes`.
 
 ## Proposed Tasks
 
@@ -20,9 +31,14 @@ Refine the freeform notes import experience by addressing destructive behavior a
 - [ ] If destructive, add a "You will lose X programs" warning.
 - [ ] Implement the chosen behavior in `programStorage.ts`.
 
-### 2. Parser heuristic for reps-only lines
-Lines like `"Bench 2 x 12"` are currently parsed as 2 sets at 12 kg, which is often a false positive for "2 sets of 12 reps".
+### 2. Parse reps from notes input ✅
 
-- [ ] Implement a heuristic (e.g., weight threshold or missing unit) to identify reps-only lines.
-- [ ] Skip these lines and count them as `skippedLines` in `notesParser.ts`.
-- [ ] Update tests to verify that `3 x 12` is skipped while `3 x 12kg` is captured.
+- [x] Add `reps: number | null` and `sets: number | null` to `ParsedExercise` (null = not specified by user).
+- [x] Rewrite `parseBulletLine` using token extraction + size-based heuristic.
+- [x] Thread `reps` through `notesImport.ts` — defaults applied via `?? DEFAULT_REPS`.
+- [ ] Update review screen to show `{sets}×{reps} · {weight}…`.
+
+### 3. Parser heuristic for reps-only lines — superseded by task 2
+
+Skipping lines caused silent data loss. The new parser never skips — ambiguous lines
+produce an exercise with `weight=0` which is visible on the review screen.
