@@ -212,4 +212,11 @@ describe('SQLite storage', () => {
     });
   });
 
+  describe('exercises schema — notes column', () => {
+    it('exercises table has a notes column after migration', () => {
+      const cols = db.all<{ name: string }>(sql`PRAGMA table_info(exercises)`);
+      expect(cols.some(c => c.name === 'notes')).toBe(true);
+    });
+  });
+
 });

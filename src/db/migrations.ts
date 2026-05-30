@@ -7,6 +7,12 @@ export const migrations = {
         tag: '0000_new_namor',
         breakpoints: true,
       },
+      {
+        idx: 1,
+        when: 1780221701055,
+        tag: '0001_exercise_notes',
+        breakpoints: true,
+      },
     ],
   },
   migrations: {
@@ -53,5 +59,6 @@ export const migrations = {
       "CREATE INDEX `idx_sessions_date` ON `sessions` (`date`);--> statement-breakpoint",
       "CREATE INDEX `idx_sessions_exercise` ON `sessions` (`exercise_id`);",
     ].join("\n"),
+    m0001: "ALTER TABLE `exercises` ADD `notes` text;",
   },
 };

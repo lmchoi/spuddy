@@ -8,6 +8,13 @@
       "when": 1780135301055,
       "tag": "0000_new_namor",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1780221701055,
+      "tag": "0001_exercise_notes",
+      "breakpoints": true
     }
   ]
 }
