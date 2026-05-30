@@ -93,7 +93,7 @@ export function getActiveTarget(
 
 export function buildNewDay(state: SessionState, day: ProgramDay, name: string): ProgramDay {
   const exercises = day.exercises.flatMap((ex, i) => {
-    if (state.loggedSets[i].length === 0) return [];
+    if (state.loggedSets[i].length === 0 && state.extraSetCounts[i] === 0) return [];
     const extra = state.extraSetCounts[i];
     const extraTargets = extra > 0
       ? Array.from({ length: extra }, () => ex.targets[ex.targets.length - 1])

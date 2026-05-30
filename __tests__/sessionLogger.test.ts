@@ -428,6 +428,21 @@ describe('buildNewDay', () => {
     // Squat still has 3 targets (not reduced to 1)
     expect(newDay.exercises[0].targets).toHaveLength(3);
   });
+
+  it('includes exercise when extra sets added but 0 sets logged', () => {
+    let state = initSession(day);
+    // Add an extra set to Squat but log nothing for it
+    state = addExtraSet(state, 0);
+    // Log Bench normally
+    state = logSet(state, 1, 8, 60);
+    state = logSet(state, 1, 8, 60);
+    const newDay = buildNewDay(state, day, 'Extra No Log');
+    // Squat must be present with original 3 targets + 1 extra = 4
+    expect(newDay.exercises).toHaveLength(2);
+    expect(newDay.exercises[0].name).toBe('Squat');
+    expect(newDay.exercises[0].targets).toHaveLength(4);
+    expect(newDay.exercises[1].name).toBe('Bench');
+  });
 });
 
 // ─── resolvePostSessionAction ─────────────────────────────────────────────────
