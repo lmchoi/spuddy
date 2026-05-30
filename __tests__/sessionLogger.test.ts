@@ -321,7 +321,7 @@ describe('detectSessionChanges', () => {
     // Log all sets for Bench only; Squat has 0 logged sets
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
-    expect(detectSessionChanges(state, day)).toBe(true);
+    expect(detectSessionChanges(state)).toBe(true);
   });
 
   it('returns true when extra sets were added', () => {
@@ -333,7 +333,7 @@ describe('detectSessionChanges', () => {
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
     state = addExtraSet(state, 0);
-    expect(detectSessionChanges(state, day)).toBe(true);
+    expect(detectSessionChanges(state)).toBe(true);
   });
 
   it('returns false for partial completion (fewer sets, no extras, no skips)', () => {
@@ -343,7 +343,7 @@ describe('detectSessionChanges', () => {
     state = logSet(state, 0, 5, 100);
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
-    expect(detectSessionChanges(state, day)).toBe(false);
+    expect(detectSessionChanges(state)).toBe(false);
   });
 
   it('returns false when different reps were logged', () => {
@@ -353,7 +353,7 @@ describe('detectSessionChanges', () => {
     state = logSet(state, 0, 3, 100);
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
-    expect(detectSessionChanges(state, day)).toBe(false);
+    expect(detectSessionChanges(state)).toBe(false);
   });
 
   it('returns false when different weight was logged', () => {
@@ -363,7 +363,7 @@ describe('detectSessionChanges', () => {
     state = logSet(state, 0, 5, 90);
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
-    expect(detectSessionChanges(state, day)).toBe(false);
+    expect(detectSessionChanges(state)).toBe(false);
   });
 
   it('returns false for a clean complete session', () => {
@@ -373,7 +373,7 @@ describe('detectSessionChanges', () => {
     state = logSet(state, 0, 5, 100);
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
-    expect(detectSessionChanges(state, day)).toBe(false);
+    expect(detectSessionChanges(state)).toBe(false);
   });
 });
 
@@ -438,7 +438,7 @@ describe('resolvePostSessionAction', () => {
     // Skipped exercise → changes detected
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
-    expect(resolvePostSessionAction(state, day)).toBe('prompt');
+    expect(resolvePostSessionAction(state)).toBe('prompt');
   });
 
   it('returns "navigate" when no changes are detected', () => {
@@ -448,6 +448,6 @@ describe('resolvePostSessionAction', () => {
     state = logSet(state, 0, 5, 100);
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
-    expect(resolvePostSessionAction(state, day)).toBe('navigate');
+    expect(resolvePostSessionAction(state)).toBe('navigate');
   });
 });

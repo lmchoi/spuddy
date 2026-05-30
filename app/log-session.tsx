@@ -436,7 +436,7 @@ export default function LogSession() {
       Alert.alert('Save failed', 'Could not save your session. Please try again.');
       return;
     }
-    if (resolvePostSessionAction(session, day) === 'navigate') {
+    if (resolvePostSessionAction(session) === 'navigate') {
       router.replace(`/progress/${today}`);
       return;
     }
