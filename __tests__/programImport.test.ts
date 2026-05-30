@@ -1,25 +1,19 @@
-import BetterSqlite from 'better-sqlite3';
-import { initSchema, makeTestDB, type DB } from '../src/storage';
+import { type DrizzleDB } from '../src/storage';
 import { importProgramFromJson } from '../src/programImport';
 import { getPrograms } from '../src/programStorage';
 import * as fs from 'fs';
 import * as path from 'path';
-
-function makeInMemoryDB(): DB {
-  const sqlite = new BetterSqlite(':memory:');
-  return makeTestDB(sqlite);
-}
+import { makeInMemoryDB } from './helpers/makeInMemoryDB';
 
 const fixture = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'fixtures/liftosaur-backup.json'), 'utf8')
 );
 
 describe('importProgramFromJson', () => {
-  let db: DB;
+  let db: DrizzleDB;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     db = makeInMemoryDB();
-    await initSchema(db);
   });
 
   it('imports all programs from fixture JSON into storage', async () => {
@@ -40,7 +34,7 @@ describe('importProgramFromJson', () => {
     await importProgramFromJson(db, fixture);
 
     const stored = await getPrograms(db);
-    const rows = await db.all<{ count: number }>('SELECT COUNT(*) AS count FROM programs');
+    const rows = db.all<{ count: number }>('SELECT COUNT(*) AS count FROM programs');
     expect(rows[0].count).toBe(stored.length);
   });
 

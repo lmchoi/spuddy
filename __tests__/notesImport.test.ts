@@ -1,13 +1,8 @@
-import BetterSqlite from 'better-sqlite3';
-import { initSchema, makeTestDB, type DB } from '../src/storage';
+import { type DrizzleDB } from '../src/storage';
 import { importFromNotes } from '../src/notesImport';
 import { getPrograms } from '../src/programStorage';
 import type { ParsedNotes } from '../src/notesParser';
-
-function makeInMemoryDB(): DB {
-  const sqlite = new BetterSqlite(':memory:');
-  return makeTestDB(sqlite);
-}
+import { makeInMemoryDB } from './helpers/makeInMemoryDB';
 
 const EMPTY_PARSED: ParsedNotes = {
   sections: [],
@@ -57,11 +52,10 @@ const EMPTY_SECTION: ParsedNotes = {
 };
 
 describe('importFromNotes', () => {
-  let db: DB;
+  let db: DrizzleDB;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     db = makeInMemoryDB();
-    await initSchema(db);
   });
 
   it('returns success with 0 programs for empty input', async () => {
@@ -110,12 +104,10 @@ describe('importFromNotes', () => {
   });
 
   it('does not wipe existing programs when all parsed sections are empty', async () => {
-    // Seed an existing program
     await importFromNotes(db, ONE_SECTION);
     const before = await getPrograms(db);
     expect(before).toHaveLength(1);
 
-    // Import notes with sections but no exercises
     const allEmpty: ParsedNotes = {
       sections: [
         { name: 'Header only', exercises: [] },
@@ -127,7 +119,6 @@ describe('importFromNotes', () => {
     expect(result.success).toBe(true);
     if (result.success) expect(result.programsCreated).toBe(0);
 
-    // Existing programs must be untouched
     const after = await getPrograms(db);
     expect(after).toHaveLength(1);
     expect(after[0].name).toBe('Push');

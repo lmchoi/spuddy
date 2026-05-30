@@ -1,4 +1,4 @@
-import type { DB } from './storage';
+import type { DrizzleDB } from './storage';
 import type { ParsedNotes, ParsedExercise } from './notesParser';
 import type { Program, ProgramDay, ProgramExercise } from './types';
 import { savePrograms } from './programStorage';
@@ -24,7 +24,7 @@ function exerciseToProgram(ex: ParsedExercise): ProgramExercise {
 }
 
 export async function importFromNotes(
-  db: DB,
+  db: DrizzleDB,
   parsedNotes: ParsedNotes
 ): Promise<NotesImportResult> {
   if (parsedNotes.sections.length === 0) {
@@ -41,10 +41,9 @@ export async function importFromNotes(
       });
 
     if (programs.length === 0) return { success: true, programsCreated: 0 };
-
     await savePrograms(db, programs);
     return { success: true, programsCreated: programs.length };
-  } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : String(e) };
+  } catch (err) {
+    return { success: false, error: String(err) };
   }
 }
