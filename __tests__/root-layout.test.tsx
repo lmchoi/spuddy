@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import RootLayout from '../app/_layout';
+import RootLayout, { unstable_settings } from '../app/_layout';
 
 jest.mock('expo-font', () => ({
   useFonts: () => [true, null],
@@ -32,6 +32,12 @@ jest.mock('react-native-reanimated', () => ({}));
 
 beforeEach(() => {
   capturedScreens.length = 0;
+});
+
+describe('unstable_settings', () => {
+  it('sets initialRouteName to index so the first-run redirect in app/index.tsx runs on boot', () => {
+    expect(unstable_settings.initialRouteName).toBe('index');
+  });
 });
 
 describe('RootLayoutNav screen registration', () => {
