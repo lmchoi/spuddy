@@ -1,0 +1,9 @@
+appId: com.mchoi.spuddy
+---
+- launchApp:
+    clearState: true
+- tapOn: "Add"
+- tapOn: "Workout notes input"
+- inputText: "2099-01-01\nexercises: {\n  Squat / 3x5 100kg\n}"
+- tapOn: "Save 1 exercise"
+- assertVisible: "Saved!"
