@@ -2,6 +2,7 @@ import { useEffect, useReducer, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
@@ -264,15 +265,17 @@ function SetList({
 function NoteRow({ note, onPress }: { note: string | null; onPress: () => void }) {
   if (note) {
     return (
-      <Pressable onPress={onPress} style={styles.noteFilled}>
-        <Text style={styles.noteText}>{note}</Text>
-        <Text style={styles.noteEditIcon}>✏️</Text>
-      </Pressable>
+      <View style={styles.noteBtnFilled}>
+        <Text style={styles.noteBtnText}>{note}</Text>
+        <Pressable onPress={onPress} style={styles.noteBtnEdit}>
+          <Text style={styles.noteBtnEditText}>Edit</Text>
+        </Pressable>
+      </View>
     );
   }
   return (
-    <Pressable onPress={onPress} style={styles.noteGhost}>
-      <Text style={styles.noteGhostText}>Add a cue or note…</Text>
+    <Pressable onPress={onPress} style={styles.noteAddBtn}>
+      <Text style={styles.noteAddBtnText}>Add note</Text>
     </Pressable>
   );
 }
@@ -292,7 +295,14 @@ function NoteSheet({
 }) {
   const [text, setText] = useState(initialText);
   return (
-    <Pressable style={styles.noteOverlay} onPress={onCancel}>
+    <KeyboardAvoidingView
+      style={styles.noteOverlay}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <Pressable
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        onPress={onCancel}
+      />
       <Pressable style={styles.noteSheet} onPress={() => {}}>
         <View style={styles.noteSheetHandle} />
         <View style={styles.noteSheetHeader}>
@@ -315,7 +325,7 @@ function NoteSheet({
         />
         <Text style={styles.noteSheetHint}>Saved to this exercise — shows every session.</Text>
       </Pressable>
-    </Pressable>
+    </KeyboardAvoidingView>
   );
 }
 
