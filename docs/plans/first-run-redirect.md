@@ -13,6 +13,6 @@ Create `app/index.tsx` that:
 
 ## Commits
 
-### 1. Add first-run root redirect
+### 1. Add first-run root redirect ✓
 - Create `app/index.tsx`
-- No tests needed (Expo Router routing is integration-tested by running the app)
+- Create `__tests__/index.test.tsx` (pre-commit hook required tests; mocked `getDB`/`getAllSessions`/`router.replace`)
