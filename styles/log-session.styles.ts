@@ -149,4 +149,37 @@ export const styles = StyleSheet.create({
   confirmBtn: { backgroundColor: C.hit, borderRadius: 14, paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
   confirmBtnPressed: { opacity: 0.85 },
   confirmBtnText: { fontSize: 16, fontWeight: '700', color: C.bg, letterSpacing: -0.2 },
+
+  noteGhost: { flexDirection: 'row', alignItems: 'center', gap: 6, opacity: 0.4, paddingVertical: 2 },
+  noteGhostText: { fontSize: 13, color: C.muted },
+  noteFilled: { flexDirection: 'row', alignItems: 'flex-start', gap: 7, paddingVertical: 1 },
+  noteText: { flex: 1, fontSize: 13, color: C.sub, lineHeight: 18 },
+  noteEditIcon: { fontSize: 11, color: C.muted, marginTop: 2 },
+
+  noteOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'flex-end',
+  },
+  noteSheet: {
+    backgroundColor: C.bg2,
+    borderTopWidth: 1, borderTopColor: C.border,
+    borderRadius: 24, borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
+    padding: 20, paddingBottom: 40,
+    gap: 12,
+  },
+  noteSheetHandle: {
+    width: 36, height: 4, borderRadius: 2,
+    backgroundColor: C.border, alignSelf: 'center', marginBottom: 4,
+  },
+  noteSheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  noteSheetTitle: { fontSize: 15, fontWeight: '700', color: C.text },
+  noteSheetDone: { fontSize: 14, fontWeight: '600', color: C.hit },
+  noteInput: {
+    backgroundColor: C.card, borderWidth: 1, borderColor: C.border,
+    borderRadius: 12, padding: 12, paddingTop: 12,
+    fontSize: 14, color: C.text, lineHeight: 21,
+    minHeight: 80, textAlignVertical: 'top',
+  },
+  noteSheetHint: { fontSize: 12, color: C.muted },
 });
