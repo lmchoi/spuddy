@@ -47,6 +47,11 @@ export async function sessionExists(db: DrizzleDB, date: string): Promise<boolea
   return (rows[0]?.n ?? 0) > 0;
 }
 
+export async function hasAnySessions(db: DrizzleDB): Promise<boolean> {
+  const rows = db.all<{ n: number }>(sql`SELECT 1 AS n FROM sessions LIMIT 1`);
+  return rows.length > 0;
+}
+
 export async function saveSession(db: DrizzleDB, session: Session): Promise<void> {
   db.transaction(tx => {
     for (const entry of session.exercises) {

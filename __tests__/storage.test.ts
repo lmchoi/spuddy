@@ -5,6 +5,7 @@ import {
   getAllSessions,
   getSessionsForExercise,
   getSessionByDate,
+  hasAnySessions,
   type DrizzleDB,
 } from '../src/storage';
 import type { Session } from '../src/types';
@@ -182,6 +183,17 @@ describe('SQLite storage', () => {
       const a = resolveOrCreateExercise(db, 'Squat');
       const b = resolveOrCreateExercise(db, 'Deadlift');
       expect(a).not.toBe(b);
+    });
+  });
+
+  describe('hasAnySessions', () => {
+    it('returns false on empty DB', async () => {
+      expect(await hasAnySessions(db)).toBe(false);
+    });
+
+    it('returns true after saving a session', async () => {
+      await saveSession(db, SESSION_A);
+      expect(await hasAnySessions(db)).toBe(true);
     });
   });
 
