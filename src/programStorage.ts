@@ -1,134 +1,109 @@
-import { resolveOrCreateExercise, type DB } from './storage';
+import { and, asc, eq, sql } from 'drizzle-orm';
+import { programDays, programExercises, programs } from './db/schema';
+import { resolveOrCreateExercise, type DrizzleDB } from './storage';
 import type { Program, ProgramDay, ProgramExercise, Target } from './types';
 
-export async function savePrograms(db: DB, programs: Program[]): Promise<void> {
-  await db.run('BEGIN');
-  try {
-    await db.run('DELETE FROM program_exercises');
-    await db.run('DELETE FROM program_days');
-    await db.run('DELETE FROM programs');
+export async function savePrograms(db: DrizzleDB, programs_: Program[]): Promise<void> {
+  db.transaction(tx => {
+    const tdb = tx as DrizzleDB;
+    tdb.delete(programExercises).run();
+    tdb.delete(programDays).run();
+    tdb.delete(programs).run();
 
-    for (const program of programs) {
-      await db.run(
-        'INSERT INTO programs (name, active_day_index) VALUES (?, ?)',
-        [program.name, program.activeDayIndex]
-      );
-      const programRows = await db.all<{ id: number }>('SELECT last_insert_rowid() AS id');
-      const programId = programRows[0].id;
+    for (const program of programs_) {
+      const programRow = tdb.insert(programs).values({ name: program.name, activeDayIndex: program.activeDayIndex }).returning({ insertedId: programs.id }).get()!;
 
       for (let di = 0; di < program.days.length; di++) {
         const day = program.days[di];
-        await db.run(
-          'INSERT INTO program_days (program_id, day_index, name) VALUES (?, ?, ?)',
-          [programId, di, day.name]
-        );
-        const dayRows = await db.all<{ id: number }>('SELECT last_insert_rowid() AS id');
-        const dayId = dayRows[0].id;
+        const dayRow = tdb.insert(programDays).values({ programId: programRow.insertedId, dayIndex: di, name: day.name }).returning({ insertedId: programDays.id }).get()!;
 
         for (let ei = 0; ei < day.exercises.length; ei++) {
           const exercise = day.exercises[ei];
-          const exerciseId = await resolveOrCreateExercise(db, exercise.name);
-          await db.run(
-            'INSERT INTO program_exercises (program_day_id, exercise_index, exercise_id, targets_json) VALUES (?, ?, ?, ?)',
-            [dayId, ei, exerciseId, JSON.stringify(exercise.targets)]
-          );
+          const exerciseId = resolveOrCreateExercise(tdb, exercise.name);
+          tdb.insert(programExercises).values({
+            programDayId: dayRow.insertedId,
+            exerciseIndex: ei,
+            exerciseId,
+            targetsJson: JSON.stringify(exercise.targets),
+          }).run();
         }
       }
     }
-
-    await db.run('COMMIT');
-  } catch (e) {
-    try { await db.run('ROLLBACK'); } catch { /* ignore secondary failure */ }
-    throw e;
-  }
+  });
 }
 
-type ProgramRow = { id: number; name: string; active_day_index: number };
-type DayRow = { id: number; program_id: number; day_index: number; name: string };
-type ExerciseRow = { name: string; exercise_id: number; exercise_index: number; targets_json: string };
+export async function getPrograms(db: DrizzleDB): Promise<Program[]> {
+  const programRows = await db.select().from(programs).orderBy(asc(programs.id));
 
-export async function getPrograms(db: DB): Promise<Program[]> {
-  const programRows = await db.all<ProgramRow>(
-    'SELECT id, name, active_day_index FROM programs ORDER BY id ASC'
-  );
+  return programRows.map(programRow => {
+    const dayRows = db.all<{ id: number; name: string; day_index: number }>(sql`
+      SELECT id, name, day_index FROM program_days
+      WHERE program_id = ${programRow.id} ORDER BY day_index ASC
+    `);
 
-  return Promise.all(
-    programRows.map(async programRow => {
-      const dayRows = await db.all<DayRow>(
-        'SELECT id, program_id, day_index, name FROM program_days WHERE program_id = ? ORDER BY day_index ASC',
-        [programRow.id]
-      );
+    const days: ProgramDay[] = dayRows.map(dayRow => ({
+      name: dayRow.name,
+      exercises: loadExercises(db, dayRow.id),
+    }));
 
-      const days: ProgramDay[] = await Promise.all(
-        dayRows.map(async dayRow => {
-          const exercises = await loadExercises(db, dayRow.id);
-          return { name: dayRow.name, exercises };
-        })
-      );
-
-      return { name: programRow.name, days, activeDayIndex: programRow.active_day_index };
-    })
-  );
+    return { name: programRow.name, days, activeDayIndex: programRow.activeDayIndex };
+  });
 }
 
 export async function getProgramDay(
-  db: DB,
+  db: DrizzleDB,
   programName: string,
   dayIndex: number
 ): Promise<ProgramDay | null> {
-  const dayRows = await db.all<DayRow>(
-    `SELECT pd.id, pd.program_id, pd.day_index, pd.name
-     FROM program_days pd
-     JOIN programs p ON pd.program_id = p.id
-     WHERE p.name = ? AND pd.day_index = ?`,
-    [programName, dayIndex]
-  );
-  if (dayRows.length === 0) return null;
+  const programRows = await db.select({ id: programs.id }).from(programs).where(eq(programs.name, programName));
+  if (programRows.length === 0) return null;
 
-  const exercises = await loadExercises(db, dayRows[0].id);
-  return { name: dayRows[0].name, exercises };
+  const dayRows = await db.select({ id: programDays.id, name: programDays.name })
+    .from(programDays)
+    .where(and(eq(programDays.programId, programRows[0].id), eq(programDays.dayIndex, dayIndex)));
+  if (dayRows.length === 0) return null;
+  const dayRow = dayRows[0];
+
+  return { name: dayRow.name, exercises: loadExercises(db, dayRow.id) };
 }
 
 export async function updateProgramDay(
-  db: DB,
+  db: DrizzleDB,
   programName: string,
   dayIndex: number,
   day: ProgramDay
 ): Promise<void> {
-  const programs = await getPrograms(db);
-  const target = programs.find(p => p.name === programName);
+  const programList = await getPrograms(db);
+  const target = programList.find(p => p.name === programName);
   if (!target) throw new Error(`Program not found: ${programName}`);
   target.days[dayIndex] = day;
-  await savePrograms(db, programs);
+  await savePrograms(db, programList);
 }
 
 export async function updateActiveDayIndex(
-  db: DB,
+  db: DrizzleDB,
   programName: string,
   dayIndex: number
 ): Promise<void> {
-  await db.run(
-    'UPDATE programs SET active_day_index = ? WHERE name = ?',
-    [dayIndex, programName]
-  );
+  db.update(programs).set({ activeDayIndex: dayIndex }).where(eq(programs.name, programName)).run();
 }
 
-export async function addProgramDay(db: DB, programName: string, day: ProgramDay): Promise<void> {
-  const programs = await getPrograms(db);
-  const target = programs.find(p => p.name === programName);
+export async function addProgramDay(db: DrizzleDB, programName: string, day: ProgramDay): Promise<void> {
+  const programList = await getPrograms(db);
+  const target = programList.find(p => p.name === programName);
   if (!target) throw new Error(`Program not found: ${programName}`);
   target.days.push(day);
-  await savePrograms(db, programs);
+  await savePrograms(db, programList);
 }
 
-async function loadExercises(db: DB, dayId: number): Promise<ProgramExercise[]> {
-  const rows = await db.all<ExerciseRow>(
-    `SELECT e.name, pe.exercise_id, pe.exercise_index, pe.targets_json
-     FROM program_exercises pe
-     JOIN exercises e ON pe.exercise_id = e.id
-     WHERE pe.program_day_id = ? ORDER BY pe.exercise_index ASC`,
-    [dayId]
-  );
+function loadExercises(db: DrizzleDB, dayId: number): ProgramExercise[] {
+  const rows = db.all<{ name: string; exercise_id: number; targets_json: string }>(sql`
+    SELECT e.name, pe.exercise_id, pe.targets_json
+    FROM program_exercises pe
+    JOIN exercises e ON pe.exercise_id = e.id
+    WHERE pe.program_day_id = ${dayId} ORDER BY pe.exercise_index ASC
+  `);
+
   return rows.map(row => ({
     exerciseId: row.exercise_id,
     name: row.name,

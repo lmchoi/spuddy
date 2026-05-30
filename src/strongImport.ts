@@ -1,4 +1,4 @@
-import type { DB } from './storage';
+import type { DrizzleDB } from './storage';
 import { saveSession } from './storage';
 import type { Program, ProgramExercise, Target, Session } from './types';
 import { savePrograms } from './programStorage';
@@ -12,7 +12,7 @@ type ImportResult =
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export async function importFromStrong(
-  db: DB,
+  db: DrizzleDB,
   text: string,
   selectedWorkoutNames: string[],
   unit: 'kg' | 'lbs'
