@@ -46,6 +46,11 @@ describe('empty state', () => {
     expect(screen.getByText('Paste to begin')).toBeTruthy();
   });
 
+  it('TextInput has accessibilityLabel for E2E targeting', () => {
+    render(<AddScreen />);
+    expect(screen.getByLabelText('Workout notes input')).toBeTruthy();
+  });
+
   it('does not show Cancel when textarea is empty', () => {
     render(<AddScreen />);
     expect(screen.queryByText('Cancel')).toBeNull();
