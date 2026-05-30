@@ -48,7 +48,7 @@ export async function sessionExists(db: DrizzleDB, date: string): Promise<boolea
 }
 
 export async function hasAnySessions(db: DrizzleDB): Promise<boolean> {
-  const rows = db.all<{ n: number }>(sql`SELECT 1 AS n FROM sessions LIMIT 1`);
+  const rows = db.all(sql`SELECT 1 FROM sessions LIMIT 1`);
   return rows.length > 0;
 }
 
