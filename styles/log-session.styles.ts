@@ -150,11 +150,20 @@ export const styles = StyleSheet.create({
   confirmBtnPressed: { opacity: 0.85 },
   confirmBtnText: { fontSize: 16, fontWeight: '700', color: C.bg, letterSpacing: -0.2 },
 
-  noteGhost: { flexDirection: 'row', alignItems: 'center', gap: 6, opacity: 0.4, paddingVertical: 2 },
-  noteGhostText: { fontSize: 13, color: C.muted },
-  noteFilled: { flexDirection: 'row', alignItems: 'flex-start', gap: 7, paddingVertical: 1 },
-  noteText: { flex: 1, fontSize: 13, color: C.sub, lineHeight: 18 },
-  noteEditIcon: { fontSize: 11, color: C.muted, marginTop: 2 },
+  noteAddBtn: {
+    flexDirection: 'row', alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingVertical: 5, paddingHorizontal: 10,
+    borderRadius: 8, borderWidth: 1, borderColor: C.border,
+  },
+  noteAddBtnText: { fontSize: 12, color: C.sub },
+  noteBtnFilled: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 1 },
+  noteBtnText: { flex: 1, fontSize: 13, color: C.sub, lineHeight: 18 },
+  noteBtnEdit: {
+    paddingVertical: 2, paddingHorizontal: 7,
+    borderRadius: 6, borderWidth: 1, borderColor: C.border,
+  },
+  noteBtnEditText: { fontSize: 11, color: C.muted },
 
   noteOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
