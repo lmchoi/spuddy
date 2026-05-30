@@ -1,0 +1,53 @@
+name: EAS Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🚀 Build APK via EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🔨 Run EAS build
+        run: eas build --platform android --profile preview --non-interactive --output ./spuddy.apk
+
+      - name: 📂 Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spuddy-release-apk
+          path: ./spuddy.apk
+
+      - name: 📝 Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./spuddy.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: true
