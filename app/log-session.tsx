@@ -391,10 +391,11 @@ export default function LogSession() {
 
   const handleLogSet = useCallback(() => {
     if (state.status !== 'ready') return;
-    const { day, session, input } = state;
+    const { day, session, input, key } = state;
     const exIdx = session.currentExerciseIdx;
     const next = logSet(session, exIdx, input.reps, input.weight);
     const nextInput = inputFromTarget(day, next);
+    saveDraft(key, next);
     setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
@@ -402,6 +403,7 @@ export default function LogSession() {
     if (state.status !== 'ready') return;
     const next = skipRest(state.session);
     const nextInput = inputFromTarget(state.day, next);
+    saveDraft(state.key, next);
     setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
@@ -409,6 +411,7 @@ export default function LogSession() {
     if (state.status !== 'ready') return;
     const next = jumpToExercise(state.session, idx);
     const nextInput = inputFromTarget(state.day, next);
+    saveDraft(state.key, next);
     setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
@@ -416,6 +419,7 @@ export default function LogSession() {
     if (state.status !== 'ready') return;
     const next = jumpToExercise(state.session, state.session.currentExerciseIdx + 1);
     const nextInput = inputFromTarget(state.day, next);
+    saveDraft(state.key, next);
     setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
@@ -423,6 +427,7 @@ export default function LogSession() {
     if (state.status !== 'ready') return;
     const next = addExtraSet(state.session, exIdx);
     const nextInput = inputFromTarget(state.day, next);
+    saveDraft(state.key, next);
     setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
