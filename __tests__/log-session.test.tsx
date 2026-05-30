@@ -394,6 +394,36 @@ describe('resume in-progress session', () => {
     // Fresh session: first set of two remaining
     expect(screen.getByText('Done · Set 1 of 2')).toBeTruthy();
   });
+
+  it('saves draft after logging a set', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    expect(saveDraft).toHaveBeenCalled();
+  });
+
+  it('saves draft after skipping rest', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    const callsBefore = (saveDraft as jest.Mock).mock.calls.length;
+
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    expect((saveDraft as jest.Mock).mock.calls.length).toBeGreaterThan(callsBefore);
+  });
+
+  it('saves draft after jumping to another exercise', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+
+    expect(saveDraft).toHaveBeenCalled();
+  });
 });
 
 // ─── Extra set — plan target comparison ──────────────────────────────────────
