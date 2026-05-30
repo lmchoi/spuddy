@@ -16,3 +16,8 @@ Create `app/index.tsx` that:
 ### 1. Add first-run root redirect ✓
 - Create `app/index.tsx`
 - Create `__tests__/index.test.tsx` (pre-commit hook required tests; mocked `getDB`/`getAllSessions`/`router.replace`)
+
+### 2. Replace getAllSessions with hasAnySessions ✓
+- Add `hasAnySessions` to `src/storage.ts` — `SELECT 1 LIMIT 1`, no join, no deserialization
+- Update `app/index.tsx` and `__tests__/index.test.tsx` to use it
+- `getAllSessions` was wasteful: fetched and deserialized every row just to check `length > 0`
