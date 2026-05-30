@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exercise Note UX — Spuddy</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #181109;
+    --bg2:       #1F1610;
+    --surface:   #251A12;
+    --card:      #2E2218;
+    --card2:     #382A1B;
+    --cardSoft:  #3F3122;
+    --border:    #3A2C1F;
+    --borderHi:  #52402C;
+    --faint:     #3F3122;
+    --text:      #F5EDDD;
+    --text2:     #D6C2A2;
+    --sub:       #A89175;
+    --muted:     #6B5639;
+    --hit:       #B7D26A;
+    --hitBg:     #2F3D1B;
+    --below:     #E8884A;
+  }
+
+  body {
+    background: #0e0a06;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 40px 20px 80px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--text);
+  }
+
+  h1 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: -32px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: -32px;
+    align-self: flex-start;
+    max-width: 375px;
+    width: 100%;
+  }
+  .section-label-wide {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: -32px;
+  }
+
+  /* ── Phone shell ── */
+  .phone {
+    width: 375px;
+    background: var(--bg);
+    border-radius: 44px;
+    overflow: hidden;
+    border: 1.5px solid #2a1e12;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+    position: relative;
+  }
+
+  .phone-notch {
+    height: 44px;
+    background: var(--bg);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+  }
+  .notch-pill {
+    width: 120px;
+    height: 34px;
+    background: #0a0604;
+    border-radius: 20px;
+  }
+
+  .screen {
+    background: var(--bg);
+    min-height: 580px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 10px 18px 12px;
+    gap: 12px;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    background: var(--card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--text2);
+    flex-shrink: 0;
+  }
+  .header-mid { flex: 1; }
+  .header-day { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .header-progress { font-size: 12px; color: var(--sub); margin-top: 1px; }
+  .finish-btn { font-size: 14px; font-weight: 600; color: var(--sub); }
+
+  /* ── Strip ── */
+  .strip {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0 18px 12px;
+    gap: 8px;
+  }
+  .chip {
+    display: flex;
+    align-items: center;
+    padding: 7px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    gap: 7px;
+    font-size: 12px; font-weight: 600; color: var(--text2);
+  }
+  .chip.active { border-color: var(--hit); background: var(--hitBg); color: var(--hit); }
+  .chip.done { opacity: 0.6; }
+  .dots { display: flex; gap: 4px; align-items: center; }
+  .dot {
+    width: 5px; height: 5px; border-radius: 3px;
+    background: var(--border);
+  }
+  .dot.hit { background: var(--hit); }
+  .dot.active { background: transparent; border: 1px solid var(--hit); }
+
+  /* ── Scroll area ── */
+  .scroll-content {
+    flex: 1;
+    padding: 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── Exercise block ── */
+  .ex-block {
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ex-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.4px;
+  }
+
+  /* ══════════════════════════════════════════════
+     NOTE ROW VARIANTS
+  ══════════════════════════════════════════════ */
+
+  /* A · Ghost (current) ── faint text, no container */
+  .note-ghost {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 2px 0;
+    opacity: 0.45;
+    transition: opacity 0.15s;
+  }
+  .note-ghost:hover { opacity: 0.7; }
+  .note-ghost-text { font-size: 13px; color: var(--muted); }
+
+  .note-filled {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    padding: 1px 0;
+  }
+  .note-filled:hover { opacity: 0.8; }
+  .note-icon { font-size: 12px; color: var(--sub); flex-shrink: 0; margin-top: 2px; }
+  .note-text {
+    font-size: 13px;
+    color: var(--sub);
+    line-height: 1.45;
+    flex: 1;
+  }
+  .note-edit-icon { font-size: 11px; color: var(--muted); flex-shrink: 0; margin-top: 2px; }
+
+  /* C · Outlined input ── looks like a dormant text field (recommended) */
+  .note-outlined {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    padding: 9px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .note-outlined:hover { border-color: var(--borderHi); }
+  .note-outlined-placeholder { font-size: 13px; color: var(--muted); flex: 1; }
+  .note-outlined-icon { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+  .note-outlined-filled {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    padding: 9px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .note-outlined-filled:hover { border-color: var(--borderHi); }
+  .note-outlined-content { flex: 1; font-size: 13px; color: var(--sub); line-height: 1.45; }
+  .note-outlined-edit { font-size: 11px; color: var(--muted); flex-shrink: 0; margin-top: 1px; }
+
+  /* D · Small "+ Add note" button */
+  .note-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px 5px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    font-size: 12px;
+    color: var(--sub);
+    cursor: pointer;
+    align-self: flex-start;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .note-add-btn:hover { border-color: var(--borderHi); color: var(--text2); }
+  .note-add-btn-icon { font-size: 11px; }
+
+  .note-btn-filled {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    cursor: pointer;
+    padding: 1px 0;
+  }
+  .note-btn-filled:hover { opacity: 0.8; }
+  .note-btn-text { font-size: 13px; color: var(--sub); line-height: 1.45; flex: 1; }
+  .note-btn-edit {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── Set card ── */
+  .set-card {
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .set-list { background: var(--card); }
+  .set-row {
+    display: flex;
+    align-items: center;
+    padding: 13px 14px;
+    gap: 10px;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .set-row:last-child { border-bottom: none; }
+  .set-dot {
+    width: 8px; height: 8px; border-radius: 4px;
+    background: var(--border); flex-shrink: 0;
+  }
+  .set-dot.done { background: var(--hit); }
+  .set-dot.active { background: transparent; border: 1.5px solid var(--hit); }
+  .set-label { font-size: 12px; color: var(--sub); width: 44px; }
+  .set-label.active { font-weight: 600; color: var(--text2); }
+  .set-label.future { color: var(--muted); }
+  .set-result { flex: 1; font-size: 14px; font-weight: 600; text-align: right; }
+  .set-result.hit { color: var(--hit); }
+  .set-target { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); text-align: right; }
+  .set-future { flex: 1; font-size: 13px; color: var(--muted); text-align: right; }
+  .set-row.done-row { opacity: 0.7; }
+  .set-row.active-row { background: var(--surface); }
+  .set-row.future-row { opacity: 0.35; }
+  .add-set-row {
+    padding: 11px 14px;
+    text-align: center;
+    font-size: 13px; font-weight: 500; color: var(--muted);
+    border: 1px dashed var(--muted);
+    opacity: 0.5;
+  }
+
+  /* ── Bottom action ── */
+  .bottom {
+    padding: 14px 18px 34px;
+    background: var(--bg);
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .stepper-row { display: flex; gap: 12px; }
+  .stepper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .step-btn {
+    width: 48px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card2);
+    font-size: 22px; color: var(--text); font-weight: 300;
+  }
+  .step-value { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .step-num { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .step-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .confirm-btn {
+    background: var(--hit);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    font-size: 16px; font-weight: 700; color: var(--bg);
+    letter-spacing: -0.2px;
+  }
+
+  /* ── Bottom sheet overlay ── */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: 44px;
+    overflow: hidden;
+  }
+  .sheet {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-radius: 24px 24px 44px 44px;
+    padding: 16px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 4px;
+  }
+  .sheet-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sheet-cancel { font-size: 14px; color: var(--muted); cursor: pointer; }
+  .sheet-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .sheet-done {
+    font-size: 14px; font-weight: 600; color: var(--hit);
+    cursor: pointer;
+  }
+  .sheet-textarea {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+    line-height: 1.5;
+    resize: none;
+    min-height: 80px;
+    outline: none;
+    width: 100%;
+  }
+  .sheet-textarea::placeholder { color: var(--muted); }
+  .sheet-textarea:focus { border-color: var(--borderHi); }
+  .sheet-hint { font-size: 12px; color: var(--muted); }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 375px;
+  }
+  .ctrl-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    max-width: 375px;
+    width: 100%;
+  }
+  .ctrl-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+  .ctrl-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    align-self: flex-start;
+  }
+  .ctrl-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #2a1e12;
+    background: #1a1108;
+    color: var(--sub);
+    font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .ctrl-btn:hover { background: #221609; border-color: var(--border); }
+  .ctrl-btn.active { background: var(--hitBg); border-color: var(--hit); color: var(--hit); }
+  .ctrl-btn.rec::after {
+    content: ' ★';
+    font-size: 10px;
+    opacity: 0.8;
+  }
+
+  /* ── Comparison grid ── */
+  .note-comparison {
+    display: flex;
+    gap: 16px;
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .compare-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 220px;
+  }
+  .compare-label {
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    text-align: center;
+  }
+  .compare-label.rec { color: var(--hit); }
+  .compare-card {
+    background: var(--bg);
+    border-radius: 16px;
+    border: 1.5px solid #2a1e12;
+    overflow: hidden;
+  }
+  .compare-card.rec { border-color: var(--hit); box-shadow: 0 0 0 1px var(--hitBg); }
+  .compare-inner {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .compare-ex-name {
+    font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.3px;
+  }
+  .compare-divider {
+    height: 1px; background: var(--border); opacity: 0.5; margin: 2px 0;
+  }
+  .compare-state-label {
+    font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: -4px;
+  }
+  .compare-desc {
+    font-size: 11px; color: var(--muted); line-height: 1.5; text-align: center;
+  }
+  .compare-tradeoff {
+    font-size: 10px; color: var(--muted); line-height: 1.5; text-align: center; opacity: 0.8;
+  }
+
+  /* ── Option B labelled card (kept from before) ── */
+  .note-inline-expanded {
+    background: var(--surface);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .note-inline-header {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .note-inline-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .note-inline-edit { font-size: 11px; color: var(--muted); cursor: pointer; }
+  .note-inline-text { font-size: 13px; color: var(--sub); line-height: 1.45; }
+</style>
+</head>
+<body>
+
+<h1>Exercise Note UX — Spuddy</h1>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- INTERACTIVE PHONE                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<div class="ctrl-group">
+  <div class="ctrl-label">Screen state</div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn active" data-state="empty"   onclick="setScreenState('empty')">No note</button>
+    <button class="ctrl-btn"        data-state="filled"  onclick="setScreenState('filled')">Note exists</button>
+    <button class="ctrl-btn"        data-state="editing" onclick="setScreenState('editing')">Editing (sheet open)</button>
+  </div>
+  <div class="ctrl-label" style="margin-top:4px;">Note row style</div>
+  <div class="ctrl-row">
+    <button class="ctrl-btn"       data-style="ghost"    onclick="setNoteStyle('ghost')">A · Ghost (current)</button>
+    <button class="ctrl-btn"       data-style="labelled" onclick="setNoteStyle('labelled')">B · Labelled card</button>
+    <button class="ctrl-btn rec"   data-style="outlined" onclick="setNoteStyle('outlined')">C · Outlined input</button>
+    <button class="ctrl-btn"       data-style="button"   onclick="setNoteStyle('button')">D · Small button</button>
+  </div>
+</div>
+
+<div class="phone" id="mainPhone">
+  <div class="phone-notch"><div class="notch-pill"></div></div>
+  <div class="screen">
+
+    <div class="header">
+      <div class="back-btn">←</div>
+      <div class="header-mid">
+        <div class="header-day">Push A</div>
+        <div class="header-progress">3 of 12 sets</div>
+      </div>
+      <div class="finish-btn">Finish</div>
+    </div>
+
+    <div class="strip">
+      <div class="chip done">Bench Press <div class="dots"><div class="dot hit"></div><div class="dot hit"></div><div class="dot hit"></div></div></div>
+      <div class="chip active">OHP <div class="dots"><div class="dot hit"></div><div class="dot active"></div><div class="dot"></div></div></div>
+      <div class="chip">Triceps</div>
+    </div>
+
+    <div class="scroll-content">
+      <div class="ex-block">
+        <div class="ex-name">Overhead Press</div>
+
+        <!-- A · Ghost -->
+        <div id="note-ghost-empty" class="note-ghost" onclick="setScreenState('editing')">
+          <span class="note-ghost-text">Add a cue or note…</span>
+        </div>
+        <div id="note-ghost-filled" class="note-filled" onclick="setScreenState('editing')" style="display:none">
+          <span class="note-icon">📝</span>
+          <span class="note-text">Drive elbows forward, not flared. Brace before unracking.</span>
+          <span class="note-edit-icon">✏️</span>
+        </div>
+
+        <!-- B · Labelled card -->
+        <div id="note-labelled-empty" class="note-inline-expanded" onclick="setScreenState('editing')" style="display:none;opacity:0.4;cursor:pointer;">
+          <div class="note-inline-header">
+            <span class="note-inline-label">📝 Cue</span>
+            <span class="note-inline-edit">Add</span>
+          </div>
+          <div class="note-inline-text" style="color:var(--muted);">No note yet.</div>
+        </div>
+        <div id="note-labelled-filled" class="note-inline-expanded" onclick="setScreenState('editing')" style="display:none;cursor:pointer;">
+          <div class="note-inline-header">
+            <span class="note-inline-label">📝 Cue</span>
+            <span class="note-inline-edit">Edit</span>
+          </div>
+          <div class="note-inline-text">Drive elbows forward, not flared. Brace before unracking.</div>
+        </div>
+
+        <!-- C · Outlined input (recommended) -->
+        <div id="note-outlined-empty" class="note-outlined" onclick="setScreenState('editing')" style="display:none">
+          <span class="note-outlined-placeholder">Add a cue or note…</span>
+          <span class="note-outlined-icon">✏️</span>
+        </div>
+        <div id="note-outlined-filled" class="note-outlined-filled" onclick="setScreenState('editing')" style="display:none">
+          <span class="note-outlined-content">Drive elbows forward, not flared. Brace before unracking.</span>
+          <span class="note-outlined-edit">✏️</span>
+        </div>
+
+        <!-- D · Small button -->
+        <div id="note-button-empty" class="note-add-btn" onclick="setScreenState('editing')" style="display:none">
+          <span class="note-add-btn-icon">📝</span> Add note
+        </div>
+        <div id="note-button-filled" class="note-btn-filled" onclick="setScreenState('editing')" style="display:none">
+          <span class="note-btn-text">Drive elbows forward, not flared. Brace before unracking.</span>
+          <span class="note-btn-edit">Edit</span>
+        </div>
+      </div>
+
+      <div class="set-card">
+        <div class="set-list">
+          <div class="set-row done-row">
+            <div class="set-dot done"></div>
+            <div class="set-label">Set 1</div>
+            <div class="set-result hit">8 × 40 kg</div>
+          </div>
+          <div class="set-row active-row">
+            <div class="set-dot active"></div>
+            <div class="set-label active">Set 2</div>
+            <div class="set-target">8 × 40 kg</div>
+          </div>
+          <div class="set-row future-row">
+            <div class="set-dot"></div>
+            <div class="set-label future">Set 3</div>
+            <div class="set-future">8 × 40 kg</div>
+          </div>
+        </div>
+        <div class="add-set-row">+ Add set</div>
+      </div>
+
+    </div><!-- /scroll-content -->
+
+    <div class="bottom">
+      <div class="stepper-row">
+        <div class="stepper">
+          <div class="step-btn">−</div>
+          <div class="step-value">
+            <div class="step-num">8</div>
+            <div class="step-lbl">reps</div>
+          </div>
+          <div class="step-btn">+</div>
+        </div>
+        <div class="stepper">
+          <div class="step-btn">−</div>
+          <div class="step-value">
+            <div class="step-num">40</div>
+            <div class="step-lbl">kg</div>
+          </div>
+          <div class="step-btn">+</div>
+        </div>
+      </div>
+      <div class="confirm-btn">Done · Set 2 of 3</div>
+    </div>
+
+    <!-- Bottom sheet overlay (editing state) -->
+    <div id="overlay" class="overlay" style="display:none" onclick="setScreenState('filled')">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div class="sheet-cancel" onclick="setScreenState('filled')">Cancel</div>
+          <div class="sheet-title">Overhead Press</div>
+          <div class="sheet-done" onclick="setScreenState('filled')">Done</div>
+        </div>
+        <textarea
+          class="sheet-textarea"
+          placeholder="Add a cue, reminder, or technique note…"
+          rows="3"
+        >Drive elbows forward, not flared. Brace before unracking.</textarea>
+        <div class="sheet-hint">Saved to this exercise — shows every session.</div>
+      </div>
+    </div>
+
+  </div><!-- /screen -->
+</div><!-- /phone -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SIDE-BY-SIDE OPTION COMPARISON                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<div class="section-label-wide">Option comparison — empty &amp; filled states</div>
+
+<div class="note-comparison">
+
+  <!-- A · Ghost (current) -->
+  <div class="compare-col">
+    <div class="compare-label">A · Ghost (current)</div>
+    <div class="compare-card">
+      <div class="compare-inner">
+        <div class="compare-state-label">Empty</div>
+        <div class="compare-ex-name">Overhead Press</div>
+        <div class="note-ghost">
+          <span class="note-ghost-text">Add a cue or note…</span>
+        </div>
+        <div class="compare-divider"></div>
+        <div class="compare-state-label">Filled</div>
+        <div class="compare-ex-name">Overhead Press</div>
+        <div class="note-filled">
+          <span class="note-icon">📝</span>
+          <span class="note-text">Drive elbows forward, not flared.</span>
+          <span class="note-edit-icon">✏️</span>
+        </div>
+      </div>
+    </div>
+    <div class="compare-desc">Lowest visual weight.<br>Empty state is easy to miss — 0.45 opacity + muted color.</div>
+    <div class="compare-tradeoff">+ Minimal / unobtrusive<br>− Very low affordance when empty</div>
+  </div>
+
+  <!-- B · Labelled card -->
+  <div class="compare-col">
+    <div class="compare-label">B · Labelled card</div>
+    <div class="compare-card">
+      <div class="compare-inner">
+        <div class="compare-state-label">Empty</div>
+        <div class="compare-ex-name">Overhead Press</div>
+        <div class="note-inline-expanded" style="opacity:0.4;">
+          <div class="note-inline-header">
+            <span class="note-inline-label">📝 Cue</span>
+            <span class="note-inline-edit">Add</span>
+          </div>
+          <div class="note-inline-text" style="color:var(--muted);">No note yet.</div>
+        </div>
+        <div class="compare-divider"></div>
+        <div class="compare-state-label">Filled</div>
+        <div class="compare-ex-name">Overhead Press</div>
+        <div class="note-inline-expanded">
+          <div class="note-inline-header">
+            <span class="note-inline-label">📝 Cue</span>
+            <span class="note-inline-edit">Edit</span>
+          </div>
+          <div class="note-inline-text">Drive elbows forward, not flared.</div>
+        </div>
+      </div>
+    </div>
+    <div class="compare-desc">Always visible container.<br>Takes space even when empty — feels heavy.</div>
+    <div class="compare-tradeoff">+ Very prominent<br>− Adds visual noise even with no note</div>
+  </div>
+
+  <!-- C · Outlined input (recommended) -->
+  <div class="compare-col">
+    <div class="compare-label rec">C · Outlined input ★ rec</div>
+    <div class="compare-card rec">
+      <div class="compare-inner">
+        <div class="compare-state-label">Empty</div>
+        <div class="compare-ex-name">Overhead Press</div>
+        <div class="note-outlined">
+          <span class="note-outlined-placeholder">Add a cue or note…</span>
+          <span class="note-outlined-icon">✏️</span>
+        </div>
+        <div class="compare-divider"></div>
+        <div class="compare-state-label">Filled</div>
+        <div class="compare-ex-name">Overhead Press</div>
+        <div class="note-outlined-filled">
+          <span class="note-outlined-content">Drive elbows forward, not flared.</span>
+          <span class="note-outlined-edit">✏️</span>
+        </div>
+      </div>
+    </div>
+    <div class="compare-desc">Looks like a dormant input field — familiar tap target. Consistent shape empty and filled.</div>
+    <div class="compare-tradeoff">+ Clear affordance, consistent shape<br>− Slightly more weight than ghost</div>
+  </div>
+
+  <!-- D · Small button -->
+  <div class="compare-col">
+    <div class="compare-label">D · Small button</div>
+    <div class="compare-card">
+      <div class="compare-inner">
+        <div class="compare-state-label">Empty</div>
+        <div class="compare-ex-name">Overhead Press</div>
+        <div class="note-add-btn">
+          <span class="note-add-btn-icon">📝</span> Add note
+        </div>
+        <div class="compare-divider"></div>
+        <div class="compare-state-label">Filled</div>
+        <div class="compare-ex-name">Overhead Press</div>
+        <div class="note-btn-filled">
+          <span class="note-btn-text">Drive elbows forward, not flared.</span>
+          <span class="note-btn-edit">Edit</span>
+        </div>
+      </div>
+    </div>
+    <div class="compare-desc">Explicit button label — zero ambiguity when empty. Compact footprint.</div>
+    <div class="compare-tradeoff">+ Unambiguous CTA<br>− Empty and filled states look inconsistent</div>
+  </div>
+
+</div>
+
+
+<script>
+  let screenState = 'empty';
+  let noteStyle   = 'ghost';
+
+  const NOTE_IDS = [
+    'ghost-empty','ghost-filled',
+    'labelled-empty','labelled-filled',
+    'outlined-empty','outlined-filled',
+    'button-empty','button-filled',
+  ];
+
+  function render() {
+    // Overlay
+    document.getElementById('overlay').style.display =
+      screenState === 'editing' ? 'flex' : 'none';
+
+    // Hide all note rows
+    NOTE_IDS.forEach(id => {
+      const el = document.getElementById('note-' + id);
+      if (el) el.style.display = 'none';
+    });
+
+    // Show the relevant row for current style + state
+    if (screenState !== 'editing') {
+      const id = 'note-' + noteStyle + '-' + screenState;
+      const el = document.getElementById(id);
+      if (el) el.style.display = el.classList.contains('note-add-btn') ? 'inline-flex' : 'flex';
+    }
+
+    // Update state button active states
+    document.querySelectorAll('[data-state]').forEach(b => {
+      b.classList.toggle('active', b.dataset.state === screenState);
+    });
+    document.querySelectorAll('[data-style]').forEach(b => {
+      b.classList.toggle('active', b.dataset.style === noteStyle);
+    });
+  }
+
+  function setScreenState(s) { screenState = s; render(); }
+  function setNoteStyle(s)   { noteStyle = s;   render(); }
+
+  // Initial render
+  render();
+</script>
+</body>
+</html>
