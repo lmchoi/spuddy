@@ -1,6 +1,7 @@
 ---
 name: sp-implement
 description: Implement a feature plan using TDD one commit at a time.
+model: gemini-3-pro-preview
 tools:
   - run_shell_command
   - read_file

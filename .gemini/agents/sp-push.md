@@ -1,6 +1,7 @@
 ---
 name: sp-push
 description: Run full checks, update documentation, and raise a pull request.
+model: gemini-3-flash-preview
 tools:
   - run_shell_command
   - read_file

@@ -1,6 +1,7 @@
 ---
 name: sp-refine
 description: Refine a feature description into a structured commit plan.
+model: gemini-3-pro-preview
 tools:
   - read_file
   - write_file

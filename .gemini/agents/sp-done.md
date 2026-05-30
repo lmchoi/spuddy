@@ -1,6 +1,7 @@
 ---
 name: sp-done
 description: Clean up local worktrees and branches after a PR is merged.
+model: gemini-3-flash-preview
 tools:
   - run_shell_command
 ---
