@@ -736,4 +736,14 @@ describe('exercise note row', () => {
     expect(setExerciseNote).toHaveBeenCalledWith(expect.anything(), 1, 'Drive elbows forward');
     expect(screen.queryByPlaceholderText(/cue, reminder/i)).toBeNull();
   });
+
+  it('closes sheet without saving when Cancel is pressed', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByText(/Add a cue or note/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Add a cue or note/i)); });
+    await waitFor(() => expect(screen.getByPlaceholderText(/cue, reminder/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('Cancel')); });
+    expect(screen.queryByPlaceholderText(/cue, reminder/i)).toBeNull();
+    expect(setExerciseNote).not.toHaveBeenCalled();
+  });
 });
