@@ -27,7 +27,7 @@ const SESSION_A: Session = {
       targets: [],
     },
   ],
-};
+} as any;
 
 const SESSION_B: Session = {
   date: '2026-05-10',
@@ -38,7 +38,7 @@ const SESSION_B: Session = {
       targets: [{ reps: 5, weight: 105 }],
     },
   ],
-};
+} as any;
 
 describe('SQLite storage', () => {
   let db: DrizzleDB;
@@ -54,6 +54,7 @@ describe('SQLite storage', () => {
     expect(sessions[0].date).toBe('2026-05-01');
     expect(sessions[0].exercises).toHaveLength(2);
     expect(sessions[0].exercises[0].name).toBe('Squat');
+    expect(sessions[0].exercises[0].exerciseId).toBe(1);
     expect(sessions[0].exercises[0].sets).toHaveLength(2);
   });
 
