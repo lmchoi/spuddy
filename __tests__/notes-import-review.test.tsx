@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import NotesImportReviewScreen from '../app/notes-import-review';
 import type { ParsedNotes } from '../src/notesParser';
 
@@ -80,6 +80,7 @@ describe('NotesImportReviewScreen', () => {
     mockUseLocalSearchParams.mockReturnValue({ parsedNotes: JSON.stringify(withNullSets) });
     render(<NotesImportReviewScreen />);
     expect(screen.getByText('80kg')).toBeTruthy();
+    expect(screen.queryByText(/set/)).toBeNull();
   });
 
   it('shows Import button with correct program count', () => {
