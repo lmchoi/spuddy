@@ -417,81 +417,93 @@ describe('add extra set — plan target comparison', () => {
 // ─── Post-session prompt ──────────────────────────────────────────────────────
 
 describe('post-session prompt', () => {
-  it('navigates without prompt when session is fully completed with no changes', async () => {
-    render(<LogSession />);
-    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+  describe('iOS path', () => {
+    beforeEach(() => {
+      // @ts-ignore
+      Platform.OS = 'ios';
+    });
 
-    // Log both Squat sets
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
-    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    afterEach(() => {
+      // @ts-ignore
+      Platform.OS = 'ios';
+    });
 
-    // Jump to Bench and log the single set
-    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    it('navigates without prompt when session is fully completed with no changes', async () => {
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
 
-    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+      // Log both Squat sets
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+      await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
 
-    expect(Alert.prompt).not.toHaveBeenCalled();
-    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
-  });
+      // Jump to Bench and log the single set
+      await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
 
-  it('shows Alert.prompt when extra sets were added', async () => {
-    render(<LogSession />);
-    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+      await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+      await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
 
-    // Log both Squat sets, then add an extra set and log it
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
-    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
-    await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText(/\+ Add set/i)); });
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+      expect(Alert.prompt).not.toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+    });
 
-    // Log Bench
-    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    it('shows Alert.prompt when extra sets were added', async () => {
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
 
-    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+      // Log both Squat sets, then add an extra set and log it
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+      await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+      await waitFor(() => expect(screen.getByText(/\+ Add set/i)).toBeTruthy());
+      await act(async () => { fireEvent.press(screen.getByText(/\+ Add set/i)); });
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
 
-    expect(Alert.prompt).toHaveBeenCalled();
-  });
+      // Log Bench
+      await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
 
-  it('calls addProgramDay and navigates when name is entered', async () => {
-    render(<LogSession />);
-    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+      await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+      await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
 
-    // Skip Squat; log Bench only
-    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
-    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+      expect(Alert.prompt).toHaveBeenCalled();
+    });
 
-    // Simulate user entering a name in the Alert.prompt callback
-    const promptCallback = (Alert.prompt as jest.Mock).mock.calls[0][2];
-    await act(async () => { promptCallback('My Custom Day'); });
+    it('calls addProgramDay and navigates when name is entered', async () => {
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
 
-    expect(addProgramDay).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
-  });
+      // Skip Squat; log Bench only
+      await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+      await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+      await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
 
-  it('navigates without saving when prompt is cancelled (null name)', async () => {
-    render(<LogSession />);
-    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+      // Simulate user entering a name in the Alert.prompt callback
+      const promptCallback = (Alert.prompt as jest.Mock).mock.calls[0][2];
+      await act(async () => { promptCallback('My Custom Day'); });
 
-    // Skip Squat; log Bench only
-    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
-    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
-    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+      expect(addProgramDay).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+    });
 
-    const promptCallback = (Alert.prompt as jest.Mock).mock.calls[0][2];
-    await act(async () => { promptCallback(null); });
+    it('navigates without saving when prompt is cancelled (null name)', async () => {
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
 
-    expect(addProgramDay).not.toHaveBeenCalled();
-    expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+      // Skip Squat; log Bench only
+      await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+      await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+      await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+      await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+      const promptCallback = (Alert.prompt as jest.Mock).mock.calls[0][2];
+      await act(async () => { promptCallback(null); });
+
+      expect(addProgramDay).not.toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+    });
   });
 
   describe('Android path', () => {
