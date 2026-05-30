@@ -11,7 +11,7 @@ When the user finishes a session, detect whether what they logged diverged from 
 - Warmup set detection
 - Renaming or reordering program days after creation
 - Any UI for managing the resulting days (settings screen work, tracked separately in `program-import-ux.md`)
-- Android name prompt (`Alert.prompt` is iOS-only; replace with inline modal if Android support needed later)
+- Android text-input name prompt (shipped a simpler `Alert.alert` Save/Skip fallback instead — a text-input modal is a future improvement)
 
 ## Design
 
@@ -45,4 +45,5 @@ No schema changes. `addProgramDay` appends to the existing `days` array via the 
 
 - A pre-existing failing test in `notes-import-review.test.tsx` blocked the pre-commit hook. It was a stale expectation from before `formatExerciseMeta` was wired in (commit 72c382b changed null-sets behaviour to show just the weight, not "1 set"). Fixed in `fix: update stale test for null-sets meta display` before the feature commits.
 - `resolvedProgramName` was added to the `ready` ScreenState so `handleFinish` can pass it to `addProgramDay` without relying on the URL param (which may be undefined when the screen auto-resolves the first program).
-- Commit 5 UI (`Alert.prompt`) is iOS-only per plan; manual verify still required on device.
+- Commit 5 wires the prompt; a follow-up fix (6584e33) added an `Alert.alert` fallback for Android — iOS uses `Alert.prompt` with a pre-filled default name, Android uses a Save/Skip alert with the same default.
+- Manual verify still required on Android device.

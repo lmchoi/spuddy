@@ -154,7 +154,7 @@ Intentionally decoupled — user brings their own AI.
 
 ### 7.8 Data Export
 
-**Must have:** Export all sessions as JSON, shared via iOS share sheet.
+**Must have:** Export all sessions as JSON, shared via the system share sheet (iOS and Android).
 
 **Nice to have:** CSV export, FIT export (post-MVP).
 
