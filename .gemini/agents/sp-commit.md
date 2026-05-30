@@ -1,6 +1,7 @@
 ---
 name: sp-commit
 description: Create an atomic, verified commit following project standards.
+model: gemini-3-flash-preview
 tools:
   - run_shell_command
   - read_file

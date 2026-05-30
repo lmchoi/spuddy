@@ -1,6 +1,7 @@
 ---
 name: sp-review
 description: Perform an extended code review against correctness and plan adherence.
+model: gemini-3-pro-preview
 tools:
   - run_shell_command
   - read_file

@@ -1,6 +1,7 @@
 ---
 name: sp-start
 description: Start a new feature by creating a branch and worktree.
+model: gemini-3-flash-preview
 tools:
   - run_shell_command
   - read_file

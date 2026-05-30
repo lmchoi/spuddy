@@ -1,6 +1,7 @@
 ---
 name: sp-fix
 description: Fix a bug TDD-style by creating a regression test first.
+model: gemini-3-pro-preview
 tools:
   - run_shell_command
   - read_file
