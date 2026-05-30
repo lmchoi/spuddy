@@ -283,17 +283,22 @@ function NoteSheet({
   exerciseName,
   initialText,
   onDone,
+  onCancel,
 }: {
   exerciseName: string;
   initialText: string;
   onDone: (text: string) => void;
+  onCancel: () => void;
 }) {
   const [text, setText] = useState(initialText);
   return (
-    <View style={styles.noteOverlay}>
-      <View style={styles.noteSheet}>
+    <Pressable style={styles.noteOverlay} onPress={onCancel}>
+      <Pressable style={styles.noteSheet} onPress={() => {}}>
         <View style={styles.noteSheetHandle} />
         <View style={styles.noteSheetHeader}>
+          <Pressable onPress={onCancel}>
+            <Text style={styles.noteSheetCancel}>Cancel</Text>
+          </Pressable>
           <Text style={styles.noteSheetTitle}>{exerciseName}</Text>
           <Pressable onPress={() => onDone(text)}>
             <Text style={styles.noteSheetDone}>Done</Text>
@@ -309,8 +314,8 @@ function NoteSheet({
           autoFocus
         />
         <Text style={styles.noteSheetHint}>Saved to this exercise — shows every session.</Text>
-      </View>
-    </View>
+      </Pressable>
+    </Pressable>
   );
 }
 
@@ -498,7 +503,6 @@ export default function LogSession() {
 
   const handleSaveNote = useCallback(async (text: string) => {
     if (state.status !== 'ready') return;
-    setNoteSheetOpen(false);
     const ex = state.day.exercises[state.session.currentExerciseIdx];
     if (ex.exerciseId === undefined) return;
     const db = await getDB();
@@ -511,6 +515,7 @@ export default function LogSession() {
       delete notes[ex.exerciseId];
     }
     setState({ ...state, notes });
+    setNoteSheetOpen(false);
   }, [state]);
 
   const handleFinish = useCallback(async () => {
@@ -607,7 +612,9 @@ export default function LogSession() {
         </Pressable>
       </View>
 
-      <ExerciseStrip day={day} sessionState={session} onSelect={handleJump} />
+      <View pointerEvents={noteSheetOpen ? 'none' : 'auto'}>
+        <ExerciseStrip day={day} sessionState={session} onSelect={handleJump} />
+      </View>
 
       <ScrollView
         style={styles.scroll}
@@ -649,6 +656,7 @@ export default function LogSession() {
           exerciseName={ex.name}
           initialText={currentNote ?? ''}
           onDone={handleSaveNote}
+          onCancel={() => setNoteSheetOpen(false)}
         />
       )}
     </View>

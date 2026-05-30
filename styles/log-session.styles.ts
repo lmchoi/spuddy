@@ -174,6 +174,7 @@ export const styles = StyleSheet.create({
   },
   noteSheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   noteSheetTitle: { fontSize: 15, fontWeight: '700', color: C.text },
+  noteSheetCancel: { fontSize: 14, fontWeight: '400', color: C.muted },
   noteSheetDone: { fontSize: 14, fontWeight: '600', color: C.hit },
   noteInput: {
     backgroundColor: C.card, borderWidth: 1, borderColor: C.border,
