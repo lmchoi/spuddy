@@ -6,10 +6,10 @@ Allow users to attach a persistent cue or technique note to any exercise. The no
 
 ## Design
 
-### UX (Option A — ghost row)
-- **Empty**: faint "Add a cue or note…" row below the exercise name. Nearly invisible; doesn't distract mid-set.
-- **Filled**: note text in `C.sub` with a 📝 icon. Reads passively as a cue.
-- **Edit**: tapping either state opens a bottom sheet with a `TextInput`. Sheet-based so the keyboard never pushes the steppers.
+### UX (Option D — explicit button) ← updated from original Option A ghost row
+- **Empty**: small bordered "Add note" button below the exercise name. Unambiguous CTA — preferred over the near-invisible ghost text given one-handed, mid-set usage.
+- **Filled**: note text in `C.sub` with a separate "Edit" button aligned right. Tapping "Edit" (not the text) opens the sheet.
+- **Edit**: opens a bottom sheet with a `TextInput`. `KeyboardAvoidingView` wraps the sheet so it rides above the keyboard rather than being obscured by it.
 - **Saving**: on sheet dismiss ("Done"), write to DB immediately. No draft needed — notes are low-stakes and small.
 
 See `docs/mockups/exercise-note-ux.html` for the interactive mockup.
@@ -52,6 +52,8 @@ No change to `ExerciseEntry` or `ProgramDay` — notes are fetched separately wh
 3. [x] **ui**: Add `NoteRow` and `NoteSheet` components + wire into `log-session.tsx`. — test: visual / manual
 4. [x] **fix**: Make `getExerciseNote` and `setExerciseNote` synchronous — silenced write errors and inconsistent with storage layer.
 5. [x] **fix**: Block exercise strip while sheet is open; add Cancel button + backdrop dismiss; move sheet-close to after save.
+6. [x] **fix**: Wrap NoteSheet in `KeyboardAvoidingView` so the sheet is not obscured by the keyboard on device.
+7. [x] **feat**: Replace ghost note row (Option A) with explicit "Add note" / "Edit" button (Option D) for clearer tap affordance.
 
 ## Implementation notes
 
