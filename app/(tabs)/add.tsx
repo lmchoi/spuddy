@@ -345,6 +345,7 @@ export default function AddScreen() {
             <TextInput
               style={[styles.textarea, isEmpty && styles.textareaEmpty]}
               multiline
+              accessibilityLabel="Workout notes input"
               placeholder={`2025-06-01\nexercises: {\n  Bench Press / 3x8 60kg / target: 3x8 60kg\n}`}
               placeholderTextColor={C.muted}
               value={text}
