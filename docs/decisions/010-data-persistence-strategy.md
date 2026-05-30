@@ -28,11 +28,19 @@ As the app evolves, the SQLite table structure will change. To prevent crashes:
     }
     ```
 
-## 3. Expo Version Upgrades
+## 3. Transition to Drizzle ORM (Planned)
+To improve long-term maintainability and type safety, the app will migrate from manual SQL migrations to **Drizzle ORM**.
+- **Action:**
+    1. Define schema in TypeScript.
+    2. Use `drizzle-kit` to manage versioned `.sql` migration files.
+    3. Use Drizzle's `useMigrations` or `migrate()` to handle the bridge from the current version to the Drizzle-managed version.
+- **Outcome:** Type-safe queries and automated, less error-prone schema evolution.
+
+## 4. Expo Version Upgrades
 When upgrading the `expo` version in `package.json`:
 
 - **Action:** Always run `npx expo prebuild --clean` to regenerate native folders with the correct dependencies before building the new APK.
 
-## 4. Backups (Future-proofing)
+## 5. Backups (Future-proofing)
 Even with migrations, local storage is fragile. 
 - **Future Goal:** Implement an "Export/Import JSON" feature or cloud sync (e.g., Google Drive/iCloud) as a safety net before major version upgrades.

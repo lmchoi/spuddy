@@ -20,6 +20,10 @@ Items that are scoped and prioritised but not yet assigned to an active mileston
 - **Swap exercise** — swap an exercise mid-session for an equivalent. Requires exercise DB integration.
 - **Add new exercise** — add an ad-hoc exercise to a session. Same dependency.
 
+## Database & Infrastructure
+
+- **Migrate to Drizzle ORM** — Replace manual SQL migrations and raw queries with Drizzle ORM for better type safety, automatic migration generation, and robust schema evolution. This should be done before the public release to simplify future schema changes for users.
+
 ## Import / data
 
 - **Imported session target display preference** — currently we hide the "on target" card when a session has no targets (imported history). A future setting could let users choose: hide / assume met / show N/A. Defer until there's user demand. Designed to be cheap: one `AsyncStorage` key, three options, no data-model change.
