@@ -2,6 +2,7 @@ import { useEffect, useReducer, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StatusBar,
@@ -361,7 +362,6 @@ export default function LogSession() {
     (_: ScreenState, next: ScreenState) => next,
     { status: 'loading' }
   );
-
   useEffect(() => {
     async function load() {
       try {
@@ -440,20 +440,34 @@ export default function LogSession() {
       router.replace(`/progress/${today}`);
       return;
     }
-    Alert.prompt(
-      'Save as new program day?',
-      'Your session differed from the program. Enter a name to save it as a new day.',
-      async (name: string | null) => {
-        if (name) {
-          try {
-            await addProgramDay(db!, resolvedProgramName, buildNewDay(session, day, name));
-          } catch {
-            // navigate anyway — saving the new day is best-effort
-          }
+    const doSave = async (name: string | null) => {
+      if (name) {
+        try {
+          await addProgramDay(db!, resolvedProgramName, buildNewDay(session, day, name));
+        } catch {
+          // navigate anyway — saving the new day is best-effort
         }
-        router.replace(`/progress/${today}`);
-      },
-    );
+      }
+      router.replace(`/progress/${today}`);
+    };
+    if (Platform.OS === 'ios') {
+      Alert.prompt(
+        'Save as new program day?',
+        'Your session differed from the program. Enter a name to save it as a new day.',
+        doSave,
+        'plain-text',
+        `${day.name} (modified)`,
+      );
+    } else {
+      Alert.alert(
+        'Save as new program day?',
+        'Your session differed from the program. Save it as a new day?',
+        [
+          { text: 'Skip', style: 'cancel', onPress: () => doSave(null) },
+          { text: 'Save', onPress: () => doSave(`${day.name} (modified)`) },
+        ],
+      );
+    }
   }, [state, router]);
 
   if (state.status === 'loading') {

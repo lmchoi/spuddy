@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
 import { getProgramDay, addProgramDay } from '@/src/programStorage';
@@ -492,5 +492,68 @@ describe('post-session prompt', () => {
 
     expect(addProgramDay).not.toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+  });
+
+  describe('Android path', () => {
+    beforeEach(() => {
+      // @ts-ignore
+      Platform.OS = 'android';
+      jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      // @ts-ignore
+      Platform.OS = 'ios';
+    });
+
+    it('calls Alert.alert (not Alert.prompt) when changes detected', async () => {
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+      await act(async () => { fireEvent.press(screen.getByText('Finish')); });
+
+      expect(Alert.prompt).not.toHaveBeenCalled();
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Save as new program day?',
+        expect.any(String),
+        expect.any(Array),
+      );
+    });
+
+    it('Save button calls addProgramDay with default name and navigates', async () => {
+      let capturedButtons: { text: string; onPress?: () => void }[] = [];
+      (Alert.alert as jest.Mock).mockImplementation((_title, _msg, buttons) => {
+        capturedButtons = buttons;
+      });
+
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+      await act(async () => { fireEvent.press(screen.getByText('Finish')); });
+
+      const saveBtn = capturedButtons.find(b => b.text === 'Save');
+      await act(async () => { saveBtn?.onPress?.(); });
+
+      expect(addProgramDay).toHaveBeenCalledTimes(1);
+      expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+    });
+
+    it('Skip button navigates without saving', async () => {
+      let capturedButtons: { text: string; style?: string; onPress?: () => void }[] = [];
+      (Alert.alert as jest.Mock).mockImplementation((_title, _msg, buttons) => {
+        capturedButtons = buttons;
+      });
+
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+      await act(async () => { fireEvent.press(screen.getByText('Finish')); });
+
+      const skipBtn = capturedButtons.find(b => b.text === 'Skip');
+      await act(async () => { skipBtn?.onPress?.(); });
+
+      expect(addProgramDay).not.toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+    });
   });
 });
