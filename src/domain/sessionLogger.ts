@@ -92,29 +92,24 @@ export function getActiveTarget(
 }
 
 export function buildNewDay(state: SessionState, day: ProgramDay, name: string): ProgramDay {
-  const exercises = day.exercises
-    .filter((_, i) => state.loggedSets[i].length > 0)
-    .map((ex) => {
-      const i = day.exercises.indexOf(ex);
-      const extra = state.extraSetCounts[i];
-      const extraTargets = extra > 0
-        ? Array.from({ length: extra }, () => ex.targets[ex.targets.length - 1])
-        : [];
-      return { name: ex.name, targets: [...ex.targets, ...extraTargets] };
-    });
+  const exercises = day.exercises.flatMap((ex, i) => {
+    if (state.loggedSets[i].length === 0) return [];
+    const extra = state.extraSetCounts[i];
+    const extraTargets = extra > 0
+      ? Array.from({ length: extra }, () => ex.targets[ex.targets.length - 1])
+      : [];
+    return [{ name: ex.name, targets: [...ex.targets, ...extraTargets] }];
+  });
   return { name, exercises };
 }
 
-export function detectSessionChanges(state: SessionState, day: ProgramDay): boolean {
-  return state.loggedSets.some((sets, i) => sets.length === 0) ||
+export function detectSessionChanges(state: SessionState): boolean {
+  return state.loggedSets.some(sets => sets.length === 0) ||
     state.extraSetCounts.some(c => c > 0);
 }
 
-export function resolvePostSessionAction(
-  state: SessionState,
-  day: ProgramDay,
-): 'prompt' | 'navigate' {
-  return detectSessionChanges(state, day) ? 'prompt' : 'navigate';
+export function resolvePostSessionAction(state: SessionState): 'prompt' | 'navigate' {
+  return detectSessionChanges(state) ? 'prompt' : 'navigate';
 }
 
 export function buildSavePayload(
