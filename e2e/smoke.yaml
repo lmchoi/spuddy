@@ -1,0 +1,4 @@
+appId: com.mchoi.spuddy
+---
+- launchApp
+- assertVisible: "Add workout"
