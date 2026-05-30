@@ -7,6 +7,7 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { styles } from '@/styles/log-session.styles';
@@ -35,6 +36,7 @@ import {
 import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
+import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 
 // ─── Local action state for reps/weight steppers ──────────────────────────────
 
@@ -257,6 +259,61 @@ function SetList({
   );
 }
 
+// ─── NoteRow ──────────────────────────────────────────────────────────────────
+
+function NoteRow({ note, onPress }: { note: string | null; onPress: () => void }) {
+  if (note) {
+    return (
+      <Pressable onPress={onPress} style={styles.noteFilled}>
+        <Text style={styles.noteText}>{note}</Text>
+        <Text style={styles.noteEditIcon}>✏️</Text>
+      </Pressable>
+    );
+  }
+  return (
+    <Pressable onPress={onPress} style={styles.noteGhost}>
+      <Text style={styles.noteGhostText}>Add a cue or note…</Text>
+    </Pressable>
+  );
+}
+
+// ─── NoteSheet ────────────────────────────────────────────────────────────────
+
+function NoteSheet({
+  exerciseName,
+  initialText,
+  onDone,
+}: {
+  exerciseName: string;
+  initialText: string;
+  onDone: (text: string) => void;
+}) {
+  const [text, setText] = useState(initialText);
+  return (
+    <View style={styles.noteOverlay}>
+      <View style={styles.noteSheet}>
+        <View style={styles.noteSheetHandle} />
+        <View style={styles.noteSheetHeader}>
+          <Text style={styles.noteSheetTitle}>{exerciseName}</Text>
+          <Pressable onPress={() => onDone(text)}>
+            <Text style={styles.noteSheetDone}>Done</Text>
+          </Pressable>
+        </View>
+        <TextInput
+          style={styles.noteInput}
+          value={text}
+          onChangeText={setText}
+          placeholder="Add a cue, reminder, or technique note…"
+          placeholderTextColor={C.muted}
+          multiline
+          autoFocus
+        />
+        <Text style={styles.noteSheetHint}>Saved to this exercise — shows every session.</Text>
+      </View>
+    </View>
+  );
+}
+
 // ─── BottomAction ─────────────────────────────────────────────────────────────
 
 function BottomAction({
@@ -346,7 +403,7 @@ function BottomAction({
 type ScreenState =
   | { status: 'loading' }
   | { status: 'empty' }
-  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string; key: string };
+  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string; key: string; notes: Record<number, string> };
 
 function inputFromTarget(day: ProgramDay, session: SessionState): InputState {
   const exIdx = session.currentExerciseIdx;
@@ -363,6 +420,7 @@ export default function LogSession() {
     (_: ScreenState, next: ScreenState) => next,
     { status: 'loading' }
   );
+  const [noteSheetOpen, setNoteSheetOpen] = useState(false);
   useEffect(() => {
     async function load() {
       try {
@@ -381,7 +439,19 @@ export default function LogSession() {
         const draft = await loadDraft(key);
         const session = draft ?? initSession(day);
         const input = inputFromTarget(day, session);
-        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, key });
+        const noteEntries = await Promise.all(
+          day.exercises
+            .filter(ex => ex.exerciseId !== undefined)
+            .map(async ex => {
+              const note = await getExerciseNote(db, ex.exerciseId!);
+              return [ex.exerciseId!, note] as const;
+            })
+        );
+        const notes: Record<number, string> = {};
+        for (const [id, note] of noteEntries) {
+          if (note) notes[id] = note;
+        }
+        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, key, notes });
       } catch {
         setState({ status: 'empty' });
       }
@@ -429,6 +499,23 @@ export default function LogSession() {
     const nextInput = inputFromTarget(state.day, next);
     saveDraft(state.key, next);
     setState({ ...state, session: next, input: nextInput });
+  }, [state]);
+
+  const handleSaveNote = useCallback(async (text: string) => {
+    if (state.status !== 'ready') return;
+    setNoteSheetOpen(false);
+    const ex = state.day.exercises[state.session.currentExerciseIdx];
+    if (ex.exerciseId === undefined) return;
+    const db = await getDB();
+    const trimmed = text.trim() || null;
+    await setExerciseNote(db, ex.exerciseId, trimmed);
+    const notes = { ...state.notes };
+    if (trimmed) {
+      notes[ex.exerciseId] = trimmed;
+    } else {
+      delete notes[ex.exerciseId];
+    }
+    setState({ ...state, notes });
   }, [state]);
 
   const handleFinish = useCallback(async () => {
@@ -501,10 +588,11 @@ export default function LogSession() {
     );
   }
 
-  const { day, session, input } = state;
+  const { day, session, input, notes } = state;
   const exIdx = session.currentExerciseIdx;
   const ex = day.exercises[exIdx];
   const { done: doneSets, total: totalSets } = sessionProgress(session, day);
+  const currentNote = ex.exerciseId !== undefined ? (notes[ex.exerciseId] ?? null) : null;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -532,6 +620,9 @@ export default function LogSession() {
       >
         <View style={styles.exBlock}>
           <Text style={styles.exName}>{ex.name}</Text>
+          {ex.exerciseId !== undefined && (
+            <NoteRow note={currentNote} onPress={() => setNoteSheetOpen(true)} />
+          )}
         </View>
         <SetList
           day={day}
@@ -557,6 +648,14 @@ export default function LogSession() {
           onFinish={handleFinish}
         />
       </View>
+
+      {noteSheetOpen && (
+        <NoteSheet
+          exerciseName={ex.name}
+          initialText={currentNote ?? ''}
+          onDone={handleSaveNote}
+        />
+      )}
     </View>
   );
 }

@@ -38,11 +38,19 @@ jest.mock('@/src/storage', () => ({
   saveSession: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('@/src/exerciseStorage', () => ({
+  getExerciseNote: jest.fn().mockResolvedValue(null),
+  setExerciseNote: jest.fn().mockResolvedValue(undefined),
+}));
+
+import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+
 const mockDay = {
   name: 'Day A',
   exercises: [
     {
       name: 'Squat',
+      exerciseId: 1,
       targets: [
         { reps: 5, weight: 100 },
         { reps: 5, weight: 100 },
@@ -50,6 +58,7 @@ const mockDay = {
     },
     {
       name: 'Bench',
+      exerciseId: 2,
       targets: [{ reps: 8, weight: 60 }],
     },
   ],
@@ -626,7 +635,7 @@ describe('post-session prompt', () => {
     });
   });
 
-  describe('Android path', () => {
+  describe('Android path (post-session)', () => {
     beforeEach(() => {
       // @ts-ignore
       Platform.OS = 'android';
@@ -687,5 +696,45 @@ describe('post-session prompt', () => {
       expect(addProgramDay).not.toHaveBeenCalled();
       expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
     });
+  });
+});
+
+// ─── Exercise note row ────────────────────────────────────────────────────────
+
+describe('exercise note row', () => {
+  beforeEach(() => {
+    (getExerciseNote as jest.Mock).mockResolvedValue(null);
+    (setExerciseNote as jest.Mock).mockResolvedValue(undefined);
+  });
+
+  it('shows ghost row when no note is set', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByText(/Add a cue or note/i)).toBeTruthy());
+  });
+
+  it('shows note text when a note exists for the current exercise', async () => {
+    (getExerciseNote as jest.Mock).mockImplementation((_db: unknown, id: number) =>
+      id === 1 ? Promise.resolve('Keep elbows tucked.') : Promise.resolve(null)
+    );
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByText('Keep elbows tucked.')).toBeTruthy());
+  });
+
+  it('opens note sheet on tap of ghost row', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByText(/Add a cue or note/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Add a cue or note/i)); });
+    await waitFor(() => expect(screen.getByPlaceholderText(/cue, reminder/i)).toBeTruthy());
+  });
+
+  it('calls setExerciseNote with new text and closes sheet on Done', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByText(/Add a cue or note/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Add a cue or note/i)); });
+    const input = screen.getByPlaceholderText(/cue, reminder/i);
+    fireEvent.changeText(input, 'Drive elbows forward');
+    await act(async () => { fireEvent.press(screen.getByText('Done')); });
+    expect(setExerciseNote).toHaveBeenCalledWith(expect.anything(), 1, 'Drive elbows forward');
+    expect(screen.queryByPlaceholderText(/cue, reminder/i)).toBeNull();
   });
 });
