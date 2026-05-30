@@ -21,3 +21,12 @@ Create `app/index.tsx` that:
 - Add `hasAnySessions` to `src/storage.ts` — `SELECT 1 LIMIT 1`, no join, no deserialization
 - Update `app/index.tsx` and `__tests__/index.test.tsx` to use it
 - `getAllSessions` was wasteful: fetched and deserialized every row just to check `length > 0`
+
+### 3. Fix initialRouteName so index screen is actually reached ✓
+- `unstable_settings.initialRouteName` was `'(tabs)'`, causing Expo Router to skip `index.tsx` on native boot entirely
+- Changed to `'index'`; added `Stack.Screen name="index" options={{ headerShown: false }}` to suppress native header
+- Added regression test to `root-layout.test.tsx` asserting `initialRouteName === 'index'`
+
+### 4. Remove dead type annotation from hasAnySessions ✓
+- `<{ n: number }>` type param and `AS n` alias were unused — only `rows.length` is checked
+- Simplified to `db.all(sql\`SELECT 1 FROM sessions LIMIT 1\`)`
