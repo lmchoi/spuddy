@@ -706,30 +706,43 @@ describe('exercise note row', () => {
     (setExerciseNote as jest.Mock).mockReset();
   });
 
-  it('shows ghost row when no note is set', async () => {
+  it('shows Add note button when no note is set', async () => {
     render(<LogSession />);
-    await waitFor(() => expect(screen.getByText(/Add a cue or note/i)).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Add note')).toBeTruthy());
   });
 
-  it('shows note text when a note exists for the current exercise', async () => {
+  it('shows note text and Edit button when a note exists', async () => {
     (getExerciseNote as jest.Mock).mockImplementation((_db: unknown, id: number) =>
       id === 1 ? 'Keep elbows tucked.' : null
     );
     render(<LogSession />);
-    await waitFor(() => expect(screen.getByText('Keep elbows tucked.')).toBeTruthy());
+    await waitFor(() => {
+      expect(screen.getByText('Keep elbows tucked.')).toBeTruthy();
+      expect(screen.getByText('Edit')).toBeTruthy();
+    });
   });
 
-  it('opens note sheet on tap of ghost row', async () => {
+  it('opens note sheet on tap of Add note button', async () => {
     render(<LogSession />);
-    await waitFor(() => expect(screen.getByText(/Add a cue or note/i)).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText(/Add a cue or note/i)); });
+    await waitFor(() => expect(screen.getByText('Add note')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('Add note')); });
+    await waitFor(() => expect(screen.getByPlaceholderText(/cue, reminder/i)).toBeTruthy());
+  });
+
+  it('opens note sheet on tap of Edit button', async () => {
+    (getExerciseNote as jest.Mock).mockImplementation((_db: unknown, id: number) =>
+      id === 1 ? 'Keep elbows tucked.' : null
+    );
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByText('Edit')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('Edit')); });
     await waitFor(() => expect(screen.getByPlaceholderText(/cue, reminder/i)).toBeTruthy());
   });
 
   it('calls setExerciseNote with new text and closes sheet on Done', async () => {
     render(<LogSession />);
-    await waitFor(() => expect(screen.getByText(/Add a cue or note/i)).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText(/Add a cue or note/i)); });
+    await waitFor(() => expect(screen.getByText('Add note')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('Add note')); });
     const input = screen.getByPlaceholderText(/cue, reminder/i);
     fireEvent.changeText(input, 'Drive elbows forward');
     await act(async () => { fireEvent.press(screen.getByText('Done')); });
@@ -739,8 +752,8 @@ describe('exercise note row', () => {
 
   it('closes sheet without saving when Cancel is pressed', async () => {
     render(<LogSession />);
-    await waitFor(() => expect(screen.getByText(/Add a cue or note/i)).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText(/Add a cue or note/i)); });
+    await waitFor(() => expect(screen.getByText('Add note')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('Add note')); });
     await waitFor(() => expect(screen.getByPlaceholderText(/cue, reminder/i)).toBeTruthy());
     await act(async () => { fireEvent.press(screen.getByText('Cancel')); });
     expect(screen.queryByPlaceholderText(/cue, reminder/i)).toBeNull();
