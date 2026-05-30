@@ -22,7 +22,7 @@ When the user finishes a session, detect whether what they logged diverged from 
 Partial completion (fewer sets, no extra), different reps, different weight — do not trigger.
 
 **What "save as new day" produces:**
-- Only exercises with ≥1 set logged are included
+- Exercises included if ≥1 set logged **or** `extraSetCounts[i] > 0` (extra sets were added even if none were logged)
 - Original program targets preserved (reps, weight)
 - Set count increased if extra sets were added; never reduced for partial completion
 
@@ -47,3 +47,4 @@ No schema changes. `addProgramDay` appends to the existing `days` array via the 
 - `resolvedProgramName` was added to the `ready` ScreenState so `handleFinish` can pass it to `addProgramDay` without relying on the URL param (which may be undefined when the screen auto-resolves the first program).
 - Commit 5 wires the prompt; a follow-up fix (6584e33) added an `Alert.alert` fallback for Android — iOS uses `Alert.prompt` with a pre-filled default name, Android uses a Save/Skip alert with the same default.
 - Manual verify still required on Android device.
+- Follow-up fix `fix: include exercises with extra sets added but 0 logged in buildNewDay` (96c4332) — widened `buildNewDay` exclusion guard from `loggedSets[i].length === 0` to `loggedSets[i].length === 0 && extraSetCounts[i] === 0`. Also resolved a pre-existing `@react-native-async-storage/async-storage` package missing from node_modules that was blocking the pre-commit hook. ✓
