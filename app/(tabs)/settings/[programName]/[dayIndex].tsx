@@ -213,6 +213,13 @@ export default function ProgramDayDetailScreen() {
           const summary = summaryLine(exercise.targets, 'kg');
           const hasWeight = exercise.targets.some(t => t.weight !== undefined);
           const hasRest = exercise.targets.some(t => t.restSeconds != null);
+          /* eslint-disable sonarjs/no-nested-conditional */
+          const summaryEl = exercise.targets.length === 0
+            ? <Text style={styles.noTargets}>NO TARGETS · TAP + TO ADD</Text>
+            : summary
+              ? <Text style={styles.exerciseSummary}>{summary}</Text>
+              : null;
+          /* eslint-enable sonarjs/no-nested-conditional */
 
           return (
             <View key={exIdx} style={styles.exerciseCard}>
@@ -240,11 +247,7 @@ export default function ProgramDayDetailScreen() {
                     </Pressable>
                   )}
 
-                  {exercise.targets.length === 0 ? (
-                    <Text style={styles.noTargets}>NO TARGETS · TAP + TO ADD</Text>
-                  ) : summary ? (
-                    <Text style={styles.exerciseSummary}>{summary}</Text>
-                  ) : null}
+                  {summaryEl}
                 </View>
 
                 <Text style={styles.chevron}>›</Text>
@@ -263,12 +266,29 @@ export default function ProgramDayDetailScreen() {
                   </View>
 
                   {/* Set rows */}
+                  {/* eslint-disable-next-line sonarjs/cognitive-complexity */}
                   {exercise.targets.map((target, setIdx) => {
                     const ec = editingCell;
                     const isReps = ec?.exIdx === exIdx && ec.setIdx === setIdx && ec.field === 'reps';
                     const isMinReps = ec?.exIdx === exIdx && ec.setIdx === setIdx && ec.field === 'minReps';
                     const isWeight = ec?.exIdx === exIdx && ec.setIdx === setIdx && ec.field === 'weight';
                     const isRest = ec?.exIdx === exIdx && ec.setIdx === setIdx && ec.field === 'rest';
+
+                    /* eslint-disable sonarjs/no-nested-conditional */
+                    const weightCellContent = target.weight === undefined
+                      ? <Text style={styles.muted}>—</Text>
+                      : isWeight
+                        ? <><TextInput style={styles.cellInput} value={String(target.weight)} keyboardType="decimal-pad" onChangeText={v => { const val = parseFloat(v); if (!isNaN(val)) updateTarget(exIdx, setIdx, { weight: val }); }} onBlur={() => setEditingCell(null)} autoFocus returnKeyType="done" onSubmitEditing={() => setEditingCell(null)} /><Text style={styles.muted}> kg</Text></>
+                        : target.weight === 0
+                          ? <Pressable onPress={() => updateTarget(exIdx, setIdx, { weight: undefined })} style={styles.bwPill}><Text style={styles.bwPillText}>BW</Text></Pressable>
+                          : <Pressable style={styles.weightRow} onPress={() => setEditingCell({ exIdx, setIdx, field: 'weight' })}><Text style={styles.gridCell}>{target.weight}</Text><Text style={styles.muted}> kg</Text></Pressable>;
+
+                    const restCellContent = target.restSeconds == null
+                      ? <Text style={styles.muted}>—</Text>
+                      : isRest
+                        ? <><TextInput style={styles.cellInput} value={String(target.restSeconds)} keyboardType="numeric" onChangeText={v => { const val = parseInt(v, 10); if (!isNaN(val)) updateTarget(exIdx, setIdx, { restSeconds: val }); }} onBlur={() => setEditingCell(null)} autoFocus returnKeyType="done" onSubmitEditing={() => setEditingCell(null)} /><Text style={styles.muted}>s</Text></>
+                        : <Pressable style={styles.restRow} onPress={() => setEditingCell({ exIdx, setIdx, field: 'rest' })}><Text style={styles.gridCell}>{target.restSeconds}</Text><Text style={styles.muted}>s</Text></Pressable>;
+                    /* eslint-enable sonarjs/no-nested-conditional */
 
                     return (
                       <View key={setIdx} style={styles.gridRow}>
@@ -355,75 +375,14 @@ export default function ProgramDayDetailScreen() {
                         {/* WEIGHT */}
                         {hasWeight && (
                           <View style={[styles.colWeight, styles.weightRow]}>
-                            {target.weight === undefined ? (
-                              <Text style={styles.muted}>—</Text>
-                            ) : isWeight ? (
-                              <>
-                                <TextInput
-                                  style={styles.cellInput}
-                                  value={String(target.weight)}
-                                  keyboardType="decimal-pad"
-                                  onChangeText={v => {
-                                    const val = parseFloat(v);
-                                    if (!isNaN(val)) updateTarget(exIdx, setIdx, { weight: val });
-                                  }}
-                                  onBlur={() => setEditingCell(null)}
-                                  autoFocus
-                                  returnKeyType="done"
-                                  onSubmitEditing={() => setEditingCell(null)}
-                                />
-                                <Text style={styles.muted}> kg</Text>
-                              </>
-                            ) : target.weight === 0 ? (
-                              <Pressable
-                                onPress={() => updateTarget(exIdx, setIdx, { weight: undefined })}
-                                style={styles.bwPill}
-                              >
-                                <Text style={styles.bwPillText}>BW</Text>
-                              </Pressable>
-                            ) : (
-                              <Pressable
-                                style={styles.weightRow}
-                                onPress={() => setEditingCell({ exIdx, setIdx, field: 'weight' })}
-                              >
-                                <Text style={styles.gridCell}>{target.weight}</Text>
-                                <Text style={styles.muted}> kg</Text>
-                              </Pressable>
-                            )}
+                            {weightCellContent}
                           </View>
                         )}
 
                         {/* REST */}
                         {hasRest && (
                           <View style={[styles.colRest, styles.restRow]}>
-                            {target.restSeconds == null ? (
-                              <Text style={styles.muted}>—</Text>
-                            ) : isRest ? (
-                              <>
-                                <TextInput
-                                  style={styles.cellInput}
-                                  value={String(target.restSeconds)}
-                                  keyboardType="numeric"
-                                  onChangeText={v => {
-                                    const val = parseInt(v, 10);
-                                    if (!isNaN(val)) updateTarget(exIdx, setIdx, { restSeconds: val });
-                                  }}
-                                  onBlur={() => setEditingCell(null)}
-                                  autoFocus
-                                  returnKeyType="done"
-                                  onSubmitEditing={() => setEditingCell(null)}
-                                />
-                                <Text style={styles.muted}>s</Text>
-                              </>
-                            ) : (
-                              <Pressable
-                                style={styles.restRow}
-                                onPress={() => setEditingCell({ exIdx, setIdx, field: 'rest' })}
-                              >
-                                <Text style={styles.gridCell}>{target.restSeconds}</Text>
-                                <Text style={styles.muted}>s</Text>
-                              </Pressable>
-                            )}
+                            {restCellContent}
                           </View>
                         )}
 

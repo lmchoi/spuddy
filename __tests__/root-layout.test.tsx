@@ -14,8 +14,6 @@ jest.mock('expo-splash-screen', () => ({
 const capturedScreens: { name: string; options?: Record<string, unknown> }[] = [];
 
 jest.mock('expo-router', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const React = require('react');
   const MockScreen = ({ name, options }: any) => {
     capturedScreens.push({ name, options });
     return null;

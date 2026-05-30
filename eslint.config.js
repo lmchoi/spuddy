@@ -8,6 +8,16 @@ module.exports = defineConfig([
   sonarjs.configs.recommended,
   prettier,
   {
+    // slow-regex: mobile app running on local user data — ReDoS requires an adversary
+    // controlling input to a long-running server, which doesn't apply here.
+    // no-nested-functions: setDay(prev => prev.exercises.map(...)) is standard React
+    // state updater pattern; the nesting is idiomatic, not a complexity smell.
+    rules: {
+      'sonarjs/slow-regex': 'off',
+      'sonarjs/no-nested-functions': 'off',
+    },
+  },
+  {
     ignores: ['.claude/**', 'docs/**', 'design_handoffs/**'],
   },
 ]);

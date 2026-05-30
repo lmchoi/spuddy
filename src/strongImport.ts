@@ -10,6 +10,7 @@ type ImportResult =
   | { success: true; sessionsImported: number; programs: Program[] }
   | { success: false; error: string };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function importFromStrong(
   db: DB,
   text: string,

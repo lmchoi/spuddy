@@ -43,6 +43,11 @@ export default function NotesImportScreen() {
     });
   }
 
+  const programSuffix = importableCount !== 1 ? 's' : '';
+  const reviewLabel = totalExercises > 0
+    ? `Review ${importableCount} program${programSuffix}`
+    : 'Paste notes to import';
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -119,9 +124,7 @@ export default function NotesImportScreen() {
           style={[styles.importBtn, !canReview && styles.importBtnDisabled]}
         >
           <Text style={[styles.importBtnText, !canReview && styles.importBtnTextDisabled]}>
-            {totalExercises > 0
-              ? `Review ${importableCount} program${importableCount !== 1 ? 's' : ''}`
-              : 'Paste notes to import'}
+            {reviewLabel}
           </Text>
         </Pressable>
       </View>
