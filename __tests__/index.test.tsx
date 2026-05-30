@@ -3,11 +3,11 @@ import { render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import Index from '../app/index';
 import { getDB } from '@/src/db';
-import { getAllSessions } from '@/src/storage';
+import { hasAnySessions } from '@/src/storage';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({
-  getAllSessions: jest.fn(),
+  hasAnySessions: jest.fn(),
 }));
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn() },
@@ -20,13 +20,13 @@ beforeEach(() => {
 
 describe('Index redirect', () => {
   it('redirects to settings when no sessions exist', async () => {
-    (getAllSessions as jest.Mock).mockResolvedValue([]);
+    (hasAnySessions as jest.Mock).mockResolvedValue(false);
     render(<Index />);
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(tabs)/settings'));
   });
 
   it('redirects to progress when sessions exist', async () => {
-    (getAllSessions as jest.Mock).mockResolvedValue([{ id: '1' }]);
+    (hasAnySessions as jest.Mock).mockResolvedValue(true);
     render(<Index />);
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(tabs)/progress'));
   });
