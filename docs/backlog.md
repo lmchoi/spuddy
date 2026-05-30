@@ -17,6 +17,7 @@ Items that are scoped and prioritised but not yet assigned to an active mileston
   - Adding **E2E tests (e.g., Maestro)** to verify native device persistence (testing the actual Expo/SQLite native bridge across app restarts). See `docs/decisions/006-e2e-testing-approach.md`.
   - Adopting type-safe query testing via an ORM (like Drizzle's mocked driver) if transitioning away from raw SQL, reducing reliance on manual type casting.
 - **Back button: warn + resume** — pressing back during a session should warn the user and offer to save progress for later resumption. On next session start, offer resume or start fresh. More complex state management.
+- **Resume prompt + stale-draft expiry** — show "Resume or start fresh?" when a draft exists; auto-expire drafts older than a day or when the program day has changed. Also add a consistency check on load: if `draft.currentExerciseIdx >= day.exercises.length` or `draft.loggedSets.length !== day.exercises.length`, discard the draft silently rather than crashing into empty state. See `docs/plans/resume-session.md` (out of scope section).
 - **Save session as new day or replace** — when finishing, allow saving to a different date or overwriting an existing session for that date.
 
 ## Deferred (pending exercise DB)

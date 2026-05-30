@@ -424,6 +424,53 @@ describe('resume in-progress session', () => {
 
     expect(saveDraft).toHaveBeenCalled();
   });
+
+  it('clears draft after successful finish (navigate path)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Complete all sets so the session finishes without a change prompt
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    expect(clearDraft).toHaveBeenCalled();
+  });
+
+  it('does not clear draft when saveSession fails', async () => {
+    (saveSession as jest.Mock).mockRejectedValueOnce(new Error('disk full'));
+    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText('Finish')); });
+
+    expect(clearDraft).not.toHaveBeenCalled();
+  });
+
+  it('navigates even when clearDraft rejects', async () => {
+    (clearDraft as jest.Mock).mockRejectedValueOnce(new Error('storage error'));
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    expect(mockReplace).toHaveBeenCalled();
+  });
 });
 
 // ─── Extra set — plan target comparison ──────────────────────────────────────

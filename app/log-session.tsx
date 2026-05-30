@@ -433,7 +433,7 @@ export default function LogSession() {
 
   const handleFinish = useCallback(async () => {
     if (state.status !== 'ready') return;
-    const { day, session, resolvedProgramName } = state;
+    const { day, session, resolvedProgramName, key } = state;
     const today = new Date().toISOString().slice(0, 10);
     const payload = buildSavePayload(session, day, today);
     let db;
@@ -444,6 +444,7 @@ export default function LogSession() {
       Alert.alert('Save failed', 'Could not save your session. Please try again.');
       return;
     }
+    await clearDraft(key).catch(() => {});
     if (resolvePostSessionAction(session) === 'navigate') {
       router.replace(`/progress/${today}`);
       return;
