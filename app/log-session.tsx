@@ -439,17 +439,12 @@ export default function LogSession() {
         const draft = await loadDraft(key);
         const session = draft ?? initSession(day);
         const input = inputFromTarget(day, session);
-        const noteEntries = await Promise.all(
-          day.exercises
-            .filter(ex => ex.exerciseId !== undefined)
-            .map(async ex => {
-              const note = await getExerciseNote(db, ex.exerciseId!);
-              return [ex.exerciseId!, note] as const;
-            })
-        );
         const notes: Record<number, string> = {};
-        for (const [id, note] of noteEntries) {
-          if (note) notes[id] = note;
+        for (const ex of day.exercises) {
+          if (ex.exerciseId !== undefined) {
+            const note = getExerciseNote(db, ex.exerciseId);
+            if (note) notes[ex.exerciseId] = note;
+          }
         }
         setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, key, notes });
       } catch {
@@ -508,7 +503,7 @@ export default function LogSession() {
     if (ex.exerciseId === undefined) return;
     const db = await getDB();
     const trimmed = text.trim() || null;
-    await setExerciseNote(db, ex.exerciseId, trimmed);
+    setExerciseNote(db, ex.exerciseId, trimmed);
     const notes = { ...state.notes };
     if (trimmed) {
       notes[ex.exerciseId] = trimmed;

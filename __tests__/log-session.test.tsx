@@ -40,8 +40,8 @@ jest.mock('@/src/storage', () => ({
 }));
 
 jest.mock('@/src/exerciseStorage', () => ({
-  getExerciseNote: jest.fn().mockResolvedValue(null),
-  setExerciseNote: jest.fn().mockResolvedValue(undefined),
+  getExerciseNote: jest.fn().mockReturnValue(null),
+  setExerciseNote: jest.fn(),
 }));
 
 const mockDay = {
@@ -702,8 +702,8 @@ describe('post-session prompt', () => {
 
 describe('exercise note row', () => {
   beforeEach(() => {
-    (getExerciseNote as jest.Mock).mockResolvedValue(null);
-    (setExerciseNote as jest.Mock).mockResolvedValue(undefined);
+    (getExerciseNote as jest.Mock).mockReturnValue(null);
+    (setExerciseNote as jest.Mock).mockReset();
   });
 
   it('shows ghost row when no note is set', async () => {
@@ -713,7 +713,7 @@ describe('exercise note row', () => {
 
   it('shows note text when a note exists for the current exercise', async () => {
     (getExerciseNote as jest.Mock).mockImplementation((_db: unknown, id: number) =>
-      id === 1 ? Promise.resolve('Keep elbows tucked.') : Promise.resolve(null)
+      id === 1 ? 'Keep elbows tucked.' : null
     );
     render(<LogSession />);
     await waitFor(() => expect(screen.getByText('Keep elbows tucked.')).toBeTruthy());
