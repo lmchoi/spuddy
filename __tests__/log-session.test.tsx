@@ -6,6 +6,7 @@ import { saveSession } from '@/src/storage';
 import { C } from '@/components/spuddy/palette';
 import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import type { SessionState } from '@/src/domain/sessionLogger';
+import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 
 jest.mock('@/src/sessionDraft', () => ({
   draftKey: jest.fn((name: string, idx: number) => `draft_session__${name}__${idx}`),
@@ -42,8 +43,6 @@ jest.mock('@/src/exerciseStorage', () => ({
   getExerciseNote: jest.fn().mockResolvedValue(null),
   setExerciseNote: jest.fn().mockResolvedValue(undefined),
 }));
-
-import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 
 const mockDay = {
   name: 'Day A',
