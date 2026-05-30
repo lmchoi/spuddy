@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Spuddy — Review Import</title>
+<style>
+  :root {
+    --bg:       #0d0d0f;
+    --card:     #1a1a1f;
+    --card2:    #1f1f26;
+    --border:   #2a2a32;
+    --hit:      #7c6af7;
+    --hit-bg:   #7c6af71a;
+    --text:     #f0f0f5;
+    --text2:    #c8c8d8;
+    --sub:      #9090a0;
+    --muted:    #505060;
+    --warn:     #e8a030;
+    --warn-bg:  #e8a0301a;
+    --r-card:   14px;
+    --r-pill:   999px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+
+  /* Phone shell */
+  .phone {
+    width: 393px;
+    height: 852px;
+    background: var(--bg);
+    border-radius: 52px;
+    border: 1px solid #2a2a2a;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow:
+      0 0 0 1px #111,
+      0 40px 80px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  /* Status bar */
+  .status-bar {
+    flex-shrink: 0;
+    height: 54px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 28px 10px;
+  }
+  .status-time {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-icons svg { color: var(--text); }
+
+  /* Header */
+  .header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px 12px;
+  }
+  .back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .back-btn:active { opacity: 0.6; }
+  .back-arrow {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1;
+    margin-top: -1px;
+  }
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  /* Scroll area */
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* Summary line */
+  .summary {
+    font-size: 13px;
+    color: var(--sub);
+    padding: 2px 2px 4px;
+    letter-spacing: -0.1px;
+  }
+  .summary strong {
+    color: var(--text2);
+    font-weight: 600;
+  }
+
+  /* Section card */
+  .section-card {
+    background: var(--card);
+    border-radius: var(--r-card);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  /* Section header row */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--hit-bg);
+    border: 1px solid rgba(124,106,247,0.25);
+    border-radius: var(--r-pill);
+    padding: 4px 11px 4px 8px;
+  }
+  .section-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--hit);
+    flex-shrink: 0;
+  }
+  .section-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--hit);
+    letter-spacing: -0.1px;
+  }
+  .section-count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Exercise row */
+  .ex-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ex-row:last-child { border-bottom: none; }
+
+  .ex-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .ex-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.1px;
+  }
+
+  .ex-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ex-sets {
+    font-size: 12px;
+    color: var(--sub);
+    font-variant-numeric: tabular-nums;
+  }
+  .ex-weight {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.2px;
+    min-width: 48px;
+    text-align: right;
+  }
+  .ex-sep {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Skipped warning */
+  .skipped-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--warn-bg);
+    border: 1px solid rgba(232,160,48,0.2);
+    border-radius: var(--r-card);
+    padding: 12px 14px;
+  }
+  .warn-icon {
+    font-size: 14px;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+  .warn-text {
+    font-size: 13px;
+    color: var(--warn);
+    line-height: 1.5;
+    letter-spacing: -0.1px;
+  }
+  .warn-text strong { font-weight: 600; }
+
+  /* Sticky bottom bar */
+  .bottom-bar {
+    flex-shrink: 0;
+    padding: 12px 18px 34px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+
+  .import-btn {
+    width: 100%;
+    padding: 15px 0;
+    background: var(--hit);
+    border-radius: var(--r-card);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.15s, transform 0.1s;
+    -webkit-appearance: none;
+  }
+  .import-btn:active {
+    opacity: 0.88;
+    transform: scale(0.99);
+  }
+  .import-btn-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.2px;
+    font-family: inherit;
+  }
+  .import-btn-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Entrance animation */
+  .section-card {
+    animation: slideUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .section-card:nth-child(2) { animation-delay: 0.04s; }
+  .section-card:nth-child(3) { animation-delay: 0.08s; }
+  .section-card:nth-child(4) { animation-delay: 0.12s; }
+  .skipped-warning { animation: slideUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .summary { animation: fadeIn 0.2s ease both; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <!-- Signal -->
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+        <rect x="0" y="8" width="3" height="4" rx="0.5" fill="currentColor" opacity="0.35"/>
+        <rect x="4.5" y="5.5" width="3" height="6.5" rx="0.5" fill="currentColor" opacity="0.35"/>
+        <rect x="9" y="3" width="3" height="9" rx="0.5" fill="currentColor"/>
+        <rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="currentColor"/>
+      </svg>
+      <!-- WiFi -->
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+        <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z" fill="currentColor"/>
+        <path d="M4.1 7.1a5.5 5.5 0 0 1 7.8 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <path d="M1.5 4.5a9 9 0 0 1 13 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.4"/>
+      </svg>
+      <!-- Battery -->
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+        <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" opacity="0.35"/>
+        <rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/>
+        <path d="M23 4v4a2 2 0 0 0 0-4z" fill="currentColor" opacity="0.4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="back-btn">
+      <span class="back-arrow">←</span>
+    </div>
+    <span class="header-title">Review import</span>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="scroll">
+
+    <p class="summary"><strong>3 programs</strong> · 8 exercises found</p>
+
+    <!-- Push -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-pill">
+          <div class="section-dot"></div>
+          <span class="section-name">Push</span>
+        </div>
+        <span class="section-count">3 exercises</span>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot"></div>
+        <span class="ex-name">Bench press</span>
+        <div class="ex-meta">
+          <span class="ex-sets">3 sets</span>
+          <span class="ex-sep">·</span>
+          <span class="ex-weight">80 kg</span>
+        </div>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot"></div>
+        <span class="ex-name">Overhead press</span>
+        <div class="ex-meta">
+          <span class="ex-sets">2 sets</span>
+          <span class="ex-sep">·</span>
+          <span class="ex-weight">50 kg</span>
+        </div>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot"></div>
+        <span class="ex-name">Tricep pushdown</span>
+        <div class="ex-meta">
+          <span class="ex-sets">1 set</span>
+          <span class="ex-sep">·</span>
+          <span class="ex-weight">30 kg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pull -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-pill">
+          <div class="section-dot"></div>
+          <span class="section-name">Pull</span>
+        </div>
+        <span class="section-count">2 exercises</span>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot"></div>
+        <span class="ex-name">Pull-ups</span>
+        <div class="ex-meta">
+          <span class="ex-sets">3 sets</span>
+          <span class="ex-sep">·</span>
+          <span class="ex-weight">BW</span>
+        </div>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot"></div>
+        <span class="ex-name">Barbell row</span>
+        <div class="ex-meta">
+          <span class="ex-sets">2 sets</span>
+          <span class="ex-sep">·</span>
+          <span class="ex-weight">70 kg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legs -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-pill">
+          <div class="section-dot"></div>
+          <span class="section-name">Legs</span>
+        </div>
+        <span class="section-count">3 exercises</span>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot"></div>
+        <span class="ex-name">Squat</span>
+        <div class="ex-meta">
+          <span class="ex-sets">3 sets</span>
+          <span class="ex-sep">·</span>
+          <span class="ex-weight">100 kg</span>
+        </div>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot"></div>
+        <span class="ex-name">Romanian deadlift</span>
+        <div class="ex-meta">
+          <span class="ex-sets">2 sets</span>
+          <span class="ex-sep">·</span>
+          <span class="ex-weight">80 kg</span>
+        </div>
+      </div>
+      <div class="ex-row">
+        <div class="ex-dot"></div>
+        <span class="ex-name">Leg press</span>
+        <div class="ex-meta">
+          <span class="ex-sets">1 set</span>
+          <span class="ex-sep">·</span>
+          <span class="ex-weight">120 kg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skipped lines warning -->
+    <div class="skipped-warning">
+      <span class="warn-icon">⚠</span>
+      <span class="warn-text"><strong>2 lines skipped</strong> — format not recognised. Go back to fix them or import without them.</span>
+    </div>
+
+  </div>
+
+  <!-- Sticky bottom bar -->
+  <div class="bottom-bar">
+    <button class="import-btn">
+      <span class="import-btn-text">Import 3 programs</span>
+      <span class="import-btn-count">8 exercises</span>
+    </button>
+  </div>
+
+</div>
+
+</body>
+</html>

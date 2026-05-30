@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Log Session — UX Redesign Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #181109;
+    --surface:   #251A12;
+    --card:      #2E2218;
+    --card2:     #382A1B;
+    --cardSoft:  #3F3122;
+    --border:    #3A2C1F;
+    --borderHi:  #52402C;
+    --faint:     #3F3122;
+    --text:      #F5EDDD;
+    --text2:     #D6C2A2;
+    --sub:       #A89175;
+    --muted:     #6B5639;
+    --hit:       #B7D26A;
+    --hitBg:     #2F3D1B;
+    --below:     #E8884A;
+  }
+
+  body {
+    background: #0e0b07;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 80px;
+    gap: 64px;
+  }
+
+  h1 {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); text-align: center;
+  }
+
+  /* ── Section header ── */
+  .section {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 24px;
+    width: 100%; max-width: 860px;
+  }
+  .section-title {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); text-align: center;
+  }
+
+  /* ── Comparison row ── */
+  .compare {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 32px;
+    width: 100%;
+  }
+  @media (min-width: 780px) {
+    .compare { flex-direction: row; align-items: flex-start; justify-content: center; gap: 32px; }
+  }
+
+  .variant {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+    flex: 1; max-width: 375px;
+  }
+  .variant-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .variant-label.before { color: #6b5030; }
+  .variant-label.after  { color: var(--hit); opacity: 0.7; }
+
+  .note {
+    font-size: 12px; color: var(--sub);
+    text-align: center; line-height: 1.6;
+    max-width: 300px;
+  }
+
+  /* ── Phone shell ── */
+  .phone {
+    width: 100%; background: var(--bg);
+    border-radius: 32px; overflow: hidden;
+    border: 1px solid #2a2218;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset;
+    display: flex; flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: center;
+    padding: 44px 18px 12px; gap: 12px;
+  }
+  .back-btn {
+    width: 36px; height: 36px; border-radius: 12px;
+    background: var(--card); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 18px; color: var(--text2); flex-shrink: 0;
+  }
+  .header-mid { flex: 1; }
+  .header-day { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .header-prog { font-size: 12px; color: var(--sub); margin-top: 1px; }
+  .finish-text { font-size: 14px; font-weight: 600; color: var(--sub); }
+
+  /* ── Strip ── */
+  .strip {
+    display: flex; flex-wrap: wrap;
+    padding: 0 18px 14px; gap: 8px;
+  }
+  .chip {
+    padding: 10px 12px; border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    min-width: 80px; display: flex;
+    flex-direction: column; gap: 6px;
+  }
+  .chip.active  { border-color: var(--hit); background: var(--hitBg); }
+
+  /* BEFORE: done chips faded */
+  .chip.done-before { opacity: 0.45; }
+
+  /* AFTER: done chips clearly tappable — checkmark, full opacity, muted border */
+  .chip.done-after {
+    opacity: 1;
+    border-color: var(--borderHi);
+    background: var(--card);
+  }
+
+  .chip-name { font-size: 12px; font-weight: 600; color: var(--text2); }
+  .chip.active .chip-name { color: var(--hit); }
+  .chip.done-after .chip-name { color: var(--sub); }
+
+  .chip-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .chip-dots { display: flex; gap: 4px; }
+  .chip-check { font-size: 9px; color: var(--hit); opacity: 0.8; }
+
+  .dot { width: 5px; height: 5px; border-radius: 3px; background: var(--border); }
+  .dot.done-active { background: var(--hit); }
+  .dot.done-muted  { background: var(--muted); opacity: 0.7; }
+  .dot.active-next { background: transparent; border: 1px dashed var(--hit); }
+
+  /* ── Scroll area ── */
+  .scroll { padding: 0 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .ex-name { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; padding-top: 4px; }
+
+  /* ── Set list ── */
+  .set-list {
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .set-row {
+    display: flex; align-items: center;
+    padding: 13px 14px; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .set-row:last-child { border-bottom: none; }
+  .set-row.done   { opacity: 0.7; }
+  .set-row.active { background: var(--surface); }
+  .set-row.future { opacity: 0.35; }
+
+  .set-dot { width: 8px; height: 8px; border-radius: 4px; background: var(--border); flex-shrink: 0; }
+  .set-dot.done   { background: var(--hit); }
+  .set-dot.active { background: transparent; border: 1.5px dashed var(--hit); box-shadow: 0 0 5px rgba(183,210,106,0.35); }
+
+  .set-label { font-size: 12px; color: var(--sub); width: 44px; flex-shrink: 0; }
+  .set-label.active { font-weight: 600; color: var(--text2); }
+  .set-result { flex: 1; font-size: 14px; font-weight: 600; text-align: right; }
+  .set-result.hit    { color: var(--hit); }
+  .set-result.miss   { color: var(--below); }
+  .set-result.target { color: var(--text); }
+  .set-result.future { font-size: 13px; color: var(--muted); }
+
+  /* BEFORE: split add-set row */
+  .add-row-before {
+    display: flex; align-items: center;
+    padding: 13px 14px; gap: 10px;
+  }
+  .add-dot-before { width: 8px; height: 8px; border-radius: 4px; background: transparent; border: 1.5px dashed var(--muted); flex-shrink: 0; }
+  .add-label-before { font-size: 12px; color: var(--muted); width: 44px; }
+  .add-result-before { flex: 1; font-size: 13px; color: var(--muted); text-align: right; font-weight: 500; }
+
+  /* AFTER: centred add-set row — lighter bg, dashed border */
+  .add-row-after {
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px 14px; gap: 6px;
+    background: var(--cardSoft);
+    border-top: 1px dashed var(--muted);
+    cursor: pointer;
+  }
+  .add-row-after:hover { background: var(--borderHi); }
+  .add-plus { font-size: 14px; color: var(--muted); font-weight: 300; }
+  .add-text  { font-size: 13px; color: var(--muted); font-weight: 500; letter-spacing: 0.2px; }
+
+  /* ── Bottom ── */
+  .bottom {
+    padding: 14px 18px 36px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .stepper-row { display: flex; gap: 12px; }
+  .stepper {
+    flex: 1; display: flex; align-items: center;
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .step-btn {
+    width: 48px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card2);
+    font-size: 22px; color: var(--text); font-weight: 300;
+  }
+  .step-val { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .step-num { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .step-unit { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  .confirm-btn {
+    background: var(--hit); border-radius: 14px;
+    padding: 16px; text-align: center;
+    font-size: 16px; font-weight: 700; color: var(--bg);
+  }
+
+  /* BEFORE: next button, no skip */
+  .next-btn-before {
+    background: var(--card); border-radius: 14px;
+    padding: 16px; text-align: center;
+    font-size: 16px; font-weight: 700; color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  /* AFTER: skip set — small secondary link above Done */
+  .skip-link {
+    text-align: center;
+    font-size: 13px; color: var(--muted);
+    font-weight: 500; padding: 2px 0;
+    letter-spacing: 0.1px;
+  }
+
+  /* ── Divider ── */
+  .vs {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase;
+    padding: 0 8px; align-self: center; flex-shrink: 0;
+  }
+
+  /* ── Callouts ── */
+  .callouts {
+    display: flex; flex-direction: column; gap: 8px;
+    max-width: 860px; width: 100%;
+  }
+  .callout {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: #1a1508; border: 1px solid #3a3010;
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 12px; color: #d6c060; line-height: 1.6;
+  }
+  .callout-icon { font-size: 13px; flex-shrink: 0; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<h1>Log Session — UX Redesign</h1>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 1: Exercise strip -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">① Exercise strip — done chips</div>
+  <div class="compare">
+
+    <!-- BEFORE -->
+    <div class="variant">
+      <div class="variant-label before">Before</div>
+      <div class="phone">
+        <div class="header">
+          <div class="back-btn">←</div>
+          <div class="header-mid">
+            <div class="header-day">Day A — Push</div>
+            <div class="header-prog">5 of 9 sets</div>
+          </div>
+          <div class="finish-text">Finish</div>
+        </div>
+        <div class="strip">
+          <div class="chip done-before">
+            <div class="chip-name">Bench Press</div>
+            <div class="chip-dots">
+              <div class="dot done-muted"></div>
+              <div class="dot done-muted"></div>
+              <div class="dot done-muted"></div>
+            </div>
+          </div>
+          <div class="chip active">
+            <div class="chip-name">OHP</div>
+            <div class="chip-dots">
+              <div class="dot done-active"></div>
+              <div class="dot active-next"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+          <div class="chip">
+            <div class="chip-name">Tricep Ext</div>
+            <div class="chip-dots">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+        </div>
+        <div class="scroll">
+          <div class="ex-name">OHP</div>
+        </div>
+      </div>
+      <div class="note">Bench Press chip looks disabled.<br>User won't tap it to jump back.</div>
+    </div>
+
+    <div class="vs">vs</div>
+
+    <!-- AFTER -->
+    <div class="variant">
+      <div class="variant-label after">After</div>
+      <div class="phone">
+        <div class="header">
+          <div class="back-btn">←</div>
+          <div class="header-mid">
+            <div class="header-day">Day A — Push</div>
+            <div class="header-prog">5 of 9 sets</div>
+          </div>
+          <div class="finish-text">Finish</div>
+        </div>
+        <div class="strip">
+          <div class="chip done-after">
+            <div class="chip-name">Bench Press</div>
+            <div class="chip-row">
+              <div class="chip-dots">
+                <div class="dot done-muted"></div>
+                <div class="dot done-muted"></div>
+                <div class="dot done-muted"></div>
+              </div>
+              <div class="chip-check">✓</div>
+            </div>
+          </div>
+          <div class="chip active">
+            <div class="chip-name">OHP</div>
+            <div class="chip-dots">
+              <div class="dot done-active"></div>
+              <div class="dot active-next"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+          <div class="chip">
+            <div class="chip-name">Tricep Ext</div>
+            <div class="chip-dots">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+        </div>
+        <div class="scroll">
+          <div class="ex-name">OHP</div>
+        </div>
+      </div>
+      <div class="note">Full opacity + small ✓ tick.<br>Looks revisitable, not locked.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 2: + Add set row -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">② "+ Add set" row layout</div>
+  <div class="compare">
+
+    <!-- BEFORE -->
+    <div class="variant">
+      <div class="variant-label before">Before</div>
+      <div class="phone">
+        <div class="scroll" style="padding-top:18px">
+          <div class="ex-name">Bench Press</div>
+          <div class="set-list">
+            <div class="set-row done">
+              <div class="set-dot done"></div>
+              <div class="set-label">Set 1</div>
+              <div class="set-result hit">8 × 60 kg</div>
+            </div>
+            <div class="set-row done">
+              <div class="set-dot done"></div>
+              <div class="set-label">Set 2</div>
+              <div class="set-result hit">8 × 60 kg</div>
+            </div>
+            <div class="set-row done">
+              <div class="set-dot done"></div>
+              <div class="set-label">Set 3</div>
+              <div class="set-result miss">6 × 60 kg</div>
+            </div>
+            <div class="add-row-before">
+              <div class="add-dot-before"></div>
+              <div class="add-label-before">+ Add</div>
+              <div class="add-result-before">set</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="note">Text split across columns.<br>Reads like a broken set row.</div>
+    </div>
+
+    <div class="vs">vs</div>
+
+    <!-- AFTER -->
+    <div class="variant">
+      <div class="variant-label after">After</div>
+      <div class="phone">
+        <div class="scroll" style="padding-top:18px">
+          <div class="ex-name">Bench Press</div>
+          <div class="set-list">
+            <div class="set-row done">
+              <div class="set-dot done"></div>
+              <div class="set-label">Set 1</div>
+              <div class="set-result hit">8 × 60 kg</div>
+            </div>
+            <div class="set-row done">
+              <div class="set-dot done"></div>
+              <div class="set-label">Set 2</div>
+              <div class="set-result hit">8 × 60 kg</div>
+            </div>
+            <div class="set-row done">
+              <div class="set-dot done"></div>
+              <div class="set-label">Set 3</div>
+              <div class="set-result miss">6 × 60 kg</div>
+            </div>
+            <div class="add-row-after">
+              <div class="add-plus">＋</div>
+              <div class="add-text">Add set</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="note">Centred, single text unit.<br>Clearly a button, not a row.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 3: Skip set -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">③ Skip set affordance</div>
+  <div class="compare">
+
+    <!-- BEFORE -->
+    <div class="variant">
+      <div class="variant-label before">Before</div>
+      <div class="phone">
+        <div class="scroll" style="padding-top:18px">
+          <div class="ex-name">OHP</div>
+          <div class="set-list">
+            <div class="set-row done">
+              <div class="set-dot done"></div>
+              <div class="set-label">Set 1</div>
+              <div class="set-result hit">8 × 40 kg</div>
+            </div>
+            <div class="set-row active">
+              <div class="set-dot active"></div>
+              <div class="set-label active">Set 2</div>
+              <div class="set-result target">8 × 40 kg</div>
+            </div>
+            <div class="set-row future">
+              <div class="set-dot"></div>
+              <div class="set-label">Set 3</div>
+              <div class="set-result future">8 × 40 kg</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom">
+          <div class="stepper-row">
+            <div class="stepper">
+              <div class="step-btn">−</div>
+              <div class="step-val"><div class="step-num">8</div><div class="step-unit">reps</div></div>
+              <div class="step-btn">+</div>
+            </div>
+            <div class="stepper">
+              <div class="step-btn">−</div>
+              <div class="step-val"><div class="step-num">40</div><div class="step-unit">kg</div></div>
+              <div class="step-btn">+</div>
+            </div>
+          </div>
+          <div class="confirm-btn">Done · Set 2 of 3</div>
+        </div>
+      </div>
+      <div class="note">No way to skip.<br>Must log a fake set or abandon.</div>
+    </div>
+
+    <div class="vs">vs</div>
+
+    <!-- AFTER -->
+    <div class="variant">
+      <div class="variant-label after">After</div>
+      <div class="phone">
+        <div class="scroll" style="padding-top:18px">
+          <div class="ex-name">OHP</div>
+          <div class="set-list">
+            <div class="set-row done">
+              <div class="set-dot done"></div>
+              <div class="set-label">Set 1</div>
+              <div class="set-result hit">8 × 40 kg</div>
+            </div>
+            <div class="set-row active">
+              <div class="set-dot active"></div>
+              <div class="set-label active">Set 2</div>
+              <div class="set-result target">8 × 40 kg</div>
+            </div>
+            <div class="set-row future">
+              <div class="set-dot"></div>
+              <div class="set-label">Set 3</div>
+              <div class="set-result future">8 × 40 kg</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom">
+          <div class="stepper-row">
+            <div class="stepper">
+              <div class="step-btn">−</div>
+              <div class="step-val"><div class="step-num">8</div><div class="step-unit">reps</div></div>
+              <div class="step-btn">+</div>
+            </div>
+            <div class="stepper">
+              <div class="step-btn">−</div>
+              <div class="step-val"><div class="step-num">40</div><div class="step-unit">kg</div></div>
+              <div class="step-btn">+</div>
+            </div>
+          </div>
+          <div class="confirm-btn">Done · Set 2 of 3</div>
+          <div class="skip-link">Skip set</div>
+        </div>
+      </div>
+      <div class="note">Small "Skip set" below Done.<br>Secondary, unambiguous, always reachable.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 4: Chip layout options -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">④ Strip chip — compact inline layout</div>
+
+  <!-- shared strip styles just for this section -->
+  <style>
+    /* pill chip variants */
+    .pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      border-radius: 999px; border: 1px solid var(--border);
+      background: var(--card);
+      white-space: nowrap; cursor: pointer;
+    }
+    .pill.active-pill  { border-color: var(--hit); background: var(--hitBg); }
+
+    /* Option A — name left, dots right, medium padding */
+    .pill-a { padding: 7px 12px 7px 10px; }
+    .pill-a .pname { font-size: 12px; font-weight: 600; color: var(--text2); }
+    .pill-a.active-pill .pname { color: var(--hit); }
+    .pill-a .pdots { display: flex; gap: 3px; }
+    .pdot { width: 5px; height: 5px; border-radius: 3px; }
+    .pdot.g  { background: var(--hit); }
+    .pdot.o  { background: var(--below); }
+    .pdot.d  { background: transparent; border: 1px dashed var(--hit); }
+    .pdot.n  { background: var(--border); }
+
+    /* Option B — dots left (status first), name right */
+    .pill-b { padding: 7px 12px 7px 10px; }
+    .pill-b .pname { font-size: 12px; font-weight: 600; color: var(--text2); }
+    .pill-b.active-pill .pname { color: var(--hit); }
+
+    /* Option C — very tight, dots only for non-active, name+dots for active */
+    .pill-c-done { padding: 6px 9px; gap: 4px; }
+    .pill-c-done .pname { font-size: 11px; font-weight: 600; color: var(--sub); }
+    .pill-c-active { padding: 7px 12px 7px 10px; }
+    .pill-c-active .pname { font-size: 12px; font-weight: 600; color: var(--hit); }
+
+    .strip-demo {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding: 16px 18px;
+      background: var(--bg); border-radius: 16px;
+      border: 1px solid var(--border);
+      width: 100%; max-width: 375px;
+    }
+    .option-group {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+      width: 100%; max-width: 375px;
+    }
+    .option-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted);
+    }
+  </style>
+
+  <div style="display:flex;flex-direction:column;gap:28px;width:100%;max-width:375px;align-items:flex-start">
+
+    <!-- Current -->
+    <div class="option-group">
+      <div class="option-label">Current — stacked, square chip</div>
+      <div class="strip-demo">
+        <div class="chip done" style="opacity:0.45">
+          <div class="chip-name">Bench Press</div>
+          <div class="chip-dots" style="display:flex;gap:4px">
+            <div class="dot hit" style="width:5px;height:5px;border-radius:3px;background:var(--hit)"></div>
+            <div class="dot miss" style="width:5px;height:5px;border-radius:3px;background:var(--below)"></div>
+            <div class="dot miss" style="width:5px;height:5px;border-radius:3px;background:var(--below)"></div>
+          </div>
+        </div>
+        <div class="chip active">
+          <div class="chip-name">OHP</div>
+          <div class="chip-dots" style="display:flex;gap:4px">
+            <div class="dot" style="width:5px;height:5px;border-radius:3px;background:var(--hit)"></div>
+            <div class="dot" style="width:5px;height:5px;border-radius:3px;background:transparent;border:1px dashed var(--hit)"></div>
+            <div class="dot" style="width:5px;height:5px;border-radius:3px;background:var(--border)"></div>
+          </div>
+        </div>
+        <div class="chip">
+          <div class="chip-name">Tricep Ext</div>
+          <div class="chip-dots" style="display:flex;gap:4px">
+            <div class="dot" style="width:5px;height:5px;border-radius:3px;background:var(--border)"></div>
+            <div class="dot" style="width:5px;height:5px;border-radius:3px;background:var(--border)"></div>
+            <div class="dot" style="width:5px;height:5px;border-radius:3px;background:var(--border)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option A: pill, name · dots -->
+    <div class="option-group">
+      <div class="option-label">A — pill · name then dots</div>
+      <div class="strip-demo">
+        <div class="pill pill-a">
+          <span class="pname">Bench Press</span>
+          <div class="pdots">
+            <div class="pdot g"></div><div class="pdot o"></div><div class="pdot o"></div>
+          </div>
+        </div>
+        <div class="pill pill-a active-pill">
+          <span class="pname">OHP</span>
+          <div class="pdots">
+            <div class="pdot g"></div><div class="pdot d"></div><div class="pdot n"></div>
+          </div>
+        </div>
+        <div class="pill pill-a">
+          <span class="pname">Tricep Ext</span>
+          <div class="pdots">
+            <div class="pdot n"></div><div class="pdot n"></div><div class="pdot n"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option B: pill, dots · name -->
+    <div class="option-group">
+      <div class="option-label">B — pill · dots then name</div>
+      <div class="strip-demo">
+        <div class="pill pill-b">
+          <div class="pdots">
+            <div class="pdot g"></div><div class="pdot o"></div><div class="pdot o"></div>
+          </div>
+          <span class="pname">Bench Press</span>
+        </div>
+        <div class="pill pill-b active-pill">
+          <div class="pdots">
+            <div class="pdot g"></div><div class="pdot d"></div><div class="pdot n"></div>
+          </div>
+          <span class="pname">OHP</span>
+        </div>
+        <div class="pill pill-b">
+          <div class="pdots">
+            <div class="pdot n"></div><div class="pdot n"></div><div class="pdot n"></div>
+          </div>
+          <span class="pname">Tricep Ext</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option C: pill, name · dots, no min-width — wraps naturally -->
+    <div class="option-group">
+      <div class="option-label">C — pill · tighter padding, smaller text</div>
+      <div class="strip-demo">
+        <div class="pill" style="padding:5px 10px 5px 8px;gap:6px">
+          <span style="font-size:11px;font-weight:600;color:var(--sub)">Bench Press</span>
+          <div class="pdots">
+            <div class="pdot g"></div><div class="pdot o"></div><div class="pdot o"></div>
+          </div>
+        </div>
+        <div class="pill active-pill" style="padding:5px 10px 5px 8px;gap:6px">
+          <span style="font-size:11px;font-weight:600;color:var(--hit)">OHP</span>
+          <div class="pdots">
+            <div class="pdot g"></div><div class="pdot d"></div><div class="pdot n"></div>
+          </div>
+        </div>
+        <div class="pill" style="padding:5px 10px 5px 8px;gap:6px">
+          <span style="font-size:11px;font-weight:600;color:var(--sub)">Tricep Ext</span>
+          <div class="pdots">
+            <div class="pdot n"></div><div class="pdot n"></div><div class="pdot n"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- SECTION 5: Many-set handling -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">⑤ Pill with 6+ sets — options</div>
+  <style>
+    .mset-group {
+      display: flex; flex-direction: column; gap: 8px;
+      width: 100%; max-width: 375px;
+    }
+    .mset-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg); border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+    /* reuse .pill, .pdot etc from section 4 */
+
+    /* fraction variant */
+    .frac {
+      font-size: 11px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.3px;
+    }
+    .frac .done-f { color: var(--hit); }
+    .frac .sep    { color: var(--muted); margin: 0 1px; }
+    .frac .total  { color: var(--muted); }
+
+    /* mini progress bar variant */
+    .pbar-wrap {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: var(--border); overflow: hidden; flex-shrink: 0;
+    }
+    .pbar-fill { height: 100%; border-radius: 2px; background: var(--hit); }
+    .pbar-fill.partial { background: linear-gradient(to right, var(--hit) 66%, var(--below) 66%); }
+
+    /* segmented bar variant */
+    .segbar { display: flex; gap: 2px; align-items: center; }
+    .seg {
+      width: 5px; height: 8px; border-radius: 1.5px;
+      background: var(--border); flex-shrink: 0;
+    }
+    .seg.g { background: var(--hit); }
+    .seg.o { background: var(--below); }
+    .seg.d { background: transparent; border: 1px dashed var(--hit); }
+  </style>
+
+  <div style="display:flex;flex-direction:column;gap:24px;width:100%;max-width:375px">
+
+    <!-- Problem: overflow -->
+    <div class="mset-group">
+      <div class="option-label">Problem — 6 dots overflows the pill</div>
+      <div class="mset-row">
+        <div class="pill pill-a active-pill">
+          <span class="pname">Squat</span>
+          <div class="pdots">
+            <div class="pdot g"></div><div class="pdot g"></div><div class="pdot g"></div>
+            <div class="pdot o"></div><div class="pdot d"></div><div class="pdot n"></div>
+          </div>
+        </div>
+        <div class="pill pill-a">
+          <span class="pname">Romanian DL</span>
+          <div class="pdots">
+            <div class="pdot n"></div><div class="pdot n"></div><div class="pdot n"></div>
+            <div class="pdot n"></div><div class="pdot n"></div><div class="pdot n"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Option 1: fraction -->
+    <div class="mset-group">
+      <div class="option-label">A — fraction · "4 / 6"</div>
+      <div class="mset-row">
+        <div class="pill pill-a active-pill">
+          <span class="pname">Squat</span>
+          <span class="frac"><span class="done-f">4</span><span class="sep">/</span><span class="total">6</span></span>
+        </div>
+        <div class="pill pill-a">
+          <span class="pname">Romanian DL</span>
+          <span class="frac"><span class="done-f" style="color:var(--muted)">0</span><span class="sep">/</span><span class="total">6</span></span>
+        </div>
+        <div class="pill pill-a">
+          <span class="pname">Leg Press</span>
+          <span class="frac"><span class="done-f" style="color:var(--muted)">0</span><span class="sep">/</span><span class="total">4</span></span>
+        </div>
+      </div>
+      <div class="note" style="text-align:left;max-width:none">Simple, always fits. Loses per-set hit/miss detail. Good fallback for 5+ sets.</div>
+    </div>
+
+    <!-- Option 2: segmented vertical bars -->
+    <div class="mset-group">
+      <div class="option-label">B — segmented bars (vertical slices)</div>
+      <div class="mset-row">
+        <div class="pill pill-a active-pill">
+          <span class="pname">Squat</span>
+          <div class="segbar">
+            <div class="seg g"></div><div class="seg g"></div><div class="seg g"></div>
+            <div class="seg o"></div><div class="seg d"></div><div class="seg"></div>
+          </div>
+        </div>
+        <div class="pill pill-a">
+          <span class="pname">Romanian DL</span>
+          <div class="segbar">
+            <div class="seg"></div><div class="seg"></div><div class="seg"></div>
+            <div class="seg"></div><div class="seg"></div><div class="seg"></div>
+          </div>
+        </div>
+        <div class="pill pill-a">
+          <span class="pname">Leg Press</span>
+          <div class="segbar">
+            <div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div>
+          </div>
+        </div>
+      </div>
+      <div class="note" style="text-align:left;max-width:none">Taller slices stay compact even at 8 sets. Keeps hit/miss colour. Dashed slice = active set.</div>
+    </div>
+
+    <!-- Option 3: hybrid — dots ≤4, fraction >4 -->
+    <div class="mset-group">
+      <div class="option-label">C — hybrid · dots if ≤ 4 sets, fraction if > 4</div>
+      <div class="mset-row">
+        <div class="pill pill-a active-pill">
+          <span class="pname">Bench Press</span>
+          <div class="pdots"><!-- 3 sets, use dots -->
+            <div class="pdot g"></div><div class="pdot d"></div><div class="pdot n"></div>
+          </div>
+        </div>
+        <div class="pill pill-a">
+          <span class="pname">Squat</span><!-- 6 sets, use fraction -->
+          <span class="frac"><span class="done-f" style="color:var(--muted)">0</span><span class="sep">/</span><span class="total">6</span></span>
+        </div>
+        <div class="pill pill-a">
+          <span class="pname">OHP</span>
+          <div class="pdots">
+            <div class="pdot g"></div><div class="pdot g"></div><div class="pdot n"></div><div class="pdot n"></div>
+          </div>
+        </div>
+      </div>
+      <div class="note" style="text-align:left;max-width:none">Best of both — dots give detail for typical 3–4 set exercises, fraction kicks in only when needed. Small inconsistency is the tradeoff.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- Annotations -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="callouts">
+  <div class="callout">
+    <div class="callout-icon">①</div>
+    <div><strong>Done chips:</strong> removing the heavy fade + adding a small ✓ makes them feel revisitable rather than locked. The active chip stays green-bordered so the current exercise is still obvious.</div>
+  </div>
+  <div class="callout">
+    <div class="callout-icon">②</div>
+    <div><strong>"+ Add set" row:</strong> centred full-width layout reads as a button rather than a data row. The ＋ and text sit together so the eye reads it as one unit. Muted colour keeps it secondary to the Done CTA.</div>
+  </div>
+  <div class="callout">
+    <div class="callout-icon">③</div>
+    <div><strong>Skip set:</strong> small muted text link below Done — low priority, always available. Skipping advances to the next set without saving a result for the skipped one. Not a destructive action so no confirmation needed.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- Colour blindness simulator -->
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!-- SVG filters (hidden) -->
+<svg style="position:absolute;width:0;height:0" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Deuteranopia (red-green, most common ~6% of men) -->
+    <filter id="deuteranopia">
+      <feColorMatrix type="matrix" values="
+        0.367  0.861 -0.228  0  0
+        0.280  0.673  0.047  0  0
+       -0.012  0.043  0.969  0  0
+        0      0      0      1  0"/>
+    </filter>
+    <!-- Protanopia (red-blind, ~1% of men) -->
+    <filter id="protanopia">
+      <feColorMatrix type="matrix" values="
+        0.152  1.053 -0.205  0  0
+        0.115  0.786  0.099  0  0
+       -0.004 -0.048  1.052  0  0
+        0      0      0      1  0"/>
+    </filter>
+    <!-- Tritanopia (blue-yellow, rare) -->
+    <filter id="tritanopia">
+      <feColorMatrix type="matrix" values="
+        1.256 -0.077 -0.179  0  0
+       -0.078  0.931  0.148  0  0
+        0.005  0.691  0.304  0  0
+        0      0      0      1  0"/>
+    </filter>
+    <!-- Achromatopsia (full greyscale) -->
+    <filter id="achromatopsia">
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+  </defs>
+</svg>
+
+<style>
+  .cbsim-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #0e0b07; border-top: 1px solid #2a2218;
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    z-index: 999;
+  }
+  .cbsim-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #6B5639; flex-shrink: 0;
+  }
+  .cbsim-btn {
+    font-size: 11px; font-weight: 600; color: #A89175;
+    background: #2E2218; border: 1px solid #3A2C1F;
+    border-radius: 999px; padding: 5px 12px;
+    cursor: pointer; letter-spacing: 0.2px;
+  }
+  .cbsim-btn:hover  { background: #382A1B; }
+  .cbsim-btn.active { background: #3d2010; border-color: #E8884A; color: #E8884A; }
+  .cbsim-btn.active.green { background: #2F3D1B; border-color: #B7D26A; color: #B7D26A; }
+
+  body.sim-deuteranopia  { filter: url(#deuteranopia); }
+  body.sim-protanopia    { filter: url(#protanopia); }
+  body.sim-tritanopia    { filter: url(#tritanopia); }
+  body.sim-achromatopsia { filter: url(#achromatopsia); }
+</style>
+
+<div class="cbsim-bar">
+  <span class="cbsim-label">Colour blindness</span>
+  <button class="cbsim-btn green active" onclick="setSim('')" id="btn-none">Normal</button>
+  <button class="cbsim-btn" onclick="setSim('deuteranopia')" id="btn-deuteranopia">Deuteranopia <span style="opacity:0.6;font-weight:400">red-green · 6% ♂</span></button>
+  <button class="cbsim-btn" onclick="setSim('protanopia')" id="btn-protanopia">Protanopia <span style="opacity:0.6;font-weight:400">red-blind · 1% ♂</span></button>
+  <button class="cbsim-btn" onclick="setSim('tritanopia')" id="btn-tritanopia">Tritanopia <span style="opacity:0.6;font-weight:400">blue-yellow · rare</span></button>
+  <button class="cbsim-btn" onclick="setSim('achromatopsia')" id="btn-achromatopsia">Greyscale <span style="opacity:0.6;font-weight:400">worst case</span></button>
+</div>
+
+<script>
+  function setSim(type) {
+    document.body.className = type ? 'sim-' + type : '';
+    document.querySelectorAll('.cbsim-btn').forEach(b => b.classList.remove('active'));
+    const id = 'btn-' + (type || 'none');
+    const btn = document.getElementById(id);
+    if (btn) { btn.classList.add('active'); if (!type) btn.classList.add('green'); }
+  }
+</script>
+
+</body>
+</html>
