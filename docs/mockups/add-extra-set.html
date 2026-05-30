@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Add Extra Set — Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #181109;
+    --bg2:       #1F1610;
+    --surface:   #251A12;
+    --card:      #2E2218;
+    --card2:     #382A1B;
+    --cardSoft:  #3F3122;
+    --border:    #3A2C1F;
+    --borderHi:  #52402C;
+    --faint:     #3F3122;
+    --text:      #F5EDDD;
+    --text2:     #D6C2A2;
+    --sub:       #A89175;
+    --muted:     #6B5639;
+    --hit:       #B7D26A;
+    --hitBg:     #2F3D1B;
+    --below:     #E8884A;
+    --belowBg:   #3D2517;
+  }
+
+  body {
+    background: #0e0b07;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+    gap: 48px;
+    min-height: 100vh;
+  }
+
+  h2 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 100%;
+    max-width: 375px;
+    background: var(--bg);
+    border-radius: 40px;
+    overflow: hidden;
+    border: 1px solid #2a2218;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    min-height: 700px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 52px 18px 12px;
+    gap: 12px;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    background: var(--card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--text2);
+    flex-shrink: 0;
+  }
+  .header-mid { flex: 1; }
+  .header-day { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .header-prog { font-size: 12px; color: var(--sub); margin-top: 1px; }
+  .header-finish { font-size: 14px; font-weight: 600; color: var(--sub); }
+
+  /* Exercise strip */
+  /* ── Exercise strip ── */
+  .strip {
+    display: flex; flex-wrap: wrap;
+    padding: 0 18px 12px; gap: 8px;
+  }
+
+  /* Pill chip */
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 11px 7px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  .chip.active { border-color: var(--hit); background: var(--hitBg); }
+  .chip.done   { opacity: 0.6; }
+
+  .chip-name { font-size: 12px; font-weight: 600; color: var(--text2); white-space: nowrap; }
+  .chip.active .chip-name { color: var(--hit); }
+
+  /* Segmented bars */
+  .segs { display: flex; gap: 2px; align-items: center; }
+  .seg {
+    width: 4px; height: 10px; border-radius: 2px;
+    background: var(--border); flex-shrink: 0;
+  }
+  .seg.hit  { background: var(--hit); }
+  .seg.miss { background: var(--below); }
+  .seg.cur  { background: transparent; border: 1px dashed var(--hit); }
+
+  /* Scroll area */
+  .scroll { flex: 1; padding: 0 18px 20px; display: flex; flex-direction: column; gap: 20px; }
+
+  .ex-name { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; padding-top: 8px; }
+
+  /* Set list card */
+  .set-list {
+    background: var(--card);
+    border-radius: 14px; border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .set-row {
+    display: flex; align-items: center;
+    padding: 13px 14px; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .set-row:last-child { border-bottom: none; }
+  .set-row.done { opacity: 0.7; }
+  .set-row.active { background: var(--surface); }
+  .set-row.future { opacity: 0.35; }
+  .set-row.add-row {
+    opacity: 1; cursor: pointer;
+    background: var(--cardSoft);
+    border-top: 1px dashed var(--muted) !important;
+  }
+  .set-row.add-row:hover { background: var(--borderHi); }
+
+  .set-dot {
+    width: 8px; height: 8px; border-radius: 4px;
+    background: var(--border); flex-shrink: 0;
+  }
+  .set-dot.done { background: var(--hit); }
+  .set-dot.active {
+    /* dashed outline = "in progress, not yet logged" */
+    background: transparent;
+    border: 1.5px dashed var(--hit);
+    box-shadow: 0 0 5px rgba(183,210,106,0.4);
+  }
+  .set-dot.add { background: transparent; border: 1.5px dashed var(--muted); }
+
+  .set-label { font-size: 12px; color: var(--sub); width: 44px; flex-shrink: 0; }
+  .set-label.active { font-weight: 600; color: var(--text2); }
+  .set-label.add { color: var(--muted); }
+  .set-result { flex: 1; font-size: 14px; font-weight: 600; text-align: right; }
+  .set-result.hit { color: var(--hit); }
+  .set-result.miss { color: var(--below); }
+  .set-result.target { color: var(--text); }
+  .set-result.future { font-size: 13px; color: var(--muted); }
+  .set-result.add { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+  /* Bottom */
+  .bottom {
+    padding: 14px 18px 36px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .stepper-row { display: flex; gap: 12px; }
+  .stepper {
+    flex: 1; display: flex; align-items: center;
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .step-btn {
+    width: 48px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card2);
+    font-size: 22px; color: var(--text); font-weight: 300;
+    user-select: none;
+  }
+  .step-val { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .step-num { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .step-unit { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  .confirm-btn {
+    background: var(--hit); border-radius: 14px;
+    padding: 16px; text-align: center;
+    font-size: 16px; font-weight: 700; color: var(--bg);
+    letter-spacing: -0.2px;
+  }
+  .next-btn {
+    background: var(--card); border-radius: 14px;
+    padding: 16px; text-align: center;
+    font-size: 16px; font-weight: 700; color: var(--text);
+    border: 1px solid var(--border);
+    letter-spacing: -0.2px;
+  }
+
+  /* Labels under scenes */
+  .label {
+    font-size: 12px; color: var(--muted); text-align: center;
+    letter-spacing: 0.2px; line-height: 1.5;
+  }
+
+  /* Annotation callout */
+  .callout {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: #1a1508; border: 1px solid #3a3010;
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 12px; color: #d6c060; line-height: 1.5;
+    max-width: 375px; width: 100%;
+  }
+  .callout-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+  .divider {
+    width: 1px; background: #2a2218; height: 48px; align-self: center;
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .scenes-row {
+      flex-direction: row !important;
+      align-items: flex-start !important;
+      gap: 32px !important;
+    }
+    .divider { display: block; }
+  }
+
+  .scenes-row {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 40px;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<h2>Add Extra Set — UI Mockup</h2>
+
+<div class="scenes-row">
+
+  <!-- ── SCENE 1: Mid-session, Bench on set 2, Tricep Ext already done ── -->
+  <div class="scene">
+    <div class="phone">
+      <div class="header">
+        <div class="back-btn">←</div>
+        <div class="header-mid">
+          <div class="header-day">Day A — Push</div>
+          <div class="header-prog">4 of 9 sets</div>
+        </div>
+        <div class="header-finish">Finish</div>
+      </div>
+
+      <div class="strip">
+        <div class="chip active">
+          <div class="chip-name">Bench Press</div>
+          <div class="segs">
+            <div class="seg hit"></div>
+            <div class="seg cur"></div>
+            <div class="seg"></div>
+          </div>
+        </div>
+        <div class="chip">
+          <div class="chip-name">OHP</div>
+          <div class="segs">
+            <div class="seg"></div>
+            <div class="seg"></div>
+            <div class="seg"></div>
+          </div>
+        </div>
+        <div class="chip done">
+          <div class="chip-name">Tricep Ext</div>
+          <div class="segs">
+            <div class="seg hit"></div>
+            <div class="seg hit"></div>
+            <div class="seg hit"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll">
+        <div class="ex-name">Bench Press</div>
+        <div class="set-list">
+          <div class="set-row done">
+            <div class="set-dot done"></div>
+            <div class="set-label">Set 1</div>
+            <div class="set-result hit">8 × 60 kg</div>
+          </div>
+          <div class="set-row active">
+            <div class="set-dot active"></div>
+            <div class="set-label active">Set 2</div>
+            <div class="set-result target">8 × 60 kg</div>
+          </div>
+          <div class="set-row future">
+            <div class="set-dot"></div>
+            <div class="set-label">Set 3</div>
+            <div class="set-result future">8 × 60 kg</div>
+          </div>
+          <!-- No "+ Add set" row — sets remain -->
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="stepper-row">
+          <div class="stepper">
+            <div class="step-btn">−</div>
+            <div class="step-val"><div class="step-num">8</div><div class="step-unit">reps</div></div>
+            <div class="step-btn">+</div>
+          </div>
+          <div class="stepper">
+            <div class="step-btn">−</div>
+            <div class="step-val"><div class="step-num">60</div><div class="step-unit">kg</div></div>
+            <div class="step-btn">+</div>
+          </div>
+        </div>
+        <div class="confirm-btn">Done · Set 2 of 3</div>
+      </div>
+    </div>
+    <div class="label">Mid-session.<br>No "+ Add set" until all 3 are done.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── SCENE 2: All 3 sets done → add-set row appears ── -->
+  <div class="scene">
+    <div class="phone">
+      <div class="header">
+        <div class="back-btn">←</div>
+        <div class="header-mid">
+          <div class="header-day">Day A — Push</div>
+          <div class="header-prog">3 of 9 sets</div>
+        </div>
+        <div class="header-finish">Finish</div>
+      </div>
+
+      <div class="strip">
+        <div class="chip active">
+          <div class="chip-name">Bench Press</div>
+          <div class="segs">
+            <div class="seg hit"></div>
+            <div class="seg hit"></div>
+            <div class="seg miss"></div>
+          </div>
+        </div>
+        <div class="chip">
+          <div class="chip-name">OHP</div>
+          <div class="segs">
+            <div class="seg"></div>
+            <div class="seg"></div>
+            <div class="seg"></div>
+          </div>
+        </div>
+        <div class="chip done">
+          <div class="chip-name">Tricep Ext</div>
+          <div class="segs">
+            <div class="seg hit"></div>
+            <div class="seg hit"></div>
+            <div class="seg hit"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll">
+        <div class="ex-name">Bench Press</div>
+        <div class="set-list">
+          <div class="set-row done">
+            <div class="set-dot done"></div>
+            <div class="set-label">Set 1</div>
+            <div class="set-result hit">8 × 60 kg</div>
+          </div>
+          <div class="set-row done">
+            <div class="set-dot done"></div>
+            <div class="set-label">Set 2</div>
+            <div class="set-result hit">8 × 60 kg</div>
+          </div>
+          <div class="set-row done">
+            <div class="set-dot done"></div>
+            <div class="set-label">Set 3</div>
+            <div class="set-result miss">6 × 60 kg</div>
+          </div>
+          <!-- ✦ ADD SET ROW ✦ -->
+          <div class="set-row add-row" style="justify-content:center;gap:6px;">
+            <span style="font-size:14px;color:var(--muted);font-weight:300;">＋</span>
+            <span style="font-size:13px;color:var(--muted);font-weight:500;">Add set</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="next-btn">Next: OHP →</div>
+      </div>
+    </div>
+    <div class="label">All sets done.<br>"+ Add set" row appears at the bottom of the card.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── SCENE 3: After tapping add-set — extra set active ── -->
+  <div class="scene">
+    <div class="phone">
+      <div class="header">
+        <div class="back-btn">←</div>
+        <div class="header-mid">
+          <div class="header-day">Day A — Push</div>
+          <div class="header-prog">3 of 9 sets</div>
+        </div>
+        <div class="header-finish">Finish</div>
+      </div>
+
+      <div class="strip">
+        <div class="chip active">
+          <div class="chip-name">Bench Press</div>
+          <div class="segs">
+            <div class="seg hit"></div>
+            <div class="seg hit"></div>
+            <div class="seg miss"></div>
+            <!-- extra set, active → dashed -->
+            <div class="seg cur"></div>
+          </div>
+        </div>
+        <div class="chip">
+          <div class="chip-name">OHP</div>
+          <div class="segs">
+            <div class="seg"></div>
+            <div class="seg"></div>
+            <div class="seg"></div>
+          </div>
+        </div>
+        <div class="chip done">
+          <div class="chip-name">Tricep Ext</div>
+          <div class="segs">
+            <div class="seg hit"></div>
+            <div class="seg hit"></div>
+            <div class="seg hit"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll">
+        <div class="ex-name">Bench Press</div>
+        <div class="set-list">
+          <div class="set-row done">
+            <div class="set-dot done"></div>
+            <div class="set-label">Set 1</div>
+            <div class="set-result hit">8 × 60 kg</div>
+          </div>
+          <div class="set-row done">
+            <div class="set-dot done"></div>
+            <div class="set-label">Set 2</div>
+            <div class="set-result hit">8 × 60 kg</div>
+          </div>
+          <div class="set-row done">
+            <div class="set-dot done"></div>
+            <div class="set-label">Set 3</div>
+            <div class="set-result miss">6 × 60 kg</div>
+          </div>
+          <!-- Extra set now active -->
+          <div class="set-row active">
+            <div class="set-dot active"></div>
+            <div class="set-label active">Set 4</div>
+            <div class="set-result target">6 × 60 kg</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <div class="stepper-row">
+          <div class="stepper">
+            <div class="step-btn">−</div>
+            <div class="step-val"><div class="step-num">6</div><div class="step-unit">reps</div></div>
+            <div class="step-btn">+</div>
+          </div>
+          <div class="stepper">
+            <div class="step-btn">−</div>
+            <div class="step-val"><div class="step-num">60</div><div class="step-unit">kg</div></div>
+            <div class="step-btn">+</div>
+          </div>
+        </div>
+        <div class="confirm-btn">Done · Set 4 of 4</div>
+      </div>
+    </div>
+    <div class="label">After tapping "+ Add set".<br>Set 4 is active. Strip grows a dashed dot.<br>Steppers pre-fill from the last <em>logged</em> set's actual values<br>(not the planned target — so 6 reps, not 8).</div>
+  </div>
+
+</div>
+
+<!-- Annotations -->
+<div style="display:flex;flex-direction:column;gap:10px;max-width:800px;width:100%">
+  <div class="callout">
+    <div class="callout-icon">◎</div>
+    <div><strong>Dashed dot = in progress.</strong> The active set row (and its strip dot) uses a dashed outline instead of solid fill. Solid green = already logged. Dashed green = currently being attempted. Dashed grey = unlogged extra set added beyond the program.</div>
+  </div>
+  <div class="callout">
+    <div class="callout-icon">✦</div>
+    <div><strong>"+ Add set" row</strong> — appears only at the bottom of the current exercise's card, only after all sets (planned + extra) are logged. Intentionally muted so it doesn't distract mid-set.</div>
+  </div>
+  <div class="callout">
+    <div class="callout-icon">⤷</div>
+    <div><strong>No new UI components</strong> — tapping "+ Add set" just re-activates the existing steppers + Done button. The "Next exercise" button disappears. Nothing new to learn.</div>
+  </div>
+</div>
+
+<svg style="position:absolute;width:0;height:0" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="deuteranopia"><feColorMatrix type="matrix" values="0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0"/></filter>
+    <filter id="protanopia"><feColorMatrix type="matrix" values="0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0"/></filter>
+    <filter id="tritanopia"><feColorMatrix type="matrix" values="1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0"/></filter>
+    <filter id="achromatopsia"><feColorMatrix type="saturate" values="0"/></filter>
+  </defs>
+</svg>
+<style>
+  .cbsim-bar { position:fixed;bottom:0;left:0;right:0;background:#0e0b07;border-top:1px solid #2a2218;padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:999; }
+  .cbsim-label { font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6B5639;flex-shrink:0; }
+  .cbsim-btn { font-size:11px;font-weight:600;color:#A89175;background:#2E2218;border:1px solid #3A2C1F;border-radius:999px;padding:5px 12px;cursor:pointer; }
+  .cbsim-btn.active { background:#2F3D1B;border-color:#B7D26A;color:#B7D26A; }
+  body.sim-deuteranopia  { filter:url(#deuteranopia); }
+  body.sim-protanopia    { filter:url(#protanopia); }
+  body.sim-tritanopia    { filter:url(#tritanopia); }
+  body.sim-achromatopsia { filter:url(#achromatopsia); }
+</style>
+<div class="cbsim-bar">
+  <span class="cbsim-label">Colour blindness</span>
+  <button class="cbsim-btn active" onclick="setSim('')" id="btn-none">Normal</button>
+  <button class="cbsim-btn" onclick="setSim('deuteranopia')" id="btn-deuteranopia">Deuteranopia <span style="opacity:0.6;font-weight:400">red-green · 6% ♂</span></button>
+  <button class="cbsim-btn" onclick="setSim('protanopia')" id="btn-protanopia">Protanopia <span style="opacity:0.6;font-weight:400">red-blind · 1% ♂</span></button>
+  <button class="cbsim-btn" onclick="setSim('tritanopia')" id="btn-tritanopia">Tritanopia <span style="opacity:0.6;font-weight:400">blue-yellow · rare</span></button>
+  <button class="cbsim-btn" onclick="setSim('achromatopsia')" id="btn-achromatopsia">Greyscale</button>
+</div>
+<script>
+  function setSim(type) {
+    document.body.className = type ? 'sim-' + type : '';
+    document.querySelectorAll('.cbsim-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + (type || 'none')).classList.add('active');
+  }
+</script>
+</body>
+</html>
