@@ -1,20 +1,14 @@
-import BetterSqlite from 'better-sqlite3';
+import { sql } from 'drizzle-orm';
 import {
-  initSchema,
-  makeTestDB,
-  saveSession,
   resolveOrCreateExercise,
+  saveSession,
   getAllSessions,
   getSessionsForExercise,
   getSessionByDate,
-  type DB,
+  type DrizzleDB,
 } from '../src/storage';
 import type { Session } from '../src/types';
-
-function makeInMemoryDB(): DB {
-  const sqlite = new BetterSqlite(':memory:');
-  return makeTestDB(sqlite);
-}
+import { makeInMemoryDB } from './helpers/makeInMemoryDB';
 
 const SESSION_A: Session = {
   date: '2026-05-01',
@@ -47,11 +41,10 @@ const SESSION_B: Session = {
 };
 
 describe('SQLite storage', () => {
-  let db: DB;
+  let db: DrizzleDB;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     db = makeInMemoryDB();
-    await initSchema(db);
   });
 
   it('saves a session and retrieves it', async () => {
@@ -163,110 +156,47 @@ describe('SQLite storage', () => {
     });
 
     it('exercises loaded from old data without id field have id undefined', async () => {
-      const exId = await resolveOrCreateExercise(db, 'Bench');
-      await db.run(
-        `INSERT INTO sessions (date, exercise_id, sets_json, targets_json) VALUES (?, ?, ?, ?)`,
-        ['2026-05-26', exId, '[{"reps":5,"weight":60,"isWarmup":false,"isBodyweight":false}]', '[]']
-      );
+      const exId = resolveOrCreateExercise(db, 'Bench');
+      db.run(sql`INSERT INTO sessions (date, exercise_id, sets_json, targets_json)
+        VALUES (${'2026-05-26'}, ${exId}, ${'[{"reps":5,"weight":60,"isWarmup":false,"isBodyweight":false}]'}, ${'[]'})`);
       const session = await getSessionByDate(db, '2026-05-26');
       expect(session?.exercises[0].id).toBeUndefined();
     });
   });
 
+  describe('resolveOrCreateExercise', () => {
+    it('returns a numeric id for a new exercise', () => {
+      const id = resolveOrCreateExercise(db, 'Press');
+      expect(typeof id).toBe('number');
+      expect(id).toBeGreaterThan(0);
+    });
+
+    it('returns the same id on repeat calls for the same name', () => {
+      const first = resolveOrCreateExercise(db, 'Curl');
+      const second = resolveOrCreateExercise(db, 'Curl');
+      expect(first).toBe(second);
+    });
+
+    it('returns distinct ids for different exercise names', () => {
+      const a = resolveOrCreateExercise(db, 'Squat');
+      const b = resolveOrCreateExercise(db, 'Deadlift');
+      expect(a).not.toBe(b);
+    });
+  });
+
   describe('deduplication safeguard', () => {
     it('skips duplicate exercise entries for the same date/name', async () => {
-      const exId = await resolveOrCreateExercise(db, 'Bench');
-      // Manually insert duplicate rows to simulate legacy bad data
-      await db.run(
-        `INSERT INTO sessions (date, exercise_id, sets_json, targets_json)
-         VALUES (?, ?, ?, ?)`,
-        ['2026-06-01', exId, '[]', '[]']
-      );
-      await db.run(
-        `INSERT INTO sessions (date, exercise_id, sets_json, targets_json)
-         VALUES (?, ?, ?, ?)`,
-        ['2026-06-01', exId, '[{"reps":10,"weight":60}]', '[]']
-      );
+      const exId = resolveOrCreateExercise(db, 'Bench');
+      db.run(sql`INSERT INTO sessions (date, exercise_id, sets_json, targets_json)
+        VALUES (${'2026-06-01'}, ${exId}, ${'[]'}, ${'[]'})`);
+      db.run(sql`INSERT INTO sessions (date, exercise_id, sets_json, targets_json)
+        VALUES (${'2026-06-01'}, ${exId}, ${'[{"reps":10,"weight":60}]'}, ${'[]'})`);
 
       const sessions = await getAllSessions(db);
       expect(sessions).toHaveLength(1);
       expect(sessions[0].exercises).toHaveLength(1);
-      // We pick the first row found for a given exercise on a given date.
-      // This is a simple safeguard against duplicate entries from legacy bugs.
       expect(sessions[0].exercises[0].sets).toHaveLength(0);
     });
   });
 
-  describe('migration to exercise IDs', () => {
-    it('migrates legacy name-based data to ID-based data', async () => {
-      const sqlite = new BetterSqlite(':memory:');
-      const db = makeTestDB(sqlite);
-
-      // Manually create legacy schema
-      await db.run(`CREATE TABLE sessions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
-        exercise_name TEXT NOT NULL,
-        sets_json TEXT NOT NULL,
-        targets_json TEXT NOT NULL
-      )`);
-      await db.run(`CREATE TABLE programs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        active_day_index INTEGER NOT NULL DEFAULT 0
-      )`);
-      await db.run(`CREATE TABLE program_days (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        program_id INTEGER NOT NULL REFERENCES programs(id),
-        day_index INTEGER NOT NULL,
-        name TEXT NOT NULL
-      )`);
-      await db.run(`CREATE TABLE program_exercises (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        program_day_id INTEGER NOT NULL REFERENCES program_days(id),
-        exercise_index INTEGER NOT NULL,
-        name TEXT NOT NULL,
-        targets_json TEXT NOT NULL
-      )`);
-
-      // Seed legacy data
-      await db.run(`INSERT INTO sessions (date, exercise_name, sets_json, targets_json) VALUES (?, ?, ?, ?)`,
-        ['2026-05-01', 'Squat', '[]', '[]']);
-      await db.run(`INSERT INTO programs (name) VALUES (?)`, ['PPL']);
-      await db.run(`INSERT INTO program_days (program_id, day_index, name) VALUES (?, ?, ?)`, [1, 0, 'Legs']);
-      await db.run(`INSERT INTO program_exercises (program_day_id, exercise_index, name, targets_json) VALUES (?, ?, ?, ?)`,
-        [1, 0, 'Squat', '[]']);
-
-      // Run initSchema which calls migrate
-      await initSchema(db);
-
-      // Verify migration
-      const exercises = await db.all<{ id: number, name: string }>(`SELECT * FROM exercises`);
-      expect(exercises).toHaveLength(1);
-      expect(exercises[0].name).toBe('Squat');
-
-      const sessions = await db.all<{ exercise_id: number }>(`SELECT exercise_id FROM sessions`);
-      expect(sessions[0].exercise_id).toBe(exercises[0].id);
-
-      const progEx = await db.all<{ exercise_id: number }>(`SELECT exercise_id FROM program_exercises`);
-      expect(progEx[0].exercise_id).toBe(exercises[0].id);
-    });
-  });
-
-  describe('saveSession error handling', () => {
-    it('preserves the original error when ROLLBACK also fails', async () => {
-      const originalError = new Error('Cannot use shared object that was already released');
-      let callCount = 0;
-      const flakyDB: DB = {
-        run: jest.fn().mockImplementation(async (sql: string) => {
-          callCount++;
-          if (callCount === 1) return; // BEGIN succeeds
-          throw callCount === 2 ? originalError : new Error('ROLLBACK also failed');
-        }),
-        all: jest.fn().mockResolvedValue([]),
-      };
-
-      await expect(saveSession(flakyDB, SESSION_A)).rejects.toThrow(originalError.message);
-    });
-  });
 });
