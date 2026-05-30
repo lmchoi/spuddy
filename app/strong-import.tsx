@@ -85,6 +85,9 @@ export default function StrongImportScreen() {
     }
   }
 
+  const workoutSuffix = selected.size === 1 ? '' : 's';
+  const importLabel = importing ? 'Importing…' : `Import ${selected.size} workout${workoutSuffix}`;
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -140,7 +143,7 @@ export default function StrongImportScreen() {
               disabled={importing || selected.size === 0}
             >
               <Text style={[styles.importButtonText, (importing || selected.size === 0) && styles.importButtonDisabledText]}>
-                {importing ? 'Importing…' : `Import ${selected.size} workout${selected.size === 1 ? '' : 's'}`}
+                {importLabel}
               </Text>
             </Pressable>
           </>

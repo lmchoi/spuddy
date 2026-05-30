@@ -30,7 +30,7 @@ export type ParsedNotes = {
 const BULLET_RE = /^[-•*]\s*/;
 
 // Detects compact NxM with no spaces (e.g. "3x12") — distinguishes sets×reps from two bare numbers.
-const COMPACT_NXM_RE = /\d+[xX]\d+/i;
+const COMPACT_NXM_RE = /\d+x\d+/i;
 
 function parseUnit(raw: string | undefined): 'kg' | 'lbs' | null {
   if (!raw) return null;
@@ -40,7 +40,7 @@ function parseUnit(raw: string | undefined): 'kg' | 'lbs' | null {
 function parseBulletLine(stripped: string): ParsedExercise {
   // Defined locally so each call gets a fresh lastIndex — avoids the shared-state
   // footgun of module-level /g regexes when used with exec/test elsewhere.
-  const TOKEN_RE = /([xX])?\s*(\d+\.?\d*)\s*[xX]?\s*(kg|lbs)?/gi;
+  const TOKEN_RE = /(x)?\s*(\d+\.?\d*)\s*[xX]?\s*(kg|lbs)?/gi;
   type Token = { value: number; unit: 'kg' | 'lbs' | null; hasX: boolean };
 
   const tokens: Token[] = [];

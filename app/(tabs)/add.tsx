@@ -176,6 +176,7 @@ function ErrorBanner({ lines }: { lines: ParseLine[] }) {
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function AddScreen() {
   const insets = useSafeAreaInsets();
   const [text, setText] = useState('');

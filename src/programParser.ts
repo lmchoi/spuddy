@@ -78,6 +78,7 @@ function extractRefName(segments: string[]): string | null {
   return refSeg.trim().slice(3).trim();
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 function parseSingleProgram(program: Record<string, unknown>): Program | ParseError {
   const name = program.name as string;
   const nextDay = typeof program.nextDay === 'number' ? program.nextDay : 0;

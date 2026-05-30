@@ -1,5 +1,6 @@
 import type { ImportedHistory, ImportedWorkoutGroup, Session, ExerciseEntry, WorkingSet } from './types';
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function parseStrongCsv(text: string): ImportedHistory {
   if (!text.trim()) return { workoutGroups: [] };
 

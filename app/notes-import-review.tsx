@@ -46,6 +46,9 @@ export default function NotesImportReviewScreen() {
     }
   }
 
+  const programSuffix = importableCount !== 1 ? 's' : '';
+  const importLabel = importing ? 'Importing…' : `Import ${importableCount} program${programSuffix}`;
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" />
@@ -90,9 +93,7 @@ export default function NotesImportReviewScreen() {
           style={[styles.importBtn, !canImport && styles.importBtnDisabled]}
         >
           <Text style={[styles.importBtnText, !canImport && styles.importBtnTextDisabled]}>
-            {importing
-              ? 'Importing…'
-              : `Import ${importableCount} program${importableCount !== 1 ? 's' : ''}`}
+            {importLabel}
           </Text>
         </Pressable>
       </View>
