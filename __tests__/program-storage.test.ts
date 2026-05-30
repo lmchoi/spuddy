@@ -170,6 +170,23 @@ describe('program storage', () => {
   });
 });
 
+describe('savePrograms error handling', () => {
+  it('preserves the original error when ROLLBACK also fails', async () => {
+    const originalError = new Error('disk I/O error');
+    let callCount = 0;
+    const flakyDB: DB = {
+      run: jest.fn().mockImplementation(async () => {
+        callCount++;
+        if (callCount === 1) return; // BEGIN succeeds
+        throw callCount === 2 ? originalError : new Error('ROLLBACK also failed');
+      }),
+      all: jest.fn().mockResolvedValue([]),
+    };
+
+    await expect(savePrograms(flakyDB, [PROGRAM_A])).rejects.toThrow(originalError.message);
+  });
+});
+
 describe('addProgramDay', () => {
   let db: DB;
 

@@ -38,7 +38,7 @@ export async function savePrograms(db: DB, programs: Program[]): Promise<void> {
 
     await db.run('COMMIT');
   } catch (e) {
-    await db.run('ROLLBACK');
+    try { await db.run('ROLLBACK'); } catch { /* ignore secondary failure */ }
     throw e;
   }
 }
