@@ -30,6 +30,21 @@ npm start       # start Expo dev server
 
 Tests run automatically on every commit via a pre-commit hook.
 
+## E2E tests (Maestro)
+
+Flows live in `e2e/`. Maestro is a CLI tool — not an npm dependency.
+
+**Setup:**
+```
+brew install maestro
+```
+
+**Run the smoke flow** (requires a running dev build on a connected device or emulator):
+```
+npm start          # terminal 1 — start Expo dev server
+maestro test e2e/smoke.yaml   # terminal 2
+```
+
 ## Docs
 
 - [`docs/prd.md`](docs/prd.md) — product requirements
