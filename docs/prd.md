@@ -13,7 +13,7 @@ A mobile workout tracking app for people following structured strength programs.
 
 The app is personal-first: built for a specific user with a specific equipment setup, but designed cleanly enough to be shared and used by others. Data flows freely in and out — the app is not a walled garden.
 
-**Design principle:** The app is a logging and analysis tool, not a program authoring tool. Programs are created or edited elsewhere (e.g. Liftosaur) and imported. The app owns the session log and the history.
+**Design principle:** The app is a logging and analysis tool that can also evolve your program based on what you actually did. Programs are bootstrapped externally (e.g. Liftosaur) and imported once; after that the app owns both the session log and the program.
 
 ---
 
@@ -51,7 +51,7 @@ Existing workout apps are either too complex or too limited for intermediate hom
 
 ## 5. Non-Goals
 
-- Not a program builder — programs are authored externally and imported
+- Not a full program builder — programs are bootstrapped externally; the app can evolve them based on session data but not author them from scratch
 - Not a social or community platform
 - Not a nutrition tracker
 - Does not require any third-party subscription or account to function
@@ -62,19 +62,20 @@ Existing workout apps are either too complex or too limited for intermediate hom
 
 ## 6. Liftosaur Relationship
 
-Liftosaur is used as an **external program authoring tool** and **one-time data bootstrap**. The app has no live API dependency on Liftosaur.
+Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 
 **What Liftosaur is used for:**
-- Creating and editing programs (Liftosaur remains the program editor for now)
-- Exporting existing session history and current program as a file
-- That file is imported into the app once; after that the app is fully standalone
+- Creating the initial program structure and exporting existing session history
+- That file is imported once; after that the app is fully standalone and owns the program
 
 **What the app does not do:**
 - Does not call the Liftosaur REST API
 - Does not write back to Liftosaur
 - Does not require Liftosaur premium
 
-**Long term:** As the app matures and gets its own import/export, Liftosaur becomes fully optional.
+**Post-import:** The app is the source of truth for both session history and program structure. Liftosaur edits will not be reflected unless re-imported (which would overwrite in-app changes).
+
+**Long term:** Liftosaur becomes fully optional once the app has enough program evolution capability to replace it.
 
 ---
 
@@ -129,20 +130,39 @@ Makes progression suggestions genuinely useful rather than generic.
 - Best set record
 - Volume per muscle group per week
 
-### 7.5 Smart Progression Engine (v0.3+)
+### 7.5 Post-Session Program Update (v0.2+)
+
+When a session is finished and the app detects that the user changed sets, reps, or weight from the program targets, prompt them to save those changes back to the program.
+
+**Two options presented:**
+- **Update this day** — overwrite the current `ProgramDay` targets to match what was actually done
+- **Save as new day** — prompt the user to name the new day, then create a new `ProgramDay` with that name, leaving the original intact
+
+**Detection rule (v1):** Compare working sets (non-warmup) against the day's targets. A prompt is shown if any of these are true:
+- An exercise in the program has **zero sets logged** (skipped entirely)
+- A logged exercise has a **different weight or rep target** than the program specifies
+- A logged exercise is **not in the program** (added mid-session)
+
+Partial set completion (e.g. did 3 of 5 sets) does **not** trigger the prompt — that's stopping early, not a program change.
+
+**When saving a new day:** include only exercises that had at least one set logged. Keep the original program targets (set count, reps, weight) for each included exercise — do not reduce targets to match what was done today. If weight or reps changed deliberately, use the new values as the target for those exercises.
+
+**No prompt if:** nothing diverged, or only warmup sets were logged.
+
+### 7.6 Smart Progression Engine (v0.3+)
 
 - Suggest next session weight based on recent performance, constrained to available equipment
 - Linear, rep-range, and deload progression patterns
 - Stall detection and variation suggestions
 - Bodyweight/band progressions: suggest harder variation, not heavier weight
 
-### 7.6 Session Review Dashboard (v0.4+)
+### 7.7 Session Review Dashboard (v0.4+)
 
 - Summary stats: duration, sets, reps, on-target percentage
 - Muscle group volume chart
 - Set-by-set breakdown
 
-### 7.7 AI Coaching
+### 7.8 AI Coaching
 
 Intentionally decoupled — user brings their own AI.
 
@@ -152,7 +172,7 @@ Intentionally decoupled — user brings their own AI.
 
 **v2.0 — desktop MCP server:** Companion desktop app hosts an MCP server. Mobile syncs data to it. Claude Desktop connects to localhost on the desktop for full read-write AI integration.
 
-### 7.8 Data Export
+### 7.9 Data Export
 
 **Must have:** Export all sessions as JSON, shared via the system share sheet (iOS and Android).
 
