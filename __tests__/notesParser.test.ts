@@ -174,6 +174,10 @@ describe('parseBulletLine — reps heuristic', () => {
     ['3x 80kg',    { sets: null, reps: 3,    weight: 80 }],
     ['3 x 80kg',   { sets: null, reps: 3,    weight: 80 }],
     ['3 x 80',     { sets: null, reps: 3,    weight: 80 }],
+    // uppercase X is treated identically (regex uses /i flag)
+    ['3X10 80kg',  { sets: 3,    reps: 10,   weight: 80, explicitUnit: 'kg'  }],
+    ['3X 80kg',    { sets: null, reps: 3,    weight: 80 }],
+    ['80kg X 3',   { sets: null, reps: 3,    weight: 80 }],
     // weight × reps (weight first)
     ['80kg x 3',   { sets: null, reps: 3,    weight: 80 }],
     ['80 x 3',     { sets: null, reps: 3,    weight: 80 }],
