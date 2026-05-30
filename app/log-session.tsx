@@ -34,6 +34,7 @@ import {
 } from '@/src/domain/sessionLogger';
 import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
+import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 
 // ─── Local action state for reps/weight steppers ──────────────────────────────
 
@@ -345,7 +346,7 @@ function BottomAction({
 type ScreenState =
   | { status: 'loading' }
   | { status: 'empty' }
-  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string };
+  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string; key: string };
 
 function inputFromTarget(day: ProgramDay, session: SessionState): InputState {
   const exIdx = session.currentExerciseIdx;
@@ -376,9 +377,11 @@ export default function LogSession() {
         }
         const day = await getProgramDay(db, resolvedName, resolvedDayIndex);
         if (!day) { setState({ status: 'empty' }); return; }
-        const session = initSession(day);
+        const key = draftKey(resolvedName, resolvedDayIndex);
+        const draft = await loadDraft(key);
+        const session = draft ?? initSession(day);
         const input = inputFromTarget(day, session);
-        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName });
+        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, key });
       } catch {
         setState({ status: 'empty' });
       }

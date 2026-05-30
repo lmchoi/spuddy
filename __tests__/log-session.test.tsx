@@ -4,6 +4,15 @@ import LogSession from '../app/log-session';
 import { getProgramDay, addProgramDay } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
 import { C } from '@/components/spuddy/palette';
+import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
+import type { SessionState } from '@/src/domain/sessionLogger';
+
+jest.mock('@/src/sessionDraft', () => ({
+  draftKey: jest.fn((name: string, idx: number) => `draft_session__${name}__${idx}`),
+  loadDraft: jest.fn().mockResolvedValue(null),
+  saveDraft: jest.fn().mockResolvedValue(undefined),
+  clearDraft: jest.fn().mockResolvedValue(undefined),
+}));
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
@@ -51,6 +60,9 @@ beforeEach(() => {
   (getProgramDay as jest.Mock).mockResolvedValue(mockDay);
   (saveSession as jest.Mock).mockResolvedValue(undefined);
   (addProgramDay as jest.Mock).mockResolvedValue(undefined);
+  (loadDraft as jest.Mock).mockResolvedValue(null);
+  (saveDraft as jest.Mock).mockResolvedValue(undefined);
+  (clearDraft as jest.Mock).mockResolvedValue(undefined);
   jest.spyOn(Alert, 'prompt').mockImplementation(() => {});
 });
 
@@ -350,6 +362,37 @@ describe('add extra set', () => {
       const rows = screen.getAllByText(/5 × 100 kg/i);
       expect(rows.length).toBe(3); // sets 1, 2, and the extra
     });
+  });
+});
+
+// ─── Resume in-progress session ──────────────────────────────────────────────
+
+describe('resume in-progress session', () => {
+  const draftWithOneSetLogged: SessionState = {
+    loggedSets: [[{ reps: 5, weight: 100 }], []],
+    targetCounts: [2, 1],
+    extraSetCounts: [0, 0],
+    currentExerciseIdx: 0,
+    isResting: false,
+    startedAt: 9999,
+  };
+
+  it('restores a draft when one exists on mount', async () => {
+    (loadDraft as jest.Mock).mockResolvedValueOnce(draftWithOneSetLogged);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // With 1 of 2 Squat sets already logged, only the last set remains
+    expect(screen.getByText('Done · Last set')).toBeTruthy();
+  });
+
+  it('starts a fresh session when no draft exists', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Fresh session: first set of two remaining
+    expect(screen.getByText('Done · Set 1 of 2')).toBeTruthy();
   });
 });
 
