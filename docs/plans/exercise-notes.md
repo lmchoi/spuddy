@@ -25,8 +25,10 @@ ALTER TABLE exercises ADD COLUMN notes TEXT;
 
 ### Storage
 Two new functions in `src/exerciseStorage.ts` (new file, keeps note I/O separate from session/program storage):
-- `getExerciseNote(db, exerciseId): Promise<string | null>`
-- `setExerciseNote(db, exerciseId, note: string | null): Promise<void>`
+- `getExerciseNote(db, exerciseId): string | null`
+- `setExerciseNote(db, exerciseId, note: string | null): void`
+
+Both are synchronous — Drizzle's `.get()` and `.run()` are sync calls; async wrappers were hiding write errors.
 
 ### Types
 No change to `ExerciseEntry` or `ProgramDay` — notes are fetched separately when the session screen loads, keyed by `exerciseId`. This avoids threading note data through the session reducer.
@@ -48,9 +50,11 @@ No change to `ExerciseEntry` or `ProgramDay` — notes are fetched separately wh
 1. [x] **migration**: Add `notes TEXT` column to `exercises` table. Add migration test. — test: `storage.test.ts`
 2. [x] **storage**: Add `src/exerciseStorage.ts` with `getExerciseNote` and `setExerciseNote`. — test: new `exercise-storage.test.ts`
 3. [x] **ui**: Add `NoteRow` and `NoteSheet` components + wire into `log-session.tsx`. — test: visual / manual
+4. [x] **fix**: Make `getExerciseNote` and `setExerciseNote` synchronous — silenced write errors and inconsistent with storage layer.
+5. [x] **fix**: Block exercise strip while sheet is open; add Cancel button + backdrop dismiss; move sheet-close to after save.
 
 ## Implementation notes
 
 - Migration 0001 `when` timestamp must be greater than 0000's `when` (1780135301055) so that `seedMigrationsIfNeeded` — which seeds 0000 as already-applied on pre-Drizzle DBs — does not cause Drizzle to skip 0001 as well. Used 1780221701055 (one day later).
-- Notes are fetched per-exercise on session load (N parallel calls, N=exercises.length). No batch API needed — sessions typically have 3–8 exercises.
+- Notes are fetched per-exercise on session load via a sync for-loop (originally `Promise.all` + async map, simplified when storage became sync).
 - `exerciseId` guard on `NoteRow` render: exercises without an id (shouldn't occur post-centralisation) simply show no note affordance rather than crashing.
