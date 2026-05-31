@@ -1,7 +1,7 @@
 import { Alert, Platform } from 'react-native';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
-import { getProgramDay, addProgramDay } from '@/src/programStorage';
+import { getProgramDay, addProgramDay, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
 import { C } from '@/components/spuddy/palette';
 import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
@@ -33,6 +33,8 @@ jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/programStorage', () => ({
   getProgramDay: jest.fn(),
   addProgramDay: jest.fn().mockResolvedValue(undefined),
+  getPrograms: jest.fn(),
+  updateActiveDayIndex: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/src/storage', () => ({
@@ -63,11 +65,19 @@ const mockDay = {
   ],
 };
 
+const mockProgram = {
+  name: 'Test Program',
+  activeDayIndex: 0,
+  days: [mockDay, { name: 'Day B', exercises: [] }],
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
   (getProgramDay as jest.Mock).mockResolvedValue(mockDay);
+  (getPrograms as jest.Mock).mockResolvedValue([mockProgram]);
   (saveSession as jest.Mock).mockResolvedValue(undefined);
   (addProgramDay as jest.Mock).mockResolvedValue(undefined);
+  (updateActiveDayIndex as jest.Mock).mockResolvedValue(undefined);
   (loadDraft as jest.Mock).mockResolvedValue(null);
   (saveDraft as jest.Mock).mockResolvedValue(undefined);
   (clearDraft as jest.Mock).mockResolvedValue(undefined);
@@ -213,6 +223,26 @@ describe('finish session', () => {
 
     expect(saveSession).toHaveBeenCalledTimes(1);
     expect(mockReplace).toHaveBeenCalledWith(expect.stringMatching(/^\/progress\//));
+  });
+
+  it('advances activeDayIndex after saving a completed session', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log all sets for Squat (2 sets)
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Jump to Bench and log its single set
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    // dayIndex=0, totalDays=2 → nextActiveDayIndex = 1
+    expect(updateActiveDayIndex).toHaveBeenCalledWith(expect.anything(), 'Test Program', 1);
   });
 });
 
