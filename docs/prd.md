@@ -1,8 +1,7 @@
 # Product Requirements Document
 ## Spuddy — Workout Tracker
 
-**Version:** 1.0  
-**Status:** Draft  
+**Status:** Active development — M1 shipped, M2 in progress
 **Last Updated:** May 2026
 
 ---
@@ -83,13 +82,18 @@ Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 
 ### 7.1 Session Logging
 
-**Must have:**
+**Shipped (M1):**
 - Log sets: reps, weight, optional notes
 - Per-exercise target display (e.g. "3 × 10–12 @ 60s rest")
 - Visual indicator per set: on target / exceeded / below target
 - Rest timer with configurable duration, haptic on completion
 - Session duration tracked automatically
 - Previous session's weights shown as default input values
+
+**Must have (M2):**
+- Rest timer push notifications (background alert when rest expires)
+- Select which program day to run before starting a session
+- Finish workout button always visible (not just after final set)
 
 **Nice to have (post-MVP):**
 - Warm-up set flag (excluded from working-set analysis)
@@ -121,16 +125,16 @@ Makes progression suggestions genuinely useful rather than generic.
 
 ### 7.4 Exercise History & Analytics
 
-**Must have (v0.1):**
+**Shipped (M1):**
 - Per-exercise view: all logged sessions, newest first
 - Each entry: date, sets × reps @ weight, on-target indicator
 
-**v0.2+:**
+**M2+:**
 - Weight and reps progression charts with target reference lines
 - Best set record
 - Volume per muscle group per week
 
-### 7.5 Post-Session Program Update (v0.2+)
+### 7.5 Post-Session Program Update (M2)
 
 When a session is finished and the app detects that the user changed sets, reps, or weight from the program targets, prompt them to save those changes back to the program.
 
@@ -138,7 +142,7 @@ When a session is finished and the app detects that the user changed sets, reps,
 - **Update this day** — overwrite the current `ProgramDay` targets to match what was actually done
 - **Save as new day** — prompt the user to name the new day, then create a new `ProgramDay` with that name, leaving the original intact
 
-**Detection rule (v1):** Compare working sets (non-warmup) against the day's targets. A prompt is shown if any of these are true:
+**Detection rule:** Compare working sets (non-warmup) against the day's targets. A prompt is shown if any of these are true:
 - An exercise in the program has **zero sets logged** (skipped entirely)
 - A logged exercise has a **different weight or rep target** than the program specifies
 - A logged exercise is **not in the program** (added mid-session)
@@ -149,14 +153,14 @@ Partial set completion (e.g. did 3 of 5 sets) does **not** trigger the prompt �
 
 **No prompt if:** nothing diverged, or only warmup sets were logged.
 
-### 7.6 Smart Progression Engine (v0.3+)
+### 7.6 Smart Progression Engine (M3)
 
 - Suggest next session weight based on recent performance, constrained to available equipment
 - Linear, rep-range, and deload progression patterns
 - Stall detection and variation suggestions
 - Bodyweight/band progressions: suggest harder variation, not heavier weight
 
-### 7.7 Session Review Dashboard (v0.4+)
+### 7.7 Session Review Dashboard (M4)
 
 - Summary stats: duration, sets, reps, on-target percentage
 - Muscle group volume chart
@@ -168,13 +172,13 @@ Intentionally decoupled — user brings their own AI.
 
 **MVP:** Export session data as JSON + copyable coaching prompt template. User pastes into Claude or any AI. No API key required.
 
-**v0.4 — in-app Claude:** Claude API called directly from the app with user's own API key. Inline session analysis and progression suggestions.
+**M4 — in-app Claude:** Claude API called directly from the app with user's own API key. Inline session analysis and progression suggestions.
 
 **v2.0 — desktop MCP server:** Companion desktop app hosts an MCP server. Mobile syncs data to it. Claude Desktop connects to localhost on the desktop for full read-write AI integration.
 
 ### 7.9 Data Export
 
-**Must have:** Export all sessions as JSON, shared via the system share sheet (iOS and Android).
+**Must have (implement before any schema migration):** Export all sessions as JSON, shared via the system share sheet (iOS and Android). Primary safety net to protect user data during updates.
 
 **Nice to have:** CSV export, FIT export (post-MVP).
 
@@ -184,6 +188,6 @@ Intentionally decoupled — user brings their own AI.
 
 - What is the exact format of Liftosaur's file export? Does it include equipment type per exercise? — **verify before building import**
 - How should band resistance be handled in progression — approximate kg equivalent, or named scale?
-- Should the app support custom exercise creation in v0.1, or only exercises from the import?
+- Should the app support custom exercise creation in M1, or only exercises from the import?
 - For in-app Claude (v0.4): user supplies their own API key — is that acceptable UX?
 - At what point does the app get its own program editor and no longer need Liftosaur?
