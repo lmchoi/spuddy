@@ -93,6 +93,23 @@ describe('importFromNotes', () => {
     expect(bench.targets[2]).toEqual({ reps: 10, weight: 80 });
   });
 
+  it('defaults to 6 sets and 10 reps when not specified in parsed data', async () => {
+    const noSetsOrReps: ParsedNotes = {
+      sections: [
+        {
+          name: 'Push',
+          exercises: [{ name: 'Squat', sets: null, reps: null, weight: 100, explicitUnit: 'kg' }],
+        },
+      ],
+      inferredUnit: 'kg',
+    };
+    await importFromNotes(db, noSetsOrReps);
+    const programs = await getPrograms(db);
+    const squat = programs[0].days[0].exercises[0];
+    expect(squat.targets).toHaveLength(6);
+    squat.targets.forEach(t => expect(t).toEqual({ reps: 10, weight: 100 }));
+  });
+
   it('skips sections with no exercises', async () => {
     const result = await importFromNotes(db, EMPTY_SECTION);
     expect(result.success).toBe(true);
