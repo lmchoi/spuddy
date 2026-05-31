@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 import NotesImportReviewScreen from '../app/notes-import-review';
 import type { ParsedNotes } from '../src/notesParser';
 
@@ -101,5 +102,15 @@ describe('NotesImportReviewScreen', () => {
       expect(mockImportFromNotes).toHaveBeenCalledWith(expect.anything(), PARSED_NOTES)
     );
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(tabs)/settings'));
+  });
+
+  it('shows the actual error message when import throws', async () => {
+    jest.spyOn(Alert, 'alert');
+    mockImportFromNotes.mockRejectedValue(new Error('table programs has no column named foo'));
+    render(<NotesImportReviewScreen />);
+    fireEvent.press(screen.getByText('Import 1 program'));
+    await waitFor(() =>
+      expect(Alert.alert).toHaveBeenCalledWith('Import failed', 'table programs has no column named foo')
+    );
   });
 });
