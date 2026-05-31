@@ -88,12 +88,12 @@ describe('importFromNotes', () => {
     const programs = await getPrograms(db);
     const bench = programs[0].days[0].exercises[0]; // 3 sets, 80kg
     expect(bench.targets).toHaveLength(3);
-    expect(bench.targets[0]).toEqual({ reps: 10, weight: 80 });
-    expect(bench.targets[1]).toEqual({ reps: 10, weight: 80 });
-    expect(bench.targets[2]).toEqual({ reps: 10, weight: 80 });
+    expect(bench.targets[0]).toEqual({ reps: 10, weight: 80, restSeconds: 60 });
+    expect(bench.targets[1]).toEqual({ reps: 10, weight: 80, restSeconds: 60 });
+    expect(bench.targets[2]).toEqual({ reps: 10, weight: 80, restSeconds: 60 });
   });
 
-  it('defaults to 6 sets and 10 reps when not specified in parsed data', async () => {
+  it('defaults to 6 sets, 10 reps, and 60s rest when not specified in parsed data', async () => {
     const noSetsOrReps: ParsedNotes = {
       sections: [
         {
@@ -107,7 +107,7 @@ describe('importFromNotes', () => {
     const programs = await getPrograms(db);
     const squat = programs[0].days[0].exercises[0];
     expect(squat.targets).toHaveLength(6);
-    squat.targets.forEach(t => expect(t).toEqual({ reps: 10, weight: 100 }));
+    squat.targets.forEach(t => expect(t).toEqual({ reps: 10, weight: 100, restSeconds: 60 }));
   });
 
   it('skips sections with no exercises', async () => {
