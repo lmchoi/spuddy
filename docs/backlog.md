@@ -11,7 +11,7 @@ Core loop for a new user setting up via notes import or a simple program.
 - **Select program day** — allow the user to choose which program day to run (e.g. Day A / Day B) before starting a session, rather than always defaulting to the next scheduled day.
 - **Rest timer push notifications** — alert the user when rest expires even if they switch apps. Full spec in `docs/plans/rest-timer-notifications.md`. Depends on rest timer UI (done).
 - **Data export (safety net)** — export all sessions as JSON via the system share sheet. Primary motivation is protecting user data during schema migrations. Already specified in PRD §7.9 as Must Have; implement before any migration that changes the sessions table.
-- **Sentry error monitoring** — open PR exists; needs decisions on environment config, before-send filtering, PII scrubbing, and whether to enable session replay. Also think through what structured logging (beyond crash reports) we need to diagnose migration or data issues.
+- **Sentry error monitoring** — open PR exists; crash reporting configured, PII scrubbing resolved, session replay deferred. Remaining: decide on structured logging needs beyond crash reports.
 - **Back button: warn + resume** — pressing back during a session should warn the user and offer to save progress for later resumption. On next session start, offer resume or start fresh. More complex state management.
 - **Migrate to Drizzle ORM** — replace raw `CREATE TABLE IF NOT EXISTS` and manual queries with Drizzle ORM for type safety, automatic migration generation, and robust schema evolution. Do this before public release. Consider `PRAGMA user_version` raw SQL as a lighter alternative if keeping dependencies at zero.
 - **reconcileDraft: match exercises by identity not position** — `reconcileDraft` currently maps `loggedSets` and `extraSetCounts` by array index. Deleting an exercise from the middle of a day silently shifts all subsequent exercises' logged data. Fix by matching on `exerciseId` (or `name` as fallback). Superseded by program versioning if that lands first — see `docs/ideas/program-versioning.md`.
@@ -29,6 +29,7 @@ Features needed for a power user migrating from Strong with years of history.
 
 ## Nice to have
 
+- **Sentry session replay + feedback widget** — replay integration and the feedback button were stripped from the initial Sentry setup to keep scope small. Revisit once crash reporting is stable; consider a settings-based feedback option rather than the floating widget. See `feat/sentry-setup` PR discussion for context.
 - **E2E tests (Maestro)** — add Maestro flows for the most-repeated manual checks. No fully successful run yet; may need environment setup before writing flows. See `docs/decisions/006-e2e-testing-approach.md` and `docs/plans/maestro-ui-tests.md`.
 - **New app icon and assets** — replace placeholder icons; convert large PNG assets to WebP to reduce bundle size.
 - **Add new exercise** — add an ad-hoc exercise to a session.
