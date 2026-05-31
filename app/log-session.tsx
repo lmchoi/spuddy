@@ -77,8 +77,8 @@ function Stepper({
 
 // ─── RestTimer ────────────────────────────────────────────────────────────────
 
-function RestTimer({ onSkip }: { onSkip: () => void }) {
-  const [remaining, setRemaining] = useState(90);
+function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void }) {
+  const [remaining, setRemaining] = useState(duration);
 
   useEffect(() => {
     if (remaining === 0) { onSkip(); return; }
@@ -88,7 +88,7 @@ function RestTimer({ onSkip }: { onSkip: () => void }) {
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
-  const pct = remaining / 90;
+  const pct = remaining / duration;
 
   return (
     <View style={styles.restBlock}>
@@ -362,7 +362,10 @@ function BottomAction({
   const total = totalSetCount(sessionState, day, exIdx);
 
   if (sessionState.isResting) {
-    return <RestTimer onSkip={onSkipRest} />;
+    const targets = day.exercises[exIdx].targets;
+    const lastTarget = targets[Math.min(logged - 1, targets.length - 1)];
+    const restDuration = lastTarget?.restSeconds ?? 60;
+    return <RestTimer duration={restDuration} onSkip={onSkipRest} />;
   }
 
   if (isSessionDone(sessionState, day)) {
