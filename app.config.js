@@ -13,6 +13,11 @@ const variants = {
     android: { package: "com.mchoi.spuddy.preview" },
     ios: { bundleIdentifier: "com.mchoi.spuddy.preview" },
   },
+  prerelease: {
+    name: "Spuddy (Pre-release)",
+    android: { package: "com.mchoi.spuddy.prerelease" },
+    ios: { bundleIdentifier: "com.mchoi.spuddy.prerelease" },
+  },
   production: {
     name: expo.name,
     android: { package: expo.android.package },
