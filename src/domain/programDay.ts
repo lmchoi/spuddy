@@ -33,6 +33,10 @@ function fmtReps(t: Target): string {
   return String(t.reps);
 }
 
+export function nextActiveDayIndex(current: number, total: number): number {
+  return (current + 1) % total;
+}
+
 export function summaryLine(targets: Target[], unit: 'kg' | 'lb'): string | null {
   if (targets.length === 0) return null;
   const sets = targets.length;
