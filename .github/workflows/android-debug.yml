@@ -36,6 +36,9 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Generate Android project
         run: APP_VARIANT=prerelease npx expo prebuild --platform android --non-interactive
 
