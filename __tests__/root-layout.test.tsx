@@ -78,4 +78,11 @@ describe('RootLayoutNav screen registration', () => {
     expect(screen).toBeDefined();
     expect(screen?.options?.headerShown).toBe(false);
   });
+
+  it('registers select-day with headerShown: false', () => {
+    render(<RootLayout />);
+    const screen = capturedScreens.find((s) => s.name === 'select-day');
+    expect(screen).toBeDefined();
+    expect(screen?.options?.headerShown).toBe(false);
+  });
 });

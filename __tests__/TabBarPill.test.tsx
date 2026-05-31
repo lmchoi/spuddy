@@ -48,11 +48,11 @@ describe('TabBarPill', () => {
     });
   });
 
-  it('pressing + pushes /log-session instead of navigating the tab', () => {
+  it('pressing + pushes /select-day instead of navigating the tab', () => {
     const nav = makeNav();
     render(<TabBarPill state={{ index: 0, routes: [...ROUTES] }} navigation={nav} />);
     fireEvent.press(screen.getByLabelText('Add workout'));
-    expect(mockPush).toHaveBeenCalledWith('/log-session');
+    expect(mockPush).toHaveBeenCalledWith('/select-day');
     expect(nav.navigate).not.toHaveBeenCalled();
   });
 

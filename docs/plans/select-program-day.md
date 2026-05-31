@@ -14,7 +14,7 @@ Variant B: wrapping pill strip of day names + exercise preview panel below + sti
 ## Flow
 
 ```
-Progress tab → "Start workout" button
+"+" tab (app/(tabs)/add.tsx) → redirects to app/select-day.tsx
   → app/select-day.tsx
       - pills wrap (flexWrap), active pill = green border + text
       - "Next up" badge on activeDayIndex day
@@ -32,5 +32,5 @@ Progress tab → "Start workout" button
 
 1. **Domain fn** — `nextActiveDayIndex(current, total): number` in `src/domain/programDay.ts` + unit tests
 2. **Select-day screen** — `app/select-day.tsx` + `styles/select-day.styles.ts`
-3. **Wire entry point** — register `select-day` in `app/_layout.tsx` (`headerShown: false`); add "Start workout" button to Progress screen
+3. **Wire entry point** — register `select-day` in `app/_layout.tsx` (`headerShown: false`); "+" tab redirect (`app/(tabs)/add.tsx` → `router.replace('/select-day')`)
 4. **Advance active day** — call `updateActiveDayIndex` in `log-session.tsx` `handleFinish` after save

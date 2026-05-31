@@ -5,16 +5,13 @@ import type { Session } from '../src/types';
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({ getAllSessions: jest.fn() }));
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn() },
   useFocusEffect: (cb: () => void) => cb(),
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
-const { getAllSessions } = jest.requireMock('@/src/storage') as {
-  getAllSessions: jest.Mock;
-};
+const { getAllSessions } = jest.requireMock('@/src/storage') as { getAllSessions: jest.Mock };
 
 const SESSION_A: Session = {
   date: '2026-05-22',
@@ -28,6 +25,8 @@ const SESSION_B: Session = {
   date: '2026-05-19',
   exercises: [{ name: 'Bench Press', sets: [], targets: [] }],
 };
+
+beforeEach(() => jest.clearAllMocks());
 
 describe('Progress screen', () => {
   it('shows empty state when there are no sessions', async () => {
@@ -47,4 +46,5 @@ describe('Progress screen', () => {
       expect(screen.getByText(/1 exercise/)).toBeTruthy();
     });
   });
+
 });
