@@ -25,6 +25,7 @@ Index of implementation plans for Spuddy.
 | [Improve Test Coverage](./improve-test-coverage.md) | Improve test coverage | Internal |
 | [Dev Tooling Hooks & Skills](./dev-tooling-hooks-skills.md) | Dev Tooling — Hooks & Skills | Internal |
 | [Program Import UX](./program-import-ux.md) | Program import UX improvements | Deferred |
+| [What's New](./whats-new.md) | Static changelog in Settings | Polish |
 
 ## Archived
 
