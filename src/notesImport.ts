@@ -10,7 +10,7 @@ export type NotesImportResult =
 // Defaults applied here — this is the only place ParsedExercise nulls become concrete values.
 // To make these user-configurable, add an optional defaults param to importFromNotes and thread
 // it through to exerciseToProgram. No other files need to change.
-const DEFAULT_SETS = 1;
+const DEFAULT_SETS = 6;
 const DEFAULT_REPS = 10;
 
 function exerciseToProgram(ex: ParsedExercise): ProgramExercise {
