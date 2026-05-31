@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { C } from '@/components/spuddy/palette';
+import { T } from '@/src/theme';
 
 export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
@@ -17,6 +18,7 @@ export const styles = StyleSheet.create({
   },
   backBtn: {
     width: 36, height: 36, borderRadius: 12,
+    minWidth: T.touch.min, minHeight: T.touch.min,
     backgroundColor: C.card,
     alignItems: 'center', justifyContent: 'center',
   },
