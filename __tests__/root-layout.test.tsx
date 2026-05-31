@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import * as Sentry from '@sentry/react-native';
+import RootLayout, { unstable_settings } from '../app/_layout';
 
 jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
@@ -36,8 +37,6 @@ jest.mock('expo-router', () => {
 
 jest.mock('../src/global.css', () => ({}));
 jest.mock('react-native-reanimated', () => ({}));
-
-import RootLayout, { unstable_settings } from '../app/_layout';
 
 beforeEach(() => {
   capturedScreens.length = 0;
