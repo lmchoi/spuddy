@@ -52,18 +52,18 @@ Commits 2–4 (log-session, add screen) are safe to start immediately — they d
 
 4. ✅ **refactor: T.spacing.screenEdge in add screen** (`3166a0d`) — token already existed; all three `paddingHorizontal: 18` replaced in `add.styles.ts`.
 
-5. **refactor: T.spacing.screenEdge in progress screen** *(hold until progress-streak-hero lands)* — apply to `progress/index.styles.ts`. Test: Jest snapshot update.
+5. ✅ **refactor: T.spacing.screenEdge in progress screens** (`0e861d6`) — applied to `progress/index.styles.ts` and `progress/date.styles.ts` (including `marginHorizontal`). Holds in commit were lifted — neither dependency branch touched the style files.
 
-6. **refactor: T.spacing.screenEdge in settings screen** *(hold until tab-bar-pill Slice 2 lands)* — apply to `settings/index.styles.ts` and `programName/dayIndex.styles.ts`. Test: Jest snapshot update.
+6. ✅ **refactor: T.spacing.screenEdge in settings screen** (`a3c2cc3`) — applied to `settings/index.styles.ts`. `programName/dayIndex.styles.ts` had no `paddingHorizontal: 18` to replace.
 
-7. **refactor: T.spacing.screenEdge in import screens** — apply to `notes-import.styles.ts`, `notes-import-review.styles.ts`, `strong-import.styles.ts`. Test: Jest snapshot updates.
+7. ✅ **refactor: T.spacing.screenEdge in import screens** (`98eca68`) — applied to `notes-import.styles.ts`, `notes-import-review.styles.ts`, `strong-import.styles.ts`.
 
-8. **refactor: card spacing tokens in SessionRow** — add `T.spacing.cardH`/`cardV` to `src/theme.ts`; apply to `SessionRow.styles.ts`. Test: Jest render snapshot on SessionRow.
+8. ✅ **refactor: card spacing tokens in SessionRow** (`728c9ff`) — added `T.spacing.cardH = 14` and `T.spacing.cardV = 12` to `src/theme.ts`; applied to `SessionRow.styles.ts`.
 
-9. **refactor: T.type scale in SessionRow** — add `T.type` scale (12/14/16/22) to `src/theme.ts`; replace non-standard `fontSize` values in `SessionRow.styles.ts`. Test: Jest render snapshot.
+9. ✅ **refactor: T.type scale in SessionRow** (`c0aca2a`) — added `T.type` scale (12/14/16/22) to `src/theme.ts`; replaced 15→16, 13→14, 11→12 in `SessionRow.styles.ts`. Chevron `fontSize: 18` left as literal (icon glyph, not body text).
 
-10. **refactor: T.type.label in TabBarPill** — token already exists; replace `fontSize: 13` in `TabBarPill.styles.ts`. Test: Jest render snapshot.
+10. ✅ **refactor: T.type.label in TabBarPill** (`da85530`) — replaced `fontSize: 13` in `TabBarPill.styles.ts`.
 
-11. **refactor: semantic palette roles** — add `C.surface`, `C.outline`, etc. alongside existing names in `palette.ts`. No visual change. Test: TypeScript compilation.
+11. **refactor: semantic palette roles** *(blocked — ADR 014 not yet written; `C.surface` already exists in palette)* — add `C.outline` etc. alongside existing names in `palette.ts`. No visual change. Test: TypeScript compilation.
 
 12. **chore: potato.png → WebP** — convert asset, update import references. Test: run `maestro test e2e/visual-baseline.yaml`, compare screenshots to Commit 1 baseline.
