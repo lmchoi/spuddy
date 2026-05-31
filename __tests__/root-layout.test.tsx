@@ -49,6 +49,11 @@ describe('Sentry initialisation', () => {
     );
   });
 
+  it('does not enable sendDefaultPii to avoid PII collection without consent', () => {
+    const call = (Sentry.init as jest.Mock).mock.calls[0][0];
+    expect(call.sendDefaultPii).toBeFalsy();
+  });
+
   it('wraps RootLayout with Sentry.wrap', () => {
     expect(Sentry.wrap).toHaveBeenCalled();
   });
