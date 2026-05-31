@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     paddingTop: 10,
     paddingBottom: 12,
     gap: 12,
@@ -31,7 +31,7 @@ export const styles = StyleSheet.create({
   strip: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     paddingBottom: 12,
     gap: 8,
   },
@@ -59,7 +59,7 @@ export const styles = StyleSheet.create({
   stripDotActive: { backgroundColor: 'transparent', borderWidth: 1, borderColor: C.hit },
 
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 18, gap: 20 },
+  scrollContent: { paddingHorizontal: T.spacing.screenEdge, gap: 20 },
 
   exBlock: { paddingTop: 8, gap: 4 },
   exName: { fontSize: 22, fontWeight: '700', color: C.text, letterSpacing: -0.4 },
@@ -115,7 +115,7 @@ export const styles = StyleSheet.create({
   addSetText: { fontSize: 13, fontWeight: '500', color: C.muted },
 
   bottom: {
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     paddingTop: 14,
     backgroundColor: C.bg,
     borderTopWidth: StyleSheet.hairlineWidth,
