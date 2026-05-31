@@ -9,9 +9,9 @@
     },
     "preview": {
       "android": {
-        "buildType": "apk",
-        "autoIncrement": true
+        "buildType": "apk"
       },
+      "autoIncrement": true,
       "distribution": "internal"
     },
     "production": {
