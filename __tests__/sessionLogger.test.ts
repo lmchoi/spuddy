@@ -486,6 +486,22 @@ const oneSetDay: ProgramDay = {
   ],
 };
 
+const threeExerciseDay: ProgramDay = {
+  name: 'Day A',
+  exercises: [
+    { name: 'Squat', targets: [{ reps: 5, weight: 100 }] },
+    { name: 'Bench', targets: [{ reps: 8, weight: 60 }] },
+    { name: 'Row',   targets: [{ reps: 8, weight: 70 }] },
+  ],
+};
+
+const oneExerciseDay: ProgramDay = {
+  name: 'Day A',
+  exercises: [
+    { name: 'Squat', targets: [{ reps: 5, weight: 100 }] },
+  ],
+};
+
 describe('reconcileDraft', () => {
   it('updates targetCounts to match the current program', () => {
     const staleDraft = initSession(oneSetDay);
@@ -506,5 +522,20 @@ describe('reconcileDraft', () => {
     draft = logSet(draft, 0, 5, 100);
     const reconciled = reconcileDraft(draft, sixSetDay);
     expect(reconciled.loggedSets[0]).toEqual([{ reps: 5, weight: 100 }]);
+  });
+
+  it('pads loggedSets and extraSetCounts when program gains exercises', () => {
+    const draft = initSession(oneSetDay);
+    const reconciled = reconcileDraft(draft, threeExerciseDay);
+    expect(reconciled.loggedSets).toHaveLength(3);
+    expect(reconciled.extraSetCounts).toHaveLength(3);
+    expect(reconciled.loggedSets[2]).toEqual([]);
+    expect(reconciled.extraSetCounts[2]).toBe(0);
+  });
+
+  it('clamps currentExerciseIdx when program loses exercises', () => {
+    const draft = { ...initSession(oneSetDay), currentExerciseIdx: 1 };
+    const reconciled = reconcileDraft(draft, oneExerciseDay);
+    expect(reconciled.currentExerciseIdx).toBe(0);
   });
 });

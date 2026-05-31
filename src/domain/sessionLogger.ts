@@ -47,7 +47,14 @@ export function skipRest(state: SessionState): SessionState {
 }
 
 export function reconcileDraft(draft: SessionState, day: ProgramDay): SessionState {
-  return { ...draft, targetCounts: day.exercises.map(ex => ex.targets.length) };
+  const n = day.exercises.length;
+  return {
+    ...draft,
+    targetCounts: day.exercises.map(ex => ex.targets.length),
+    loggedSets: day.exercises.map((_, i) => draft.loggedSets[i] ?? []),
+    extraSetCounts: day.exercises.map((_, i) => draft.extraSetCounts[i] ?? 0),
+    currentExerciseIdx: Math.min(draft.currentExerciseIdx, n - 1),
+  };
 }
 
 export function jumpToExercise(state: SessionState, idx: number): SessionState {

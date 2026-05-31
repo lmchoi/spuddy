@@ -764,6 +764,27 @@ describe('exercise note row', () => {
 // ─── Rest timer duration ──────────────────────────────────────────────────────
 
 describe('rest timer duration', () => {
+  it('defaults to 1:00 when target restSeconds is 0', async () => {
+    const dayWithZeroRest = {
+      name: 'Day A',
+      exercises: [
+        {
+          name: 'Squat',
+          exerciseId: 1,
+          targets: [
+            { reps: 5, weight: 100, restSeconds: 0 },
+            { reps: 5, weight: 100, restSeconds: 0 },
+          ],
+        },
+      ],
+    };
+    (getProgramDay as jest.Mock).mockResolvedValue(dayWithZeroRest);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    expect(screen.getByText('1:00')).toBeTruthy();
+  });
+
   it('shows 1:00 when target restSeconds is 60', async () => {
     const dayWith60sRest = {
       name: 'Day A',
