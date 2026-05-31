@@ -32,6 +32,7 @@ import {
   sessionProgress,
   resolvePostSessionAction,
   buildNewDay,
+  reconcileDraft,
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import type { ProgramDay } from '@/src/types';
@@ -452,7 +453,7 @@ export default function LogSession() {
         if (!day) { setState({ status: 'empty' }); return; }
         const key = draftKey(resolvedName, resolvedDayIndex);
         const draft = await loadDraft(key);
-        const session = draft ?? initSession(day);
+        const session = draft ? reconcileDraft(draft, day) : initSession(day);
         const input = inputFromTarget(day, session);
         const notes: Record<number, string> = {};
         for (const ex of day.exercises) {

@@ -46,6 +46,10 @@ export function skipRest(state: SessionState): SessionState {
   return { ...state, isResting: false };
 }
 
+export function reconcileDraft(draft: SessionState, day: ProgramDay): SessionState {
+  return { ...draft, targetCounts: day.exercises.map(ex => ex.targets.length) };
+}
+
 export function jumpToExercise(state: SessionState, idx: number): SessionState {
   return { ...state, currentExerciseIdx: idx, isResting: false };
 }

@@ -13,6 +13,7 @@ import {
   detectSessionChanges,
   buildNewDay,
   resolvePostSessionAction,
+  reconcileDraft,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -464,5 +465,46 @@ describe('resolvePostSessionAction', () => {
     state = logSet(state, 1, 8, 60);
     state = logSet(state, 1, 8, 60);
     expect(resolvePostSessionAction(state)).toBe('navigate');
+  });
+});
+
+// ─── reconcileDraft ───────────────────────────────────────────────────────────
+
+const sixSetDay: ProgramDay = {
+  name: 'Day A',
+  exercises: [
+    { name: 'Squat', targets: Array.from({ length: 6 }, () => ({ reps: 5, weight: 100 })) },
+    { name: 'Bench', targets: Array.from({ length: 4 }, () => ({ reps: 8, weight: 60 })) },
+  ],
+};
+
+const oneSetDay: ProgramDay = {
+  name: 'Day A',
+  exercises: [
+    { name: 'Squat', targets: [{ reps: 5, weight: 100 }] },
+    { name: 'Bench', targets: [{ reps: 8, weight: 60 }] },
+  ],
+};
+
+describe('reconcileDraft', () => {
+  it('updates targetCounts to match the current program', () => {
+    const staleDraft = initSession(oneSetDay);
+    expect(staleDraft.targetCounts).toEqual([1, 1]);
+    const reconciled = reconcileDraft(staleDraft, sixSetDay);
+    expect(reconciled.targetCounts).toEqual([6, 4]);
+  });
+
+  it('isResting is true after logging one set when draft is reconciled with a 6-set program', () => {
+    const staleDraft = initSession(oneSetDay);
+    const reconciled = reconcileDraft(staleDraft, sixSetDay);
+    const afterLog = logSet(reconciled, 0, 5, 100);
+    expect(afterLog.isResting).toBe(true);
+  });
+
+  it('preserves logged sets from the draft', () => {
+    let draft = initSession(oneSetDay);
+    draft = logSet(draft, 0, 5, 100);
+    const reconciled = reconcileDraft(draft, sixSetDay);
+    expect(reconciled.loggedSets[0]).toEqual([{ reps: 5, weight: 100 }]);
   });
 });
