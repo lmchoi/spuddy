@@ -12,6 +12,7 @@ export type NotesImportResult =
 // it through to exerciseToProgram. No other files need to change.
 const DEFAULT_SETS = 6;
 const DEFAULT_REPS = 10;
+const DEFAULT_REST_SECONDS = 60;
 
 function exerciseToProgram(ex: ParsedExercise): ProgramExercise {
   const sets = ex.sets ?? DEFAULT_SETS;
@@ -19,6 +20,7 @@ function exerciseToProgram(ex: ParsedExercise): ProgramExercise {
   const targets = Array.from({ length: sets }, () => ({
     reps,
     weight: ex.weight,
+    restSeconds: DEFAULT_REST_SECONDS,
   }));
   return { name: ex.name, targets };
 }
