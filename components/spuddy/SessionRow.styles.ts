@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { C } from './palette';
+import { T } from '@/src/theme';
 
 export const styles = StyleSheet.create({
   row: {
@@ -10,8 +11,8 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: C.border,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: T.spacing.cardH,
+    paddingVertical: T.spacing.cardV,
   },
   rowPressed: {
     backgroundColor: C.card2,
