@@ -22,4 +22,10 @@ export const C = {
   pr:          '#FFB94D',
   spudFlesh:   '#F2DEB4',
   spudSkin:    '#C77F39',
+  // Semantic roles (M3-inspired aliases — additive only)
+  primary:     '#B7D26A',  // = hit
+  onPrimary:   '#181109',  // = bg
+  outline:     '#3A2C1F',  // = border
+  outlineHi:   '#52402C',  // = borderHi
+  error:       '#E8884A',  // = below
 } as const;
