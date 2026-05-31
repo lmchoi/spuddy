@@ -39,8 +39,8 @@ export default function NotesImportReviewScreen() {
       } else {
         Alert.alert('Import failed', result.error);
       }
-    } catch {
-      Alert.alert('Import failed', 'Something went wrong.');
+    } catch (err) {
+      Alert.alert('Import failed', err instanceof Error ? err.message : String(err));
     } finally {
       setImporting(false);
     }
