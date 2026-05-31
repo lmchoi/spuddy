@@ -1,0 +1,14 @@
+appId: com.mchoi.spuddy
+---
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 10000
+- tapOn: "Settings"
+- assertVisible: "Settings"
+- takeScreenshot: baseline-settings
+- tapOn: "Progress"
+- assertVisible: "Progress"
+- takeScreenshot: baseline-progress
+- tapOn: "Add workout"
+- takeScreenshot: baseline-log-session
+- back
