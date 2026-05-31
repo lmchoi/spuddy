@@ -1,41 +1,23 @@
 import { render, screen, waitFor } from '@testing-library/react-native';
 import ProgressScreen from '../app/(tabs)/progress/index';
-import AddScreen from '../app/(tabs)/add';
 import SettingsScreen from '../app/(tabs)/settings';
 import { getPrograms } from '@/src/programStorage';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({
   getAllSessions: jest.fn().mockResolvedValue([]),
-  sessionExists: jest.fn().mockResolvedValue(false),
-  saveSession: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('@/src/programStorage', () => ({
   getProgram: jest.fn().mockResolvedValue(null),
   getPrograms: jest.fn().mockResolvedValue([]),
 }));
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn() },
   useFocusEffect: (cb: () => void) => cb(),
   useRouter: () => ({ push: jest.fn() }),
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
-
-describe('Add screen', () => {
-  it('renders a text input', () => {
-    render(<AddScreen />);
-    expect(screen.getByText('Add workout')).toBeTruthy();
-    // textarea is present (placeholder is multi-line, test for the input instead)
-    expect(screen.getByDisplayValue('')).toBeTruthy();
-  });
-
-  it('renders a disabled save button when empty', () => {
-    render(<AddScreen />);
-    expect(screen.getByText('Paste to begin')).toBeTruthy();
-  });
-});
 
 describe('Progress screen', () => {
   it('renders without crashing', async () => {

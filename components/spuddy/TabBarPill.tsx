@@ -65,7 +65,7 @@ export function TabBarPill({ state, navigation }: TabBarProps) {
             return (
               <TouchableOpacity
                 key={route.key}
-                onPress={() => router.push('/log-session')}
+                onPress={() => router.push('/select-day')}
                 accessibilityRole="button"
                 accessibilityLabel="Add workout"
                 accessibilityState={{ selected: isFocused }}
