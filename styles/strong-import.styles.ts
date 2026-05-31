@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { C } from '@/components/spuddy/palette';
+import { T } from '@/src/theme';
 
 export const styles = StyleSheet.create({
   container: {
@@ -7,7 +8,7 @@ export const styles = StyleSheet.create({
     backgroundColor: C.bg,
   },
   scrollContent: {
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     paddingBottom: 120,
     gap: 20,
   },
