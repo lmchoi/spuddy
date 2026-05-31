@@ -1,6 +1,13 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import RootLayout, { unstable_settings } from '../app/_layout';
+import * as Sentry from '@sentry/react-native';
+
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  wrap: jest.fn((component: unknown) => component),
+  mobileReplayIntegration: jest.fn(() => ({})),
+  feedbackIntegration: jest.fn(() => ({})),
+}));
 
 jest.mock('expo-font', () => ({
   useFonts: () => [true, null],
@@ -30,8 +37,22 @@ jest.mock('expo-router', () => {
 jest.mock('../src/global.css', () => ({}));
 jest.mock('react-native-reanimated', () => ({}));
 
+import RootLayout, { unstable_settings } from '../app/_layout';
+
 beforeEach(() => {
   capturedScreens.length = 0;
+});
+
+describe('Sentry initialisation', () => {
+  it('initialises Sentry with the project DSN', () => {
+    expect(Sentry.init).toHaveBeenCalledWith(
+      expect.objectContaining({ dsn: expect.stringContaining('sentry.io') }),
+    );
+  });
+
+  it('wraps RootLayout with Sentry.wrap', () => {
+    expect(Sentry.wrap).toHaveBeenCalled();
+  });
 });
 
 describe('unstable_settings', () => {

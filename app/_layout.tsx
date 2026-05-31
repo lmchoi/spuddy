@@ -5,6 +5,26 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { C } from '@/components/spuddy/palette';
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: 'https://ba6c59ff39e4675977259568cf4ba962@o4511484024193024.ingest.de.sentry.io/4511484032516176',
+
+  // Adds more context data to events (IP address, cookies, user, etc.)
+  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+  sendDefaultPii: true,
+
+  // Enable Logs
+  enableLogs: true,
+
+  // Configure Session Replay
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
 
 const WarmDarkTheme = { ...DarkTheme, colors: { ...DarkTheme.colors, background: C.bg } };
 
@@ -21,7 +41,7 @@ export const unstable_settings = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+export default Sentry.wrap(function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -42,7 +62,7 @@ export default function RootLayout() {
   }
 
   return <RootLayoutNav />;
-}
+});
 
 function RootLayoutNav() {
   return (
@@ -53,7 +73,10 @@ function RootLayoutNav() {
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="notes-import" options={{ headerShown: false }} />
         <Stack.Screen name="notes-import-review" options={{ headerShown: false }} />
-        <Stack.Screen name="strong-import" options={{ title: 'Import from Strong', headerShown: true }} />
+        <Stack.Screen
+          name="strong-import"
+          options={{ title: 'Import from Strong', headerShown: true }}
+        />
       </Stack>
     </ThemeProvider>
   );

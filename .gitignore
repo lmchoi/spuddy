@@ -52,3 +52,5 @@ design_handoffs/
 
 # coverage
 coverage/
+
+.env.local
