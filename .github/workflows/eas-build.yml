@@ -2,6 +2,10 @@ name: EAS Build Android APK
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g. 0.2.0)'
+        required: true
   push:
     tags:
       - 'v*'
@@ -28,8 +32,10 @@ jobs:
 
       - name: 🏷 Set app version from git tag
         run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION=${{ github.event.inputs.version || format('{0}', github.ref_name) }}
+          VERSION=${VERSION#v}
           jq --arg v "$VERSION" '.expo.version = $v' app.json > app.json.tmp && mv app.json.tmp app.json
+          jq --arg v "$VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
           echo "Building version $VERSION"
 
       - name: 🚀 Build APK via EAS
