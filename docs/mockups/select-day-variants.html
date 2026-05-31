@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spuddy — Select Day Variants</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #111;
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    flex-wrap: wrap;
+  }
+
+  .col { display: flex; flex-direction: column; gap: 0; }
+
+  .label {
+    color: #888;
+    font-size: 11px;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .sublabel {
+    color: #555;
+    font-size: 10px;
+    text-align: center;
+    margin-top: 6px;
+    line-height: 1.4;
+    max-width: 320px;
+  }
+
+  .phone { width: 320px; flex-shrink: 0; }
+
+  .screen {
+    background: #181109;
+    border-radius: 44px;
+    overflow: hidden;
+    border: 1px solid #3A2C1F;
+    height: 680px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .status-bar {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    flex-shrink: 0;
+  }
+  .status-time { color: #F5EDDD; font-size: 15px; font-weight: 600; }
+  .status-icons { color: #F5EDDD; font-size: 13px; letter-spacing: 2px; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 20px 14px;
+    flex-shrink: 0;
+  }
+  .back-btn { color: #A89175; font-size: 22px; padding: 4px 8px 4px 0; flex-shrink: 0; }
+  .screen-title { color: #F5EDDD; font-size: 22px; font-weight: 700; }
+
+  /* ── VARIANT A: Tap to go (no confirm step) ───────────────── */
+
+  .tap-list { flex: 1; overflow-y: auto; padding: 0 20px; }
+
+  .tap-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 16px;
+    background: #251A12;
+    border: 1px solid #3A2C1F;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .tap-row.next {
+    border-color: #B7D26A;
+    background: #1D230E;
+  }
+  .tap-row-left { flex: 1; padding-right: 12px; }
+  .tap-row-name { color: #F5EDDD; font-size: 16px; font-weight: 600; }
+  .tap-row-exercises { color: #A89175; font-size: 12px; margin-top: 3px; line-height: 1.4; }
+  .next-badge {
+    background: #2F3D1B;
+    color: #B7D26A;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tap-chevron { color: #3A2C1F; font-size: 20px; margin-left: 8px; flex-shrink: 0; }
+  .tap-row.next .tap-chevron { color: #B7D26A; }
+
+  /* ── VARIANT B: Pill tabs + exercise preview ──────────────── */
+
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 20px 14px;
+    flex-shrink: 0;
+  }
+
+  .pill {
+    background: #2E2218;
+    border: 1px solid #3A2C1F;
+    border-radius: 999px;
+    padding: 7px 11px;
+    cursor: pointer;
+  }
+  .pill.active {
+    background: #2F3D1B;
+    border-color: #B7D26A;
+  }
+  .pill-text { color: #A89175; font-size: 12px; font-weight: 600; }
+  .pill.active .pill-text { color: #B7D26A; }
+
+  .preview-card {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0 20px;
+    background: #251A12;
+    border: 1px solid #B7D26A;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .preview-day-name { color: #F5EDDD; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .preview-next-badge {
+    display: inline-block;
+    background: #2F3D1B;
+    color: #B7D26A;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 14px;
+  }
+  .preview-ex-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #2E2218;
+  }
+  .preview-ex-row:last-child { border-bottom: none; }
+  .preview-ex-dot {
+    width: 6px; height: 6px;
+    border-radius: 3px;
+    background: #52402C;
+    flex-shrink: 0;
+  }
+  .preview-ex-name { color: #D6C2A2; font-size: 14px; }
+  .preview-ex-target { color: #6B5639; font-size: 12px; margin-left: auto; }
+
+  .pill-bottom {
+    padding: 14px 20px 28px;
+    flex-shrink: 0;
+    border-top: 1px solid #2E2218;
+  }
+  .go-btn {
+    background: #B7D26A;
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .go-btn-text { color: #181109; font-size: 17px; font-weight: 700; }
+
+  /* ── VARIANT C: Bottom sheet over progress ────────────────── */
+
+  .progress-bg {
+    flex: 1;
+    padding: 4px 20px 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(24,17,9,0.7);
+  }
+
+  .bg-title { color: #F5EDDD; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+  .bg-hero {
+    background: #251A12;
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid #3A2C1F;
+    margin-bottom: 10px;
+  }
+  .bg-hero-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .bg-streak { color: #F5EDDD; font-size: 36px; font-weight: 800; }
+  .bg-streak-label { color: #A89175; font-size: 13px; }
+  .bg-stats { display: flex; gap: 0; border-top: 1px solid #3A2C1F; padding-top: 10px; }
+  .bg-stat { flex: 1; text-align: center; }
+  .bg-stat + .bg-stat { border-left: 1px solid #3A2C1F; }
+  .bg-stat-val { color: #F5EDDD; font-size: 18px; font-weight: 700; }
+  .bg-stat-lbl { color: #6B5639; font-size: 11px; text-transform: uppercase; }
+
+  .sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: #1F1610;
+    border-radius: 24px 24px 0 0;
+    border-top: 1px solid #3A2C1F;
+    padding: 0 0 32px;
+    z-index: 10;
+  }
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: #3A2C1F;
+    border-radius: 2px;
+    margin: 10px auto 16px;
+  }
+  .sheet-title {
+    color: #F5EDDD;
+    font-size: 17px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .sheet-list { padding: 0 16px; }
+  .sheet-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 14px;
+    background: #251A12;
+    border: 1px solid #3A2C1F;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .sheet-row.next {
+    border-color: #B7D26A;
+    background: #1D230E;
+  }
+  .sheet-row-name { color: #F5EDDD; font-size: 15px; font-weight: 600; }
+  .sheet-row-ex { color: #6B5639; font-size: 12px; margin-top: 2px; }
+  .sheet-next-badge {
+    background: #2F3D1B;
+    color: #B7D26A;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ── VARIANT A: Tap to go ─────────────────────────────────── -->
+<div class="col">
+  <div class="phone">
+    <div class="label">A — Tap to go</div>
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <span class="status-icons">● ▲ ■</span>
+      </div>
+      <div class="header">
+        <div class="back-btn">←</div>
+        <div class="screen-title">Choose day</div>
+      </div>
+
+      <div class="tap-list">
+        <div class="tap-row next">
+          <div class="tap-row-left">
+            <div class="tap-row-name">Push A</div>
+            <div class="tap-row-exercises">Bench Press · OHP · Incline DB · Tricep Ext · Lateral Raise</div>
+          </div>
+          <div class="next-badge">Next up</div>
+          <div class="tap-chevron">›</div>
+        </div>
+        <div class="tap-row">
+          <div class="tap-row-left">
+            <div class="tap-row-name">Pull B</div>
+            <div class="tap-row-exercises">Pull-ups · Rows · Face Pulls · Bicep Curl · Rear Delt Fly</div>
+          </div>
+          <div class="tap-chevron">›</div>
+        </div>
+        <div class="tap-row">
+          <div class="tap-row-left">
+            <div class="tap-row-name">Legs C</div>
+            <div class="tap-row-exercises">Squat · RDL · Leg Press · Calf Raise · Step-ups</div>
+          </div>
+          <div class="tap-chevron">›</div>
+        </div>
+        <div class="tap-row">
+          <div class="tap-row-left">
+            <div class="tap-row-name">Push A (modified)</div>
+            <div class="tap-row-exercises">Bench Press · OHP · Dips · Tricep Ext</div>
+          </div>
+          <div class="tap-chevron">›</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sublabel">No confirm step — tapping a row immediately starts the session. Fewer taps for everyone, but no "are you sure?" moment.</div>
+</div>
+
+
+<!-- ── VARIANT B: Pill tabs + exercise preview ─────────────── -->
+<div class="col">
+  <div class="phone">
+    <div class="label">B — Pill tabs + preview</div>
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <span class="status-icons">● ▲ ■</span>
+      </div>
+      <div class="header">
+        <div class="back-btn">←</div>
+        <div class="screen-title">Choose day</div>
+      </div>
+
+      <div class="pill-row">
+        <div class="pill active"><span class="pill-text">Push A</span></div>
+        <div class="pill"><span class="pill-text">Pull B</span></div>
+        <div class="pill"><span class="pill-text">Legs C</span></div>
+        <div class="pill"><span class="pill-text">Push A (mod)</span></div>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-day-name">Push A</div>
+        <div class="preview-next-badge">Next up</div>
+        <div class="preview-ex-row">
+          <div class="preview-ex-dot"></div>
+          <div class="preview-ex-name">Bench Press</div>
+          <div class="preview-ex-target">3 × 8–10 @ 60kg</div>
+        </div>
+        <div class="preview-ex-row">
+          <div class="preview-ex-dot"></div>
+          <div class="preview-ex-name">Overhead Press</div>
+          <div class="preview-ex-target">3 × 10–12 @ 30kg</div>
+        </div>
+        <div class="preview-ex-row">
+          <div class="preview-ex-dot"></div>
+          <div class="preview-ex-name">Incline DB Press</div>
+          <div class="preview-ex-target">3 × 12 @ 22kg</div>
+        </div>
+        <div class="preview-ex-row">
+          <div class="preview-ex-dot"></div>
+          <div class="preview-ex-name">Tricep Extension</div>
+          <div class="preview-ex-target">3 × 12 @ 12kg</div>
+        </div>
+        <div class="preview-ex-row">
+          <div class="preview-ex-dot"></div>
+          <div class="preview-ex-name">Lateral Raise</div>
+          <div class="preview-ex-target">3 × 15 @ 8kg</div>
+        </div>
+      </div>
+
+      <div class="pill-bottom">
+        <div class="go-btn">
+          <div class="go-btn-text">Start Push A</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sublabel">See exercises + targets before committing. Good if days have similar names. More information, more taps.</div>
+</div>
+
+
+<!-- ── VARIANT C: Bottom sheet ─────────────────────────────── -->
+<div class="col">
+  <div class="phone">
+    <div class="label">C — Bottom sheet</div>
+    <div class="screen">
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <span class="status-icons">● ▲ ■</span>
+      </div>
+
+      <div class="progress-bg">
+        <div class="bg-title">Progress</div>
+        <div class="bg-hero">
+          <div class="bg-hero-row">
+            <div class="bg-streak">5</div>
+            <div class="bg-streak-label">day streak</div>
+          </div>
+          <div class="bg-stats">
+            <div class="bg-stat">
+              <div class="bg-stat-val">18</div>
+              <div class="bg-stat-lbl">sessions</div>
+            </div>
+            <div class="bg-stat">
+              <div class="bg-stat-val">84%</div>
+              <div class="bg-stat-lbl">on target</div>
+            </div>
+            <div class="bg-stat">
+              <div class="bg-stat-val">—</div>
+              <div class="bg-stat-lbl">last PR</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">Choose day</div>
+        <div class="sheet-list">
+          <div class="sheet-row next">
+            <div>
+              <div class="sheet-row-name">Push A</div>
+              <div class="sheet-row-ex">Bench · OHP · Incline DB · Tricep Ext · Lateral Raise</div>
+            </div>
+            <div class="sheet-next-badge">Next up</div>
+          </div>
+          <div class="sheet-row">
+            <div>
+              <div class="sheet-row-name">Pull B</div>
+              <div class="sheet-row-ex">Pull-ups · Rows · Face Pulls · Bicep Curl · Rear Delt Fly</div>
+            </div>
+          </div>
+          <div class="sheet-row">
+            <div>
+              <div class="sheet-row-name">Legs C</div>
+              <div class="sheet-row-ex">Squat · RDL · Leg Press · Calf Raise · Step-ups</div>
+            </div>
+          </div>
+          <div class="sheet-row">
+            <div>
+              <div class="sheet-row-name">Push A (modified)</div>
+              <div class="sheet-row-ex">Bench Press · OHP · Dips · Tricep Ext</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sublabel">Sheet slides up over the Progress tab — no navigation, feels lighter. Rows tap-to-go like variant A. Requires a modal presentation in Expo Router.</div>
+</div>
+
+</body>
+</html>
