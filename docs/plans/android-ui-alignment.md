@@ -64,6 +64,6 @@ Commits 2–4 (log-session, add screen) are safe to start immediately — they d
 
 10. ✅ **refactor: T.type.label in TabBarPill** (`da85530`) — replaced `fontSize: 13` in `TabBarPill.styles.ts`.
 
-11. **refactor: semantic palette roles** *(blocked — ADR 014 not yet written; `C.surface` already exists in palette)* — add `C.outline` etc. alongside existing names in `palette.ts`. No visual change. Test: TypeScript compilation.
+11. ✅ **refactor: semantic palette roles** (`f7cab50`) — added `C.primary`, `C.onPrimary`, `C.outline`, `C.outlineHi`, `C.error` as M3-inspired aliases. No ADR needed (additive only, no visual change).
 
-12. **chore: potato.png → WebP** — convert asset, update import references. Test: run `maestro test e2e/visual-baseline.yaml`, compare screenshots to Commit 1 baseline.
+12. ~~**chore: potato.png → WebP**~~ — deferred; asset is unused and not yet checked in.
