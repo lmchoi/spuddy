@@ -1,8 +1,8 @@
-const { getDefaultConfig } = require('expo/metro-config');
 const { withNativewind } = require('nativewind/metro');
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 
 /** @type {import('expo/metro-config').MetroConfig} */
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
 
 // expo-sqlite uses a WASM web worker that Metro can't resolve on web.
 // Block the import so web bundling doesn't fail.
