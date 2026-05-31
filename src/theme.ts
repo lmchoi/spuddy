@@ -7,4 +7,10 @@ export const T = {
     cardH: 14,
     cardV: 12,
   },
+  type: {
+    title: 22,
+    body: 16,
+    bodyMd: 14,
+    label: 12,
+  },
 } as const;

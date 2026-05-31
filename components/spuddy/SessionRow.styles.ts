@@ -26,16 +26,16 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   date: {
-    fontSize: 15,
+    fontSize: T.type.body,
     fontWeight: '600',
     color: C.text,
     letterSpacing: -0.2,
   },
   dateDense: {
-    fontSize: 13,
+    fontSize: T.type.bodyMd,
   },
   meta: {
-    fontSize: 11,
+    fontSize: T.type.label,
     color: C.sub,
     marginTop: 2,
   },
