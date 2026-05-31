@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { C } from './palette';
+import { T } from '@/src/theme';
 
 export const styles = StyleSheet.create({
   wrapper: {
@@ -35,7 +36,7 @@ export const styles = StyleSheet.create({
     backgroundColor: C.card2,
   },
   label: {
-    fontSize: 13,
+    fontSize: T.type.label,
     fontWeight: '600',
     color: C.text,
   },
