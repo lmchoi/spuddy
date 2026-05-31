@@ -55,7 +55,8 @@ describe('Sentry initialisation', () => {
   });
 
   it('wraps RootLayout with Sentry.wrap', () => {
-    expect(Sentry.wrap).toHaveBeenCalled();
+    expect(Sentry.wrap).toHaveBeenCalledWith(expect.any(Function));
+    expect(RootLayout).toBe((Sentry.wrap as jest.Mock).mock.results[0].value);
   });
 });
 
