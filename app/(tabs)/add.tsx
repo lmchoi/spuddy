@@ -17,6 +17,7 @@ import { saveSession, sessionExists } from '@/src/storage';
 import type { ExerciseEntry } from '@/src/types';
 import { workingSets, warmupSets } from '@/src/domain/exerciseEntry';
 import { C } from '@/components/spuddy/palette';
+import { T } from '@/src/theme';
 
 // ─── Spuddy mascot ───────────────────────────────────────────────────────────
 
@@ -384,7 +385,7 @@ export default function AddScreen() {
           </ScrollView>
 
           {/* Sticky bottom bar */}
-          <View style={[styles.stickyBar, { paddingBottom: insets.bottom + 18 }]}>
+          <View style={[styles.stickyBar, { paddingBottom: insets.bottom + T.spacing.screenEdge }]}>
             {!isEmpty && (
               <Pressable onPress={handleCancel} style={styles.cancelBtn}>
                 <Text style={styles.cancelBtnText}>Cancel</Text>

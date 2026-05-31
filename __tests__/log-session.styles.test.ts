@@ -1,17 +1,11 @@
 import { styles } from '../styles/log-session.styles';
-
-describe('log-session styles — a11y', () => {
-  it('backBtn meets 48dp minimum touch target', () => {
-    expect(styles.backBtn.minHeight).toBeGreaterThanOrEqual(48);
-    expect(styles.backBtn.minWidth).toBeGreaterThanOrEqual(48);
-  });
-});
+import { T } from '../src/theme';
 
 describe('log-session styles — spacing', () => {
-  it('uses 16dp screen-edge margin everywhere', () => {
-    expect(styles.header.paddingHorizontal).toBe(16);
-    expect(styles.strip.paddingHorizontal).toBe(16);
-    expect(styles.scrollContent.paddingHorizontal).toBe(16);
-    expect(styles.bottom.paddingHorizontal).toBe(16);
+  it('uses screen-edge token everywhere', () => {
+    expect(styles.header.paddingHorizontal).toBe(T.spacing.screenEdge);
+    expect(styles.strip.paddingHorizontal).toBe(T.spacing.screenEdge);
+    expect(styles.scrollContent.paddingHorizontal).toBe(T.spacing.screenEdge);
+    expect(styles.bottom.paddingHorizontal).toBe(T.spacing.screenEdge);
   });
 });

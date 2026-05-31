@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { C } from '@/components/spuddy/palette';
+import { T } from '@/src/theme';
 
 export const styles = StyleSheet.create({
   container: {
@@ -11,7 +12,7 @@ export const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     paddingTop: 14,
     paddingBottom: 10,
     gap: 12,
@@ -58,7 +59,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     paddingBottom: 24,
     gap: 14,
   },
@@ -317,7 +318,7 @@ export const styles = StyleSheet.create({
   stickyBar: {
     flexDirection: 'column',
     gap: 8,
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     paddingTop: 12,
     backgroundColor: C.bg,
     borderTopWidth: 1,
