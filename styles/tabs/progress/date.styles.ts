@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { C } from '@/components/spuddy/palette';
+import { T } from '@/src/theme';
 
 export const styles = StyleSheet.create({
   container: {
@@ -9,7 +10,7 @@ export const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     paddingVertical: 14,
     gap: 12,
   },
@@ -48,7 +49,7 @@ export const styles = StyleSheet.create({
 
   // ─── Bento
   bentoSection: {
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     gap: 8,
     marginBottom: 14,
   },
@@ -131,7 +132,7 @@ export const styles = StyleSheet.create({
 
   // ─── Coach card
   coachCard: {
-    marginHorizontal: 18,
+    marginHorizontal: T.spacing.screenEdge,
     marginBottom: 16,
     padding: 14,
     backgroundColor: C.cardSoft,
@@ -154,7 +155,7 @@ export const styles = StyleSheet.create({
 
   // ─── Section heading
   sectionHeader: {
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     marginBottom: 8,
   },
   sectionLabel: {
@@ -166,7 +167,7 @@ export const styles = StyleSheet.create({
 
   // ─── Exercise list
   exList: {
-    paddingHorizontal: 18,
+    paddingHorizontal: T.spacing.screenEdge,
     gap: 8,
   },
   exRow: {
