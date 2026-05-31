@@ -4,5 +4,7 @@ export const T = {
   },
   spacing: {
     screenEdge: 16,
+    cardH: 14,
+    cardV: 12,
   },
 } as const;
