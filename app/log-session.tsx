@@ -88,7 +88,7 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
-  const pct = duration > 0 ? remaining / duration : 0;
+  const pct = remaining / duration;
 
   return (
     <View style={styles.restBlock}>
