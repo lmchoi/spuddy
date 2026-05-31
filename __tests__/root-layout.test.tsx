@@ -45,7 +45,7 @@ beforeEach(() => {
 describe('Sentry initialisation', () => {
   it('initialises Sentry with the project DSN', () => {
     expect(Sentry.init).toHaveBeenCalledWith(
-      expect.objectContaining({ dsn: expect.stringContaining('sentry.io') }),
+      expect.objectContaining({ dsn: process.env.EXPO_PUBLIC_SENTRY_DSN }),
     );
   });
 
