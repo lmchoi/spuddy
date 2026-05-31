@@ -6,8 +6,6 @@ import RootLayout, { unstable_settings } from '../app/_layout';
 jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
   wrap: jest.fn((component: unknown) => component),
-  mobileReplayIntegration: jest.fn(() => ({})),
-  feedbackIntegration: jest.fn(() => ({})),
 }));
 
 jest.mock('expo-font', () => ({
