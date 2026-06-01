@@ -146,4 +146,17 @@ export const styles = StyleSheet.create({
   importBtnTextDisabled: {
     color: C.muted,
   },
+  debugFillBtn: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: C.border,
+    backgroundColor: C.card,
+  },
+  debugFillBtnText: {
+    fontSize: 11,
+    color: C.muted,
+  },
 });

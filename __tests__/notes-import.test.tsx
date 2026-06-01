@@ -56,25 +56,25 @@ describe('NotesImportScreen', () => {
     expect(screen.queryByText('lbs')).toBeNull();
   });
 
-  it('shows "Review N programs" CTA when exercises are present', () => {
+  it('shows "Review N days" CTA when exercises are present', () => {
     render(<NotesImportScreen />);
     const input = screen.getByPlaceholderText(/Upper body/);
     fireEvent.changeText(input, 'Push\n- Bench press - 80');
-    expect(screen.getByText('Review 1 program')).toBeTruthy();
+    expect(screen.getByText('Review 1 day')).toBeTruthy();
   });
 
   it('CTA count excludes empty sections', () => {
     render(<NotesImportScreen />);
     const input = screen.getByPlaceholderText(/Upper body/);
     fireEvent.changeText(input, 'Push\n- Bench press - 80\nPull');
-    expect(screen.getByText('Review 1 program')).toBeTruthy();
+    expect(screen.getByText('Review 1 day')).toBeTruthy();
   });
 
   it('tapping Review pushes to review screen with serialised ParsedNotes', () => {
     render(<NotesImportScreen />);
     const input = screen.getByPlaceholderText(/Upper body/);
     fireEvent.changeText(input, 'Push\n- Bench press - 80');
-    fireEvent.press(screen.getByText('Review 1 program'));
+    fireEvent.press(screen.getByText('Review 1 day'));
     expect(mockPush).toHaveBeenCalledWith(
       expect.objectContaining({ pathname: '/notes-import-review' })
     );

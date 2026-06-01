@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { styles } from '@/styles/notes-import.styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { parseWorkoutNotes } from '@/src/notesParser';
+import { SAMPLE_WORKOUT_NOTES } from '@/src/debug/sampleNotes';
 import { C } from '@/components/spuddy/palette';
 
 export default function NotesImportScreen() {
@@ -43,9 +44,9 @@ export default function NotesImportScreen() {
     });
   }
 
-  const programSuffix = importableCount !== 1 ? 's' : '';
+  const daySuffix = importableCount !== 1 ? 's' : '';
   const reviewLabel = totalExercises > 0
-    ? `Review ${importableCount} program${programSuffix}`
+    ? `Review ${importableCount} day${daySuffix}`
     : 'Paste notes to import';
 
   return (
@@ -72,6 +73,7 @@ export default function NotesImportScreen() {
           style={styles.textarea}
           multiline
           autoFocus
+          accessibilityLabel="Workout notes input"
           placeholder={'Upper body\n- Bench press - 80kg\n- Overhead press - 50kg\n\nLower body\n- Squat - 100kg'}
           placeholderTextColor={C.muted}
           value={text}
@@ -81,6 +83,12 @@ export default function NotesImportScreen() {
           autoCapitalize="none"
           textAlignVertical="top"
         />
+
+        {__DEV__ && (
+          <Pressable onPress={() => setText(SAMPLE_WORKOUT_NOTES)} style={styles.debugFillBtn}>
+            <Text style={styles.debugFillBtnText}>⚙ Fill sample</Text>
+          </Pressable>
+        )}
 
         {/* Live preview */}
         {parsed && parsed.sections.length > 0 && (
