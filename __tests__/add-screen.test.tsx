@@ -5,6 +5,7 @@ const mockReplace = jest.fn();
 
 jest.mock('expo-router', () => ({
   router: { replace: (...args: unknown[]) => mockReplace(...args) },
+  Redirect: ({ href }: { href: string }) => { mockReplace(href); return null; },
 }));
 
 beforeEach(() => jest.clearAllMocks());
