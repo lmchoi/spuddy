@@ -34,6 +34,12 @@ docs/
   ideas/              # unreviewed drafts, may contain hallucinations (see ideas/CLAUDE.md)
 ```
 
+## Maestro (E2E testing)
+
+Cheat sheet: `.claude/maestro.md`. Use it when writing or reviewing Maestro flows.
+
+If something doesn't work — selector fails, command behaves unexpectedly, flow crashes — or if a flow under review looks wrong, fetch the live docs at https://docs.maestro.dev/llms.txt before assuming the cheat sheet is complete.
+
 ## Workflow
 
 - **Before starting a milestone:** a plan must exist in `docs/plans/`. Write it (or ask the user to confirm it) before writing any code.
