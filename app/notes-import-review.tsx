@@ -24,9 +24,9 @@ export default function NotesImportReviewScreen() {
   const parsed: ParsedNotes = JSON.parse(rawParam);
 
   const importableSections = parsed.sections.filter(s => s.exercises.length > 0);
-  const importableCount = importableSections.length;
+  const dayCount = importableSections.length;
   const totalExercises = parsed.sections.reduce((sum, s) => sum + s.exercises.length, 0);
-  const canImport = importableCount > 0 && !importing;
+  const canImport = dayCount > 0 && !importing;
 
   async function handleImport() {
     if (!canImport) return;
@@ -46,8 +46,8 @@ export default function NotesImportReviewScreen() {
     }
   }
 
-  const programSuffix = importableCount !== 1 ? 's' : '';
-  const importLabel = importing ? 'Importing…' : `Import ${importableCount} program${programSuffix}`;
+  const daySuffix = dayCount !== 1 ? 's' : '';
+  const importLabel = importing ? 'Importing…' : `Import 1 program`;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -62,7 +62,7 @@ export default function NotesImportReviewScreen() {
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.summary}>
-          {importableCount} program{importableCount !== 1 ? 's' : ''} · {totalExercises} exercise{totalExercises !== 1 ? 's' : ''}
+          1 program · {dayCount} day{daySuffix} · {totalExercises} exercise{totalExercises !== 1 ? 's' : ''}
         </Text>
 
         {importableSections.map((section, si) => (

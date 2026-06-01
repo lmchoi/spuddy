@@ -13,6 +13,7 @@ export type NotesImportResult =
 const DEFAULT_SETS = 6;
 const DEFAULT_REPS = 10;
 const DEFAULT_REST_SECONDS = 60;
+const DEFAULT_PROGRAM_NAME = 'My Program';
 
 function exerciseToProgram(ex: ParsedExercise): ProgramExercise {
   const sets = ex.sets ?? DEFAULT_SETS;
@@ -34,17 +35,17 @@ export async function importFromNotes(
   }
 
   try {
-    const programs: Program[] = parsedNotes.sections
+    const days: ProgramDay[] = parsedNotes.sections
       .filter(s => s.exercises.length > 0)
-      .map(section => {
-        const exercises: ProgramExercise[] = section.exercises.map(exerciseToProgram);
-        const day: ProgramDay = { name: section.name, exercises };
-        return { name: section.name, days: [day], activeDayIndex: 0 };
-      });
+      .map(section => ({
+        name: section.name,
+        exercises: section.exercises.map(exerciseToProgram),
+      }));
 
-    if (programs.length === 0) return { success: true, programsCreated: 0 };
-    await savePrograms(db, programs);
-    return { success: true, programsCreated: programs.length };
+    if (days.length === 0) return { success: true, programsCreated: 0 };
+    const program: Program = { name: DEFAULT_PROGRAM_NAME, days, activeDayIndex: 0 };
+    await savePrograms(db, [program]);
+    return { success: true, programsCreated: 1 };
   } catch (err) {
     return { success: false, error: String(err) };
   }
