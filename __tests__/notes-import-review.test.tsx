@@ -44,9 +44,9 @@ describe('NotesImportReviewScreen', () => {
     expect(screen.getByText('Review import')).toBeTruthy();
   });
 
-  it('shows summary line with program and exercise counts', () => {
+  it('shows summary line with program, day, and exercise counts', () => {
     render(<NotesImportReviewScreen />);
-    expect(screen.getByText('1 program · 2 exercises')).toBeTruthy();
+    expect(screen.getByText('1 program · 1 day · 2 exercises')).toBeTruthy();
   });
 
   it('shows section name pill', () => {

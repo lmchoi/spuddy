@@ -64,17 +64,18 @@ describe('importFromNotes', () => {
     if (result.success) expect(result.programsCreated).toBe(0);
   });
 
-  it('creates one program per section', async () => {
+  it('creates one program with all sections as days', async () => {
     const result = await importFromNotes(db, TWO_SECTIONS);
     expect(result.success).toBe(true);
-    if (result.success) expect(result.programsCreated).toBe(2);
+    if (result.success) expect(result.programsCreated).toBe(1);
 
     const programs = await getPrograms(db);
-    expect(programs).toHaveLength(2);
-    expect(programs.map(p => p.name)).toEqual(['Push', 'Pull']);
+    expect(programs).toHaveLength(1);
+    expect(programs[0].days).toHaveLength(2);
+    expect(programs[0].days.map(d => d.name)).toEqual(['Push', 'Pull']);
   });
 
-  it('each program has a single day containing all its exercises', async () => {
+  it('each day contains all exercises from its section', async () => {
     await importFromNotes(db, ONE_SECTION);
     const programs = await getPrograms(db);
     expect(programs[0].days).toHaveLength(1);
@@ -117,7 +118,8 @@ describe('importFromNotes', () => {
 
     const programs = await getPrograms(db);
     expect(programs).toHaveLength(1);
-    expect(programs[0].name).toBe('Pull');
+    expect(programs[0].days).toHaveLength(1);
+    expect(programs[0].days[0].name).toBe('Pull');
   });
 
   it('does not wipe existing programs when all parsed sections are empty', async () => {
@@ -138,6 +140,6 @@ describe('importFromNotes', () => {
 
     const after = await getPrograms(db);
     expect(after).toHaveLength(1);
-    expect(after[0].name).toBe('Push');
+    expect(after[0].name).toBe('My Program');
   });
 });
