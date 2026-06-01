@@ -1,0 +1,35 @@
+appId: com.mchoi.spuddy
+---
+# Set up: import notes to create a 3-day program
+- launchApp:
+    clearState: true
+- tapOn: "Settings"
+- tapOn: "Paste workout notes"
+- tapOn: "⚙ Fill sample"
+- hideKeyboard
+- tapOn: "Review 3 days"
+- tapOn: "Import 1 program"
+- assertVisible: "Push"
+
+# Navigate to select-day via Add tab
+- tapOn: "Add workout"
+- assertVisible: "Choose day"
+
+# Pill strip shows all 3 days
+- assertVisible: "Push"
+- assertVisible: "Pull"
+- assertVisible: "Legs"
+
+# First day is active and shown as Next up
+- assertVisible: "Next up"
+- assertVisible: "Bench press"
+
+# Switch to Pull day
+- tapOn: "Pull"
+- assertVisible: "Lat pulldown"
+
+# Switch to Legs day and start
+- tapOn: "Legs"
+- assertVisible: "Squat"
+- tapOn: "Start Legs"
+- assertVisible: "Legs"

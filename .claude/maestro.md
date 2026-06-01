@@ -24,6 +24,8 @@ appId: com.mchoi.spuddy
 | `waitForAnimationToEnd` | `- waitForAnimationToEnd: { timeout: 10000 }` |
 | `takeScreenshot` | `- takeScreenshot: my-name` |
 | `back` | `- back` |
+| `setClipboard` | `- setClipboard: "text to paste"` |
+| `pasteText` | `- pasteText` (pastes Maestro's internal clipboard into focused field) |
 
 ## Other commands you'll likely need
 
