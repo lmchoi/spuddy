@@ -77,3 +77,32 @@ Apple Watch and WearOS users get wrist haptic taps from the notification for fre
 
 1. What data does the notification need to log a "Next set" silently? At minimum: exercise ID, reps, weight, set type (working/warmup). The scheduled notification payload must carry this at timer-start time.
 2. Should "Next set" also restart the rest timer immediately (for the following set), or leave that to the user once they're back in the app?
+
+---
+
+## Commit breakdown
+
+| # | Commit message | Files |
+|---|---|---|
+| 1 | `feat(domain): add rest notification payload builder` | `src/domain/restNotification.ts`, `__tests__/restNotification.test.ts` |
+| 2 | `feat(notifications): add notification service wrapper` | `src/notifications.ts`, `__tests__/notifications.test.ts` |
+| 3 | `feat(haptics): haptic pulse when rest timer expires in foreground` | `app/log-session.tsx`, `__tests__/log-session.test.tsx` |
+| 4 | `feat(notifications): schedule on rest start, cancel on skip` | `app/log-session.tsx`, `__tests__/log-session.test.tsx` |
+| 5 | `feat(notifications): handle notification response (next set + deep-link)` | `src/notificationHandler.ts`, `__tests__/notificationHandler.test.ts`, `app/_layout.tsx` |
+
+### Payload carried in each notification
+
+`RestNotificationPayload` (stored in `notification.request.content.data`):
+
+```
+exerciseName: string   — display name for notification body
+reps: number           — logged reps of the last set
+weight: number         — logged weight (0 = bodyweight)
+programName: string    — needed to key the session draft
+dayIndex: number       — needed to key the session draft
+exerciseIdx: number    — needed to call logSet on the right exercise
+```
+
+### Decision: "Next set" does NOT restart the rest timer
+
+After a background "Next set" log the session draft is updated but the app stays backgrounded. The rest timer is an in-app UI element — it will re-initialise from the draft when the user next opens the app. Restarting the timer from a background handler would require significant complexity for little UX gain.
