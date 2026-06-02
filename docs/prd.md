@@ -48,7 +48,15 @@ Existing workout apps are either too complex or too limited for intermediate hom
 
 ---
 
-## 5. Non-Goals
+## 5. Data Principles
+
+- **No hard-delete on structured data** — program days and exercises are archived/disabled, not deleted. Their indices must remain stable because session history references them by position. Deleting a day shifts all subsequent indices and silently corrupts history.
+- **Session history is immutable** — past sessions are never edited or removed.
+- **Re-import replaces, not merges** — importing a new program from an external source replaces the entire program record. This is the only path to structural deletion.
+
+---
+
+## 6. Non-Goals
 
 - Not a full program builder — programs are bootstrapped externally; the app can evolve them based on session data but not author them from scratch
 - Not a social or community platform
@@ -59,7 +67,7 @@ Existing workout apps are either too complex or too limited for intermediate hom
 
 ---
 
-## 6. Liftosaur Relationship
+## 7. Liftosaur Relationship
 
 Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 
@@ -78,7 +86,7 @@ Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 
 ---
 
-## 7. Features
+## 8. Features
 
 ### 7.1 Session Logging
 
@@ -184,7 +192,7 @@ Intentionally decoupled — user brings their own AI.
 
 ---
 
-## 8. Open Questions
+## 9. Open Questions
 
 - What is the exact format of Liftosaur's file export? Does it include equipment type per exercise? — **verify before building import**
 - How should band resistance be handled in progression — approximate kg equivalent, or named scale?
