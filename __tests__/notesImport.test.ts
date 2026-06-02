@@ -126,6 +126,7 @@ describe('importFromNotes', () => {
     await importFromNotes(db, ONE_SECTION);
     const before = await getPrograms(db);
     expect(before).toHaveLength(1);
+    const firstName = before[0].name;
 
     const allEmpty: ParsedNotes = {
       sections: [
@@ -140,6 +141,27 @@ describe('importFromNotes', () => {
 
     const after = await getPrograms(db);
     expect(after).toHaveLength(1);
-    expect(after[0].name).toBe('My Program');
+    expect(after[0].name).toBe(firstName);
+  });
+
+  it('importing twice appends a second program and leaves the first untouched', async () => {
+    jest.useFakeTimers({ now: new Date('2026-06-02T12:00:00Z') });
+    try {
+      await importFromNotes(db, ONE_SECTION);
+      const after1 = await getPrograms(db);
+      expect(after1).toHaveLength(1);
+      expect(after1[0].name).toBe('My Program – 2 Jun 2026');
+      expect(after1[0].days).toHaveLength(1);
+
+      await importFromNotes(db, TWO_SECTIONS);
+      const after2 = await getPrograms(db);
+      expect(after2).toHaveLength(2);
+      expect(after2[0].name).toBe('My Program – 2 Jun 2026');
+      expect(after2[0].days).toHaveLength(1); // first import untouched
+      expect(after2[1].name).toBe('My Program – 2 Jun 2026');
+      expect(after2[1].days).toHaveLength(2); // second import has 2 sections
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
