@@ -88,6 +88,13 @@ export function updateActiveDayIndex(
   db.update(programs).set({ activeDayIndex: dayIndex }).where(eq(programs.name, programName)).run();
 }
 
+export async function getProgramTotalDays(db: DrizzleDB, programName: string): Promise<number> {
+  const programRows = await db.select({ id: programs.id }).from(programs).where(eq(programs.name, programName));
+  if (programRows.length === 0) return 0;
+  const rows = db.all<{ n: number }>(sql`SELECT COUNT(*) AS n FROM program_days WHERE program_id = ${programRows[0].id}`);
+  return rows[0]?.n ?? 0;
+}
+
 export async function addProgramDay(db: DrizzleDB, programName: string, day: ProgramDay): Promise<void> {
   const programList = await getPrograms(db);
   const target = programList.find(p => p.name === programName);
