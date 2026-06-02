@@ -7,6 +7,17 @@ import { C } from '@/components/spuddy/palette';
 import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import type { SessionState } from '@/src/domain/sessionLogger';
 import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+import { scheduleRestNotification, cancelRestNotification, requestRestNotificationPermission } from '@/src/notifications';
+
+jest.mock('@/src/notifications', () => ({
+  scheduleRestNotification: jest.fn().mockResolvedValue(undefined),
+  cancelRestNotification: jest.fn().mockResolvedValue(undefined),
+  requestRestNotificationPermission: jest.fn().mockResolvedValue(true),
+  registerRestNotificationCategory: jest.fn().mockResolvedValue(undefined),
+  REST_TIMER_ID: 'rest-timer',
+  NEXT_SET_ACTION: 'NEXT_SET',
+  OPEN_APP_ACTION: 'OPEN_APP',
+}));
 
 jest.mock('@/src/sessionDraft', () => ({
   draftKey: jest.fn((name: string, idx: number) => `draft_session__${name}__${idx}`),
@@ -835,5 +846,75 @@ describe('rest timer duration', () => {
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
     expect(screen.getByText('1:00')).toBeTruthy();
+  });
+});
+
+// ─── Rest notifications ───────────────────────────────────────────────────────
+
+describe('rest notifications', () => {
+  beforeEach(() => {
+    (scheduleRestNotification as jest.Mock).mockClear();
+    (cancelRestNotification as jest.Mock).mockClear();
+    (requestRestNotificationPermission as jest.Mock).mockClear();
+  });
+
+  it('schedules a notification after logging a set that starts a rest period', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    expect(scheduleRestNotification).toHaveBeenCalledTimes(1);
+    expect(scheduleRestNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        exerciseName: 'Squat',
+        reps: 5,
+        weight: 100,
+      }),
+      expect.any(Number),
+    );
+  });
+
+  it('does not schedule a notification after the last set (no rest follows)', async () => {
+    // Single-set day: no rest after the only set
+    const singleSetDay = {
+      name: 'Day A',
+      exercises: [
+        {
+          name: 'Squat',
+          exerciseId: 1,
+          targets: [{ reps: 5, weight: 100 }],
+        },
+      ],
+    };
+    (getProgramDay as jest.Mock).mockResolvedValue(singleSetDay);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    expect(scheduleRestNotification).not.toHaveBeenCalled();
+  });
+
+  it('cancels the notification when the user taps Skip rest', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    expect(cancelRestNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes programName and dayIndex in the notification payload', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    const payload = (scheduleRestNotification as jest.Mock).mock.calls[0][0];
+    expect(payload.programName).toBe('Test Program');
+    expect(payload.dayIndex).toBe(0);
+    expect(payload.exerciseIdx).toBe(0);
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState, useCallback } from 'react';
+import { useEffect, useReducer, useState, useCallback, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -40,6 +40,12 @@ import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+import {
+  scheduleRestNotification,
+  cancelRestNotification,
+  requestRestNotificationPermission,
+} from '@/src/notifications';
+import type { RestNotificationPayload } from '@/src/domain/restNotification';
 
 // ─── Local action state for reps/weight steppers ──────────────────────────────
 
@@ -441,6 +447,7 @@ export default function LogSession() {
     { status: 'loading' }
   );
   const [noteSheetOpen, setNoteSheetOpen] = useState(false);
+  const permissionRequested = useRef(false);
   useEffect(() => {
     async function load() {
       try {
@@ -480,12 +487,33 @@ export default function LogSession() {
 
   const handleLogSet = useCallback(() => {
     if (state.status !== 'ready') return;
-    const { day, session, input, key } = state;
+    const { day, session, input, key, resolvedProgramName, resolvedDayIndex } = state;
     const exIdx = session.currentExerciseIdx;
     const next = logSet(session, exIdx, input.reps, input.weight);
     const nextInput = inputFromTarget(day, next);
     saveDraft(key, next);
     setState({ ...state, session: next, input: nextInput });
+    if (next.isResting) {
+      const targets = day.exercises[exIdx].targets;
+      const lastTarget = targets[Math.min(next.loggedSets[exIdx].length - 1, targets.length - 1)];
+      const delaySeconds = lastTarget?.restSeconds || 60;
+      const payload: RestNotificationPayload = {
+        exerciseName: day.exercises[exIdx].name,
+        reps: input.reps,
+        weight: input.weight,
+        programName: resolvedProgramName,
+        dayIndex: resolvedDayIndex,
+        exerciseIdx: exIdx,
+      };
+      if (!permissionRequested.current) {
+        permissionRequested.current = true;
+        requestRestNotificationPermission().then(granted => {
+          if (granted) scheduleRestNotification(payload, delaySeconds);
+        });
+      } else {
+        scheduleRestNotification(payload, delaySeconds);
+      }
+    }
   }, [state]);
 
   const handleSkipRest = useCallback(() => {
@@ -494,6 +522,7 @@ export default function LogSession() {
     const nextInput = inputFromTarget(state.day, next);
     saveDraft(state.key, next);
     setState({ ...state, session: next, input: nextInput });
+    cancelRestNotification();
   }, [state]);
 
   const handleJump = useCallback((idx: number) => {
