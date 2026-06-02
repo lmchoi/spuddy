@@ -1,4 +1,4 @@
-import { Alert, Platform } from 'react-native';
+import { Alert, AppState, Platform } from 'react-native';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
 import { getProgramDay, addProgramDay, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
@@ -895,5 +895,83 @@ describe('notifications', () => {
     fireEvent.press(screen.getByText(/Done/i));
     await act(async () => { fireEvent.press(screen.getByText('Finish')); });
     expect(mockCancelRestNotification).toHaveBeenCalled();
+  });
+});
+
+// ─── Rest timer — wall clock accuracy ────────────────────────────────────────
+
+describe('rest timer — wall clock accuracy on foreground resume', () => {
+  let appStateListeners: Array<(state: string) => void>;
+  let dateNowSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    appStateListeners = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_event: any, handler: any) => {
+      appStateListeners.push(handler);
+      return { remove: jest.fn() } as any;
+    });
+    dateNowSpy = jest.spyOn(Date, 'now');
+  });
+
+  afterEach(() => {
+    dateNowSpy.mockRestore();
+  });
+
+  it('recalculates remaining from wall clock when app returns to foreground', async () => {
+    const t0 = 1_000_000_000;
+    dateNowSpy.mockReturnValue(t0);
+
+    const dayWith90sRest = {
+      name: 'Day A',
+      exercises: [
+        {
+          name: 'Squat',
+          exerciseId: 1,
+          targets: [
+            { reps: 5, weight: 100, restSeconds: 90 },
+            { reps: 5, weight: 100, restSeconds: 90 },
+          ],
+        },
+      ],
+    };
+    (getProgramDay as jest.Mock).mockResolvedValue(dayWith90sRest);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Log a set at t0 — rest timer starts with 90 s remaining
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    expect(screen.getByText('1:30')).toBeTruthy();
+
+    // 30 seconds elapse while app is backgrounded
+    dateNowSpy.mockReturnValue(t0 + 30_000);
+
+    // App returns to foreground — listener fires
+    await act(async () => {
+      appStateListeners.forEach(fn => fn('active'));
+    });
+
+    // Should show 60 s remaining, not 90 s
+    expect(screen.getByText('1:00')).toBeTruthy();
+  });
+
+  it('does not recalculate when app moves to background or inactive', async () => {
+    const t0 = 1_000_000_000;
+    dateNowSpy.mockReturnValue(t0);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    dateNowSpy.mockReturnValue(t0 + 30_000);
+
+    // background / inactive events must not trigger recalculation
+    await act(async () => {
+      appStateListeners.forEach(fn => fn('background'));
+      appStateListeners.forEach(fn => fn('inactive'));
+    });
+
+    // Timer display unchanged (still shows original; no tick has fired)
+    expect(screen.getByText('1:00')).toBeTruthy();
   });
 });
