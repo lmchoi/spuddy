@@ -47,6 +47,18 @@ jest.mock('@/src/exerciseStorage', () => ({
   setExerciseNote: jest.fn(),
 }));
 
+const mockRequestNotificationPermission = jest.fn().mockResolvedValue(true);
+const mockScheduleRestNotification = jest.fn().mockResolvedValue(undefined);
+const mockCancelRestNotification = jest.fn().mockResolvedValue(undefined);
+const mockSetupNotificationChannel = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('@/src/notifications', () => ({
+  requestNotificationPermission: (...args: unknown[]) => mockRequestNotificationPermission(...args),
+  scheduleRestNotification: (...args: unknown[]) => mockScheduleRestNotification(...args),
+  cancelRestNotification: (...args: unknown[]) => mockCancelRestNotification(...args),
+  setupNotificationChannel: (...args: unknown[]) => mockSetupNotificationChannel(...args),
+}));
+
 const mockDay = {
   name: 'Day A',
   exercises: [
@@ -835,5 +847,53 @@ describe('rest timer duration', () => {
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
     expect(screen.getByText('1:00')).toBeTruthy();
+  });
+});
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+describe('notifications', () => {
+  const dayWithRest = {
+    name: 'Day A',
+    exercises: [
+      {
+        name: 'Squat',
+        exerciseId: 1,
+        targets: [
+          { reps: 5, weight: 100, restSeconds: 90 },
+          { reps: 5, weight: 100, restSeconds: 90 },
+        ],
+      },
+    ],
+  };
+
+  it('requests permission when session loads', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(mockRequestNotificationPermission).toHaveBeenCalledTimes(1));
+  });
+
+  it('schedules rest notification with correct exercise name and delay when rest starts', async () => {
+    (getProgramDay as jest.Mock).mockResolvedValue(dayWithRest);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    expect(mockScheduleRestNotification).toHaveBeenCalledWith(90);
+  });
+
+  it('cancels rest notification when rest is skipped', async () => {
+    (getProgramDay as jest.Mock).mockResolvedValue(dayWithRest);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip/i)); });
+    expect(mockCancelRestNotification).toHaveBeenCalled();
+  });
+
+  it('cancels rest notification when session is finished', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    fireEvent.press(screen.getByText(/Done/i));
+    await act(async () => { fireEvent.press(screen.getByText('Finish')); });
+    expect(mockCancelRestNotification).toHaveBeenCalled();
   });
 });

@@ -40,6 +40,7 @@ import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+import { requestNotificationPermission, scheduleRestNotification, cancelRestNotification, setupNotificationChannel } from '@/src/notifications';
 
 // ─── Local action state for reps/weight steppers ──────────────────────────────
 
@@ -471,6 +472,8 @@ export default function LogSession() {
           }
         }
         setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, resolvedDayIndex, totalDays, key, notes });
+        setupNotificationChannel();
+        requestNotificationPermission();
       } catch {
         setState({ status: 'empty' });
       }
@@ -486,10 +489,17 @@ export default function LogSession() {
     const nextInput = inputFromTarget(day, next);
     saveDraft(key, next);
     setState({ ...state, session: next, input: nextInput });
+    if (next.isResting) {
+      const targets = day.exercises[exIdx].targets;
+      const lastTarget = targets[Math.min(next.loggedSets[exIdx].length - 1, targets.length - 1)];
+      const delaySeconds = lastTarget?.restSeconds ?? 60;
+      scheduleRestNotification(delaySeconds);
+    }
   }, [state]);
 
   const handleSkipRest = useCallback(() => {
     if (state.status !== 'ready') return;
+    cancelRestNotification();
     const next = skipRest(state.session);
     const nextInput = inputFromTarget(state.day, next);
     saveDraft(state.key, next);
@@ -539,6 +549,7 @@ export default function LogSession() {
 
   const handleFinish = useCallback(async () => {
     if (state.status !== 'ready') return;
+    cancelRestNotification();
     const { day, session, resolvedProgramName, resolvedDayIndex, totalDays, key } = state;
     const today = new Date().toISOString().slice(0, 10);
     const payload = buildSavePayload(session, day, today);
