@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '@/styles/select-day.styles';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';
 import { getDB } from '@/src/db';
@@ -26,20 +26,23 @@ export default function SelectDay() {
   const router = useRouter();
   const [state, setState] = useState<ScreenState>({ status: 'loading' });
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const db = await getDB();
-        const programs = await getPrograms(db);
-        if (programs.length === 0) { setState({ status: 'empty' }); return; }
-        const program = programs[0];
-        setState({ status: 'ready', program, selectedIndex: program.activeDayIndex });
-      } catch {
-        setState({ status: 'empty' });
+  useFocusEffect(
+    useCallback(() => {
+      async function load() {
+        try {
+          const db = await getDB();
+          const programs = await getPrograms(db);
+          if (programs.length === 0) { setState({ status: 'empty' }); return; }
+          // single-program invariant: multi-program support is post-MVP
+          const program = programs[0];
+          setState({ status: 'ready', program, selectedIndex: Math.min(program.activeDayIndex, program.days.length - 1) });
+        } catch {
+          setState({ status: 'empty' });
+        }
       }
-    }
-    load();
-  }, []);
+      load();
+    }, [])
+  );
 
   if (state.status === 'loading') {
     return (
