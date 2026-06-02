@@ -30,11 +30,22 @@ jest.mock('expo-router', () => {
     }),
     ThemeProvider: ({ children }: any) => <>{children}</>,
     DarkTheme: { colors: { background: '#000' } },
+    useRouter: () => ({ push: jest.fn() }),
   };
 });
 
 jest.mock('../src/global.css', () => ({}));
 jest.mock('react-native-reanimated', () => ({}));
+jest.mock('expo-notifications', () => ({
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  setNotificationCategoryAsync: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock('../src/notifications', () => ({
+  registerRestNotificationCategory: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock('../src/notificationHandler', () => ({
+  handleRestNotificationResponse: jest.fn(),
+}));
 
 beforeEach(() => {
   capturedScreens.length = 0;

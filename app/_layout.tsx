@@ -1,11 +1,14 @@
 import '../src/global.css';
 import { useFonts } from 'expo-font';
-import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { C } from '@/components/spuddy/palette';
 import * as Sentry from '@sentry/react-native';
+import * as Notifications from 'expo-notifications';
+import { registerRestNotificationCategory } from '@/src/notifications';
+import { handleRestNotificationResponse } from '@/src/notificationHandler';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -51,6 +54,16 @@ export default Sentry.wrap(function RootLayout() {
 });
 
 function RootLayoutNav() {
+  const router = useRouter();
+
+  useEffect(() => {
+    registerRestNotificationCategory();
+    const sub = Notifications.addNotificationResponseReceivedListener(response => {
+      handleRestNotificationResponse(response, router);
+    });
+    return () => sub.remove();
+  }, [router]);
+
   return (
     <ThemeProvider value={WarmDarkTheme}>
       <Stack>
