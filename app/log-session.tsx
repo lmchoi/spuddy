@@ -16,7 +16,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';
 import { getDB } from '@/src/db';
-import { addProgramDay, getProgramDay, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
+import { addProgramDay, getProgramDay, getProgramTotalDays, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
 import { nextActiveDayIndex } from '@/src/domain/programDay';
 import { saveSession } from '@/src/storage';
 import {
@@ -423,7 +423,7 @@ function BottomAction({
 type ScreenState =
   | { status: 'loading' }
   | { status: 'empty' }
-  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string; resolvedDayIndex: number; key: string; notes: Record<number, string> };
+  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string; resolvedDayIndex: number; totalDays: number; key: string; notes: Record<number, string> };
 
 function inputFromTarget(day: ProgramDay, session: SessionState): InputState {
   const exIdx = session.currentExerciseIdx;
@@ -447,11 +447,15 @@ export default function LogSession() {
         const db = await getDB();
         let resolvedName = programName;
         let resolvedDayIndex = Number(dayIndex ?? 0);
+        let totalDays = 0;
         if (!resolvedName) {
           const programs = await getPrograms(db);
           if (programs.length === 0) { setState({ status: 'empty' }); return; }
           resolvedName = programs[0].name;
           resolvedDayIndex = programs[0].activeDayIndex;
+          totalDays = programs[0].days.length;
+        } else {
+          totalDays = await getProgramTotalDays(db, resolvedName);
         }
         const day = await getProgramDay(db, resolvedName, resolvedDayIndex);
         if (!day) { setState({ status: 'empty' }); return; }
@@ -466,7 +470,7 @@ export default function LogSession() {
             if (note) notes[ex.exerciseId] = note;
           }
         }
-        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, resolvedDayIndex, key, notes });
+        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, resolvedDayIndex, totalDays, key, notes });
       } catch {
         setState({ status: 'empty' });
       }
@@ -535,7 +539,7 @@ export default function LogSession() {
 
   const handleFinish = useCallback(async () => {
     if (state.status !== 'ready') return;
-    const { day, session, resolvedProgramName, resolvedDayIndex, key } = state;
+    const { day, session, resolvedProgramName, resolvedDayIndex, totalDays, key } = state;
     const today = new Date().toISOString().slice(0, 10);
     const payload = buildSavePayload(session, day, today);
     let db;
@@ -547,10 +551,8 @@ export default function LogSession() {
       return;
     }
     await clearDraft(key).catch(() => {});
-    const programs = await getPrograms(db).catch(() => []);
-    const program = programs.find(p => p.name === resolvedProgramName);
-    if (program) {
-      const nextIdx = nextActiveDayIndex(resolvedDayIndex, program.days.length);
+    if (totalDays > 0) {
+      const nextIdx = nextActiveDayIndex(resolvedDayIndex, totalDays);
       try { updateActiveDayIndex(db, resolvedProgramName, nextIdx); } catch {}
     }
     if (resolvePostSessionAction(session) === 'navigate') {
