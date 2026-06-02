@@ -80,11 +80,11 @@ export async function updateProgramDay(
   await savePrograms(db, programList);
 }
 
-export async function updateActiveDayIndex(
+export function updateActiveDayIndex(
   db: DrizzleDB,
   programName: string,
   dayIndex: number
-): Promise<void> {
+): void {
   db.update(programs).set({ activeDayIndex: dayIndex }).where(eq(programs.name, programName)).run();
 }
 

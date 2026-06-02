@@ -551,7 +551,7 @@ export default function LogSession() {
     const program = programs.find(p => p.name === resolvedProgramName);
     if (program) {
       const nextIdx = nextActiveDayIndex(resolvedDayIndex, program.days.length);
-      await updateActiveDayIndex(db, resolvedProgramName, nextIdx).catch(() => {});
+      try { updateActiveDayIndex(db, resolvedProgramName, nextIdx); } catch {}
     }
     if (resolvePostSessionAction(session) === 'navigate') {
       router.replace(`/progress/${today}`);
