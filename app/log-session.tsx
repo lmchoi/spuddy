@@ -527,6 +527,7 @@ export default function LogSession() {
 
   const handleJump = useCallback((idx: number) => {
     if (state.status !== 'ready') return;
+    cancelRestNotification();
     const next = jumpToExercise(state.session, idx);
     const nextInput = inputFromTarget(state.day, next);
     saveDraft(state.key, next);
@@ -535,6 +536,7 @@ export default function LogSession() {
 
   const handleNextExercise = useCallback(() => {
     if (state.status !== 'ready') return;
+    cancelRestNotification();
     const next = jumpToExercise(state.session, state.session.currentExerciseIdx + 1);
     const nextInput = inputFromTarget(state.day, next);
     saveDraft(state.key, next);

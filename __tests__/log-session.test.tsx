@@ -906,6 +906,20 @@ describe('notifications', () => {
     expect(mockCancelRestNotification).toHaveBeenCalledTimes(1);
   });
 
+  it('cancels rest notification when user jumps to another exercise mid-rest', async () => {
+    (getProgramDay as jest.Mock).mockResolvedValue({
+      name: 'Day A',
+      exercises: [
+        { name: 'Squat', exerciseId: 1, targets: [{ reps: 5, weight: 100, restSeconds: 90 }, { reps: 5, weight: 100, restSeconds: 90 }] },
+        { name: 'Bench', exerciseId: 2, targets: [{ reps: 8, weight: 60 }] },
+      ],
+    });
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    expect(mockCancelRestNotification).toHaveBeenCalledTimes(1);
+  });
 });
 
 // ─── Rest timer — wall clock accuracy ────────────────────────────────────────
