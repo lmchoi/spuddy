@@ -34,7 +34,7 @@ jest.mock('@/src/programStorage', () => ({
   getProgramDay: jest.fn(),
   addProgramDay: jest.fn().mockResolvedValue(undefined),
   getPrograms: jest.fn(),
-  updateActiveDayIndex: jest.fn().mockResolvedValue(undefined),
+  updateActiveDayIndex: jest.fn(),
 }));
 
 jest.mock('@/src/storage', () => ({
@@ -77,7 +77,7 @@ beforeEach(() => {
   (getPrograms as jest.Mock).mockResolvedValue([mockProgram]);
   (saveSession as jest.Mock).mockResolvedValue(undefined);
   (addProgramDay as jest.Mock).mockResolvedValue(undefined);
-  (updateActiveDayIndex as jest.Mock).mockResolvedValue(undefined);
+  (updateActiveDayIndex as jest.Mock).mockReturnValue(undefined);
   (loadDraft as jest.Mock).mockResolvedValue(null);
   (saveDraft as jest.Mock).mockResolvedValue(undefined);
   (clearDraft as jest.Mock).mockResolvedValue(undefined);
