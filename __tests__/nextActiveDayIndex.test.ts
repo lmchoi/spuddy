@@ -13,4 +13,8 @@ describe('nextActiveDayIndex', () => {
   it('wraps with a single-day program', () => {
     expect(nextActiveDayIndex(0, 1)).toBe(0);
   });
+
+  it('returns 0 when total is 0 (invariant violation guard)', () => {
+    expect(nextActiveDayIndex(0, 0)).toBe(0);
+  });
 });
