@@ -61,8 +61,8 @@ export default function SettingsScreen() {
         {programs.length === 0 ? (
           <Text style={styles.empty}>No programs loaded</Text>
         ) : (
-          programs.map(program => (
-            <View key={program.name} style={styles.programSection}>
+          programs.map((program, programIndex) => (
+            <View key={programIndex} style={styles.programSection}>
               <Text style={styles.programName}>{program.name}</Text>
               <View style={styles.dayList}>
                 {program.days.map((day, index) => (
