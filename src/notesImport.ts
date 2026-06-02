@@ -1,7 +1,13 @@
 import type { DrizzleDB } from './storage';
 import type { ParsedNotes, ParsedExercise } from './notesParser';
 import type { Program, ProgramDay, ProgramExercise } from './types';
-import { savePrograms } from './programStorage';
+import { getPrograms, savePrograms } from './programStorage';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function formatImportDate(d: Date): string {
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
 
 export type NotesImportResult =
   | { success: true; programsCreated: number }
@@ -43,8 +49,10 @@ export async function importFromNotes(
       }));
 
     if (days.length === 0) return { success: true, programsCreated: 0 };
-    const program: Program = { name: DEFAULT_PROGRAM_NAME, days, activeDayIndex: 0 };
-    await savePrograms(db, [program]);
+    const name = `${DEFAULT_PROGRAM_NAME} – ${formatImportDate(new Date())}`;
+    const program: Program = { name, days, activeDayIndex: 0 };
+    const existing = await getPrograms(db);
+    await savePrograms(db, [...existing, program]);
     return { success: true, programsCreated: 1 };
   } catch (err) {
     return { success: false, error: String(err) };
