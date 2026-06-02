@@ -1,5 +1,5 @@
 import { handleRestNotificationResponse } from '@/src/notificationHandler';
-import { loadDraft, saveDraft, draftKey } from '@/src/sessionDraft';
+import { loadDraft, saveDraft } from '@/src/sessionDraft';
 import { logSet } from '@/src/domain/sessionLogger';
 import { cancelRestNotification, NEXT_SET_ACTION, REST_TIMER_ID } from '@/src/notifications';
 import type { RestNotificationPayload } from '@/src/domain/restNotification';
