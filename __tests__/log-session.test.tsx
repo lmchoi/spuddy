@@ -1,7 +1,7 @@
 import { Alert, Platform } from 'react-native';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
-import { getProgramDay, addProgramDay, getProgramTotalDays, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
+import { getProgramDay, addProgramDay, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
 import { C } from '@/components/spuddy/palette';
 import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
