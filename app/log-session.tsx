@@ -456,6 +456,11 @@ export default function LogSession() {
     { status: 'loading' }
   );
   const [noteSheetOpen, setNoteSheetOpen] = useState(false);
+
+  useEffect(() => {
+    return () => { cancelRestNotification(); };
+  }, []);
+
   useEffect(() => {
     async function load() {
       try {

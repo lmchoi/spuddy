@@ -896,6 +896,16 @@ describe('notifications', () => {
     await act(async () => { fireEvent.press(screen.getByText('Finish')); });
     expect(mockCancelRestNotification).toHaveBeenCalled();
   });
+
+  it('cancels rest notification when screen unmounts mid-rest', async () => {
+    (getProgramDay as jest.Mock).mockResolvedValue(dayWithRest);
+    const { unmount } = render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { unmount(); });
+    expect(mockCancelRestNotification).toHaveBeenCalledTimes(1);
+  });
+
 });
 
 // ─── Rest timer — wall clock accuracy ────────────────────────────────────────
