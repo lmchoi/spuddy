@@ -104,6 +104,20 @@ describe('programs loaded', () => {
   });
 });
 
+// ─── Duplicate program names ─────────────────────────────────────────────────
+
+describe('duplicate program names', () => {
+  it('renders both programs when two share the same name', async () => {
+    mockGetPrograms.mockResolvedValue([
+      { name: 'My Program – 2 Jun 2026', days: [{ name: 'Push', exercises: [] }] },
+      { name: 'My Program – 2 Jun 2026', days: [{ name: 'Pull', exercises: [] }] },
+    ]);
+    render(<SettingsScreen />);
+    expect(await screen.findByText('Push')).toBeTruthy();
+    expect(screen.getByText('Pull')).toBeTruthy();
+  });
+});
+
 // ─── Import button disabled state ────────────────────────────────────────────
 
 describe('import disabled state', () => {
