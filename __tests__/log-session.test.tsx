@@ -1,4 +1,4 @@
-import { Alert, Platform } from 'react-native';
+import { Alert, AppState, Platform } from 'react-native';
 import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
 import { getProgramDay, addProgramDay, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
@@ -860,5 +860,77 @@ describe('rest timer duration', () => {
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
     expect(screen.getByText('0:05')).toBeTruthy();
+  });
+});
+
+// ─── Rest timer — wall clock accuracy ────────────────────────────────────────
+
+describe('rest timer — wall clock accuracy on foreground resume', () => {
+  const day3sRest = {
+    name: 'Day A',
+    exercises: [
+      {
+        name: 'Squat',
+        exerciseId: 1,
+        // 3 s < 5 s dev cap so effectiveDuration = 3 in these tests
+        targets: [
+          { reps: 5, weight: 100, restSeconds: 3 },
+          { reps: 5, weight: 100, restSeconds: 3 },
+        ],
+      },
+    ],
+  };
+
+  let appStateListeners: Array<(state: string) => void>;
+  let dateNowSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    appStateListeners = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_event: any, handler: any) => {
+      appStateListeners.push(handler);
+      return { remove: jest.fn() } as any;
+    });
+    dateNowSpy = jest.spyOn(Date, 'now');
+    (getProgramDay as jest.Mock).mockResolvedValue(day3sRest);
+  });
+
+  afterEach(() => {
+    dateNowSpy.mockRestore();
+  });
+
+  it('recalculates remaining from wall clock when app returns to foreground', async () => {
+    const t0 = 1_000_000_000_000;
+    dateNowSpy.mockReturnValue(t0);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    expect(screen.getByText('0:03')).toBeTruthy();
+
+    // 2 s elapse while backgrounded
+    dateNowSpy.mockReturnValue(t0 + 2_000);
+
+    await act(async () => { appStateListeners.forEach(fn => fn('active')); });
+
+    expect(screen.getByText('0:01')).toBeTruthy();
+  });
+
+  it('does not recalculate on background or inactive events', async () => {
+    const t0 = 1_000_000_000_000;
+    dateNowSpy.mockReturnValue(t0);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    dateNowSpy.mockReturnValue(t0 + 2_000);
+
+    await act(async () => {
+      appStateListeners.forEach(fn => fn('background'));
+      appStateListeners.forEach(fn => fn('inactive'));
+    });
+
+    // No recalc fired — still shows initial value
+    expect(screen.getByText('0:03')).toBeTruthy();
   });
 });
