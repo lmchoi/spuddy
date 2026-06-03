@@ -797,7 +797,7 @@ describe('exercise note row', () => {
 describe('rest timer duration', () => {
   // __DEV__ is true in Jest, so the 5 s dev cap applies to all durations > 5 s.
   // Prod behaviour (full countdown) is verified manually or via Maestro.
-  it('falls back to DEFAULT_REST_SECONDS when target restSeconds is 0 (shows 0:05 in dev)', async () => {
+  it('skips rest immediately when restSeconds is 0', async () => {
     const dayWithZeroRest = {
       name: 'Day A',
       exercises: [
@@ -815,8 +815,9 @@ describe('rest timer duration', () => {
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
-    // DEFAULT_REST_SECONDS (60) clamped to 5 by __DEV__ guard
-    expect(screen.getByText('0:05')).toBeTruthy();
+    // restSeconds: 0 means no rest — timer should auto-skip, not fall back to DEFAULT_REST_SECONDS
+    expect(screen.queryByText(/Skip rest/i)).toBeNull();
+    expect(screen.getByText(/Done/i)).toBeTruthy();
   });
 
   it('shows configured restSeconds when ≤ 5 s (no dev clamp)', async () => {

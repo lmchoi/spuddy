@@ -91,7 +91,7 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
-  const pct = remaining / effectiveDuration;
+  const pct = effectiveDuration > 0 ? remaining / effectiveDuration : 0;
 
   return (
     <View style={styles.restBlock}>
@@ -367,7 +367,7 @@ function BottomAction({
   if (sessionState.isResting) {
     const targets = day.exercises[exIdx].targets;
     const lastTarget = targets[Math.min(logged - 1, targets.length - 1)];
-    const restDuration = lastTarget?.restSeconds || DEFAULT_REST_SECONDS;
+    const restDuration = lastTarget?.restSeconds ?? DEFAULT_REST_SECONDS;
     return <RestTimer duration={restDuration} onSkip={onSkipRest} />;
   }
 
