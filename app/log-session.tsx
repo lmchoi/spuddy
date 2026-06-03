@@ -36,6 +36,7 @@ import {
   reconcileDraft,
   type SessionState,
 } from '@/src/domain/sessionLogger';
+import { DEFAULT_REST_SECONDS } from '@/src/types';
 import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
@@ -365,7 +366,7 @@ function BottomAction({
   if (sessionState.isResting) {
     const targets = day.exercises[exIdx].targets;
     const lastTarget = targets[Math.min(logged - 1, targets.length - 1)];
-    const restDuration = lastTarget?.restSeconds || 60;
+    const restDuration = lastTarget?.restSeconds || DEFAULT_REST_SECONDS;
     return <RestTimer duration={restDuration} onSkip={onSkipRest} />;
   }
 

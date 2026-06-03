@@ -9,6 +9,8 @@ export type WorkingSet = {
   durationSeconds?: number;
 };
 
+export const DEFAULT_REST_SECONDS = 60;
+
 export type Target = {
   reps: number;
   minReps?: number;    // lower bound of a rep range

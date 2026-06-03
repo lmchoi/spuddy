@@ -1,5 +1,6 @@
 import type { DrizzleDB } from './storage';
 import type { ParsedNotes, ParsedExercise } from './notesParser';
+import { DEFAULT_REST_SECONDS } from './types';
 import type { Program, ProgramDay, ProgramExercise } from './types';
 import { getPrograms, savePrograms } from './programStorage';
 
@@ -18,7 +19,6 @@ export type NotesImportResult =
 // it through to exerciseToProgram. No other files need to change.
 const DEFAULT_SETS = 6;
 const DEFAULT_REPS = 10;
-const DEFAULT_REST_SECONDS = 60;
 const DEFAULT_PROGRAM_NAME = 'My Program';
 
 function exerciseToProgram(ex: ParsedExercise): ProgramExercise {
