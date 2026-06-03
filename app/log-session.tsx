@@ -98,9 +98,12 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
 
   useEffect(() => {
     if (remaining === 0) { onSkip(); return; }
-    const t = setTimeout(recalc, 1000);
+    const t = setTimeout(() => setRemaining(prev => {
+      const next = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+      return next === prev ? prev - 1 : next;
+    }), 1000);
     return () => clearTimeout(t);
-  }, [remaining, onSkip, recalc]);
+  }, [remaining, onSkip, endsAt]);
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;

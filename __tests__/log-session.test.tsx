@@ -1015,3 +1015,4 @@ describe('rest timer — wall clock accuracy on foreground resume', () => {
     expect(screen.getByText('1:00')).toBeTruthy();
   });
 });
+
