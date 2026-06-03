@@ -795,7 +795,9 @@ describe('exercise note row', () => {
 // ─── Rest timer duration ──────────────────────────────────────────────────────
 
 describe('rest timer duration', () => {
-  it('defaults to 1:00 when target restSeconds is 0', async () => {
+  // __DEV__ is true in Jest, so the 5 s dev cap applies to all durations > 5 s.
+  // Prod behaviour (full countdown) is verified manually or via Maestro.
+  it('falls back to DEFAULT_REST_SECONDS when target restSeconds is 0 (shows 0:05 in dev)', async () => {
     const dayWithZeroRest = {
       name: 'Day A',
       exercises: [
@@ -813,27 +815,49 @@ describe('rest timer duration', () => {
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
-    expect(screen.getByText('1:00')).toBeTruthy();
+    // DEFAULT_REST_SECONDS (60) clamped to 5 by __DEV__ guard
+    expect(screen.getByText('0:05')).toBeTruthy();
   });
 
-  it('shows 1:00 when target restSeconds is 60', async () => {
-    const dayWith60sRest = {
+  it('shows configured restSeconds when ≤ 5 s (no dev clamp)', async () => {
+    const dayWith3sRest = {
       name: 'Day A',
       exercises: [
         {
           name: 'Squat',
           exerciseId: 1,
           targets: [
-            { reps: 5, weight: 100, restSeconds: 60 },
-            { reps: 5, weight: 100, restSeconds: 60 },
+            { reps: 5, weight: 100, restSeconds: 3 },
+            { reps: 5, weight: 100, restSeconds: 3 },
           ],
         },
       ],
     };
-    (getProgramDay as jest.Mock).mockResolvedValue(dayWith60sRest);
+    (getProgramDay as jest.Mock).mockResolvedValue(dayWith3sRest);
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
-    expect(screen.getByText('1:00')).toBeTruthy();
+    expect(screen.getByText('0:03')).toBeTruthy();
+  });
+
+  it('clamps to 5 s in dev builds (__DEV__ is true in Jest)', async () => {
+    const dayWith90sRest = {
+      name: 'Day A',
+      exercises: [
+        {
+          name: 'Squat',
+          exerciseId: 1,
+          targets: [
+            { reps: 5, weight: 100, restSeconds: 90 },
+            { reps: 5, weight: 100, restSeconds: 90 },
+          ],
+        },
+      ],
+    };
+    (getProgramDay as jest.Mock).mockResolvedValue(dayWith90sRest);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    expect(screen.getByText('0:05')).toBeTruthy();
   });
 });
