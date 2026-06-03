@@ -872,6 +872,22 @@ describe('notifications', () => {
     await waitFor(() => expect(mockRequestNotificationPermission).toHaveBeenCalledTimes(1));
   });
 
+  it('awaits channel setup before requesting permission', async () => {
+    let resolveChannel!: () => void;
+    mockSetupNotificationChannel.mockImplementationOnce(
+      () => new Promise<void>(res => { resolveChannel = res; })
+    );
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    expect(mockRequestNotificationPermission).not.toHaveBeenCalled();
+
+    await act(async () => { resolveChannel(); });
+
+    expect(mockRequestNotificationPermission).toHaveBeenCalledTimes(1);
+  });
+
   it('schedules rest notification with correct delay when rest starts', async () => {
     (getProgramDay as jest.Mock).mockResolvedValue(dayWithRest);
     render(<LogSession />);

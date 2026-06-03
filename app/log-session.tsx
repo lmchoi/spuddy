@@ -491,8 +491,8 @@ export default function LogSession() {
           }
         }
         setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, resolvedDayIndex, totalDays, key, notes });
-        setupNotificationChannel();
-        requestNotificationPermission();
+        await setupNotificationChannel();
+        await requestNotificationPermission();
       } catch {
         setState({ status: 'empty' });
       }
