@@ -80,7 +80,8 @@ function Stepper({
 // ─── RestTimer ────────────────────────────────────────────────────────────────
 
 function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void }) {
-  const [remaining, setRemaining] = useState(duration);
+  const effectiveDuration = __DEV__ ? Math.min(duration, 5) : duration;
+  const [remaining, setRemaining] = useState(effectiveDuration);
 
   useEffect(() => {
     if (remaining === 0) { onSkip(); return; }
@@ -90,7 +91,7 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
-  const pct = remaining / duration;
+  const pct = remaining / effectiveDuration;
 
   return (
     <View style={styles.restBlock}>
