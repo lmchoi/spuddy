@@ -872,7 +872,7 @@ describe('notifications', () => {
     await waitFor(() => expect(mockRequestNotificationPermission).toHaveBeenCalledTimes(1));
   });
 
-  it('schedules rest notification with correct exercise name and delay when rest starts', async () => {
+  it('schedules rest notification with correct delay when rest starts', async () => {
     (getProgramDay as jest.Mock).mockResolvedValue(dayWithRest);
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
