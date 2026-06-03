@@ -38,6 +38,7 @@ import {
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import { DEFAULT_REST_SECONDS } from '@/src/types';
+import { presentRestExpiredNotification, setupNotificationChannel } from '@/src/notifications';
 import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
@@ -97,7 +98,11 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
   }, [recalc]);
 
   useEffect(() => {
-    if (remaining === 0) { onSkip(); return; }
+    if (remaining === 0) {
+      presentRestExpiredNotification();
+      onSkip();
+      return;
+    }
     const t = setTimeout(recalc, 1000);
     return () => clearTimeout(t);
   }, [remaining, onSkip, recalc]);
@@ -486,6 +491,7 @@ export default function LogSession() {
           }
         }
         setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, resolvedDayIndex, totalDays, key, notes });
+        setupNotificationChannel();
       } catch {
         setState({ status: 'empty' });
       }

@@ -8,6 +8,14 @@ import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import type { SessionState } from '@/src/domain/sessionLogger';
 import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 
+const mockPresentRestExpiredNotification = jest.fn().mockResolvedValue(undefined);
+const mockSetupNotificationChannel = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('@/src/notifications', () => ({
+  presentRestExpiredNotification: (...args: unknown[]) => mockPresentRestExpiredNotification(...args),
+  setupNotificationChannel: (...args: unknown[]) => mockSetupNotificationChannel(...args),
+}));
+
 jest.mock('@/src/sessionDraft', () => ({
   draftKey: jest.fn((name: string, idx: number) => `draft_session__${name}__${idx}`),
   loadDraft: jest.fn().mockResolvedValue(null),
@@ -932,5 +940,43 @@ describe('rest timer — wall clock accuracy on foreground resume', () => {
 
     // No recalc fired — still shows initial value
     expect(screen.getByText('0:03')).toBeTruthy();
+  });
+});
+
+// ─── Rest timer — notification on expiry ──────────────────────────────────────
+
+describe('rest timer — notification on expiry', () => {
+  let appStateListeners: ((state: string) => void)[];
+
+  beforeEach(() => {
+    appStateListeners = [];
+    jest.spyOn(AppState, 'addEventListener').mockImplementation(
+      (_event, handler) => {
+        appStateListeners.push(handler as (state: string) => void);
+        return { remove: jest.fn() };
+      }
+    );
+    mockPresentRestExpiredNotification.mockClear();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('calls presentRestExpiredNotification when the timer reaches zero', async () => {
+    const t0 = 1_000_000_000_000;
+    const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(t0);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    // Advance wall clock past the 5 s DEV cap, then trigger recalc via foreground resume
+    dateNowSpy.mockReturnValue(t0 + 5_001);
+    await act(async () => { appStateListeners.forEach(fn => fn('active')); });
+
+    expect(mockPresentRestExpiredNotification).toHaveBeenCalledTimes(1);
+    dateNowSpy.mockRestore();
   });
 });
