@@ -36,6 +36,7 @@
         }
       ],
       "expo-sqlite",
+      "expo-notifications",
       [
         "@sentry/react-native/expo",
         {
