@@ -1016,3 +1016,49 @@ describe('rest timer — wall clock accuracy on foreground resume', () => {
   });
 });
 
+// ─── Rest timer — stall prevention ───────────────────────────────────────────
+
+describe('rest timer — stall prevention', () => {
+  let dateNowSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    dateNowSpy = jest.spyOn(Date, 'now');
+  });
+
+  afterEach(() => {
+    dateNowSpy.mockRestore();
+    jest.useRealTimers();
+  });
+
+  it('ticks forward when setTimeout fires before the wall-clock second rolls over', async () => {
+    const t0 = 1_000_000_000_000;
+    dateNowSpy.mockReturnValue(t0);
+
+    const dayWith90sRest = {
+      name: 'Day A',
+      exercises: [{
+        name: 'Squat',
+        exerciseId: 1,
+        targets: [
+          { reps: 5, weight: 100, restSeconds: 90 },
+          { reps: 5, weight: 100, restSeconds: 90 },
+        ],
+      }],
+    };
+    (getProgramDay as jest.Mock).mockResolvedValue(dayWith90sRest);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    expect(screen.getByText('1:30')).toBeTruthy();
+
+    // setTimeout fires 999 ms in — wall clock ceiling hasn't changed (still 90)
+    dateNowSpy.mockReturnValue(t0 + 999);
+    await act(async () => { jest.advanceTimersByTime(1000); });
+
+    expect(screen.getByText('1:29')).toBeTruthy();
+  });
+});
+

@@ -36,6 +36,7 @@ describe('requestNotificationPermission', () => {
 
 describe('scheduleRestNotification', () => {
   it('schedules with the correct identifier, content, and delay', async () => {
+    mockCancelScheduledNotificationAsync.mockResolvedValue(undefined);
     mockScheduleNotificationAsync.mockResolvedValue(undefined);
     await scheduleRestNotification(90);
     expect(mockScheduleNotificationAsync).toHaveBeenCalledWith({
@@ -43,6 +44,16 @@ describe('scheduleRestNotification', () => {
       content: { title: 'Time to go again', body: 'Tap to log your next set' },
       trigger: { type: 'timeInterval', seconds: 90, channelId: 'rest-timer' },
     });
+  });
+
+  it('cancels any existing notification before scheduling', async () => {
+    const calls: string[] = [];
+    mockCancelScheduledNotificationAsync.mockImplementation(async () => { calls.push('cancel'); });
+    mockScheduleNotificationAsync.mockImplementation(async () => { calls.push('schedule'); });
+
+    await scheduleRestNotification(90);
+
+    expect(calls).toEqual(['cancel', 'schedule']);
   });
 });
 

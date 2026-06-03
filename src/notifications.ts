@@ -52,6 +52,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
 export async function scheduleRestNotification(delaySeconds: number): Promise<void> {
   const N = getN();
   if (!N) return;
+  await N.cancelScheduledNotificationAsync(REST_NOTIFICATION_ID).catch(() => {});
   await N.scheduleNotificationAsync({
     identifier: REST_NOTIFICATION_ID,
     content: {
