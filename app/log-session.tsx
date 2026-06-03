@@ -2,6 +2,7 @@ import { useEffect, useReducer, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -81,13 +82,25 @@ function Stepper({
 
 function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void }) {
   const effectiveDuration = __DEV__ ? Math.min(duration, 5) : duration;
+  const [endsAt] = useState(() => Date.now() + effectiveDuration * 1000);
   const [remaining, setRemaining] = useState(effectiveDuration);
+
+  const recalc = useCallback(() => {
+    setRemaining(Math.max(0, Math.ceil((endsAt - Date.now()) / 1000)));
+  }, [endsAt]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') recalc();
+    });
+    return () => sub.remove();
+  }, [recalc]);
 
   useEffect(() => {
     if (remaining === 0) { onSkip(); return; }
-    const t = setTimeout(() => setRemaining(r => r - 1), 1000);
+    const t = setTimeout(recalc, 1000);
     return () => clearTimeout(t);
-  }, [remaining, onSkip]);
+  }, [remaining, onSkip, recalc]);
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
