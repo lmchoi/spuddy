@@ -39,6 +39,14 @@ ln -sf "$(pwd)/node_modules" .claude/worktrees/<slug>/node_modules
 ln -sf "$(pwd)/.env" .claude/worktrees/<slug>/.env 2>/dev/null || true
 ```
 
+If `expo run:android` is used in the worktree, prebuild generates a fresh `android/` dir with no `local.properties`. Symlink it from the main repo so Gradle can find the SDK:
+
+```bash
+ln -sf "$(pwd)/android/local.properties" .claude/worktrees/<slug>/android/local.properties
+```
+
+This only applies if `android/local.properties` exists in the main repo and if the worktree has an `android/` dir (i.e. after prebuild has run).
+
 ### Step 4: Verify hooks are wired up
 
 ```bash
