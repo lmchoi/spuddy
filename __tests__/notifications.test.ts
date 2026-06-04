@@ -3,6 +3,7 @@ const mockCancelScheduledNotificationAsync = jest.fn().mockResolvedValue(undefin
 const mockSetNotificationChannelAsync = jest.fn().mockResolvedValue(undefined);
 const mockSetNotificationHandler = jest.fn();
 const mockRequestPermissionsAsync = jest.fn().mockResolvedValue(undefined);
+const mockAddNotificationResponseReceivedListener = jest.fn();
 
 jest.mock('expo-constants', () => ({
   default: { appOwnership: 'standalone' },
@@ -14,6 +15,8 @@ jest.mock('expo-notifications', () => ({
   setNotificationChannelAsync: (...args: unknown[]) => mockSetNotificationChannelAsync(...args),
   setNotificationHandler: (...args: unknown[]) => mockSetNotificationHandler(...args),
   requestPermissionsAsync: (...args: unknown[]) => mockRequestPermissionsAsync(...args),
+  addNotificationResponseReceivedListener: (...args: unknown[]) =>
+    mockAddNotificationResponseReceivedListener(...args),
   AndroidImportance: { HIGH: 4 },
   SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
 }));
@@ -22,6 +25,7 @@ import {
   scheduleRestExpiredNotification,
   cancelRestExpiredNotification,
   setupNotificationChannel,
+  setupNotificationResponseListener,
 } from '@/src/notifications';
 
 beforeEach(() => {
@@ -57,5 +61,30 @@ describe('setupNotificationChannel — permissions', () => {
   it('calls requestPermissionsAsync on every channel setup', async () => {
     await setupNotificationChannel();
     expect(mockRequestPermissionsAsync).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('setupNotificationResponseListener', () => {
+  it('calls navigate when a notification response is received', () => {
+    const mockNavigate = jest.fn();
+    const mockSub = { remove: jest.fn() };
+    mockAddNotificationResponseReceivedListener.mockReturnValue(mockSub);
+
+    setupNotificationResponseListener(mockNavigate);
+
+    const callback = mockAddNotificationResponseReceivedListener.mock.calls[0][0] as () => void;
+    callback();
+
+    expect(mockNavigate).toHaveBeenCalled();
+  });
+
+  it('returns a cleanup function that removes the subscription', () => {
+    const mockSub = { remove: jest.fn() };
+    mockAddNotificationResponseReceivedListener.mockReturnValue(mockSub);
+
+    const cleanup = setupNotificationResponseListener(jest.fn());
+    cleanup();
+
+    expect(mockSub.remove).toHaveBeenCalled();
   });
 });
