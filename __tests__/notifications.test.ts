@@ -2,6 +2,7 @@ const mockScheduleNotificationAsync = jest.fn().mockResolvedValue(undefined);
 const mockCancelScheduledNotificationAsync = jest.fn().mockResolvedValue(undefined);
 const mockSetNotificationChannelAsync = jest.fn().mockResolvedValue(undefined);
 const mockSetNotificationHandler = jest.fn();
+const mockRequestPermissionsAsync = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('expo-constants', () => ({
   default: { appOwnership: 'standalone' },
@@ -12,6 +13,7 @@ jest.mock('expo-notifications', () => ({
   cancelScheduledNotificationAsync: (...args: unknown[]) => mockCancelScheduledNotificationAsync(...args),
   setNotificationChannelAsync: (...args: unknown[]) => mockSetNotificationChannelAsync(...args),
   setNotificationHandler: (...args: unknown[]) => mockSetNotificationHandler(...args),
+  requestPermissionsAsync: (...args: unknown[]) => mockRequestPermissionsAsync(...args),
   AndroidImportance: { HIGH: 4 },
   SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
 }));
@@ -19,6 +21,7 @@ jest.mock('expo-notifications', () => ({
 import {
   scheduleRestExpiredNotification,
   cancelRestExpiredNotification,
+  setupNotificationChannel,
 } from '@/src/notifications';
 
 beforeEach(() => {
@@ -47,5 +50,12 @@ describe('cancelRestExpiredNotification', () => {
   it('cancels by the rest-timer-expiry identifier', async () => {
     await cancelRestExpiredNotification();
     expect(mockCancelScheduledNotificationAsync).toHaveBeenCalledWith('rest-timer-expiry');
+  });
+});
+
+describe('setupNotificationChannel — permissions', () => {
+  it('calls requestPermissionsAsync on every channel setup', async () => {
+    await setupNotificationChannel();
+    expect(mockRequestPermissionsAsync).toHaveBeenCalledTimes(1);
   });
 });
