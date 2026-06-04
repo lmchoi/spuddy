@@ -8,11 +8,13 @@ import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import type { SessionState } from '@/src/domain/sessionLogger';
 import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 
-const mockPresentRestExpiredNotification = jest.fn().mockResolvedValue(undefined);
+const mockScheduleRestExpiredNotification = jest.fn().mockResolvedValue(undefined);
+const mockCancelRestExpiredNotification = jest.fn().mockResolvedValue(undefined);
 const mockSetupNotificationChannel = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('@/src/notifications', () => ({
-  presentRestExpiredNotification: (...args: unknown[]) => mockPresentRestExpiredNotification(...args),
+  scheduleRestExpiredNotification: (...args: unknown[]) => mockScheduleRestExpiredNotification(...args),
+  cancelRestExpiredNotification: (...args: unknown[]) => mockCancelRestExpiredNotification(...args),
   setupNotificationChannel: (...args: unknown[]) => mockSetupNotificationChannel(...args),
 }));
 
@@ -943,27 +945,53 @@ describe('rest timer — wall clock accuracy on foreground resume', () => {
   });
 });
 
-// ─── Rest timer — notification on expiry ──────────────────────────────────────
+// ─── Rest timer — notification scheduling ─────────────────────────────────────
 
-describe('rest timer — notification on expiry', () => {
+describe('rest timer — notification scheduling', () => {
   let appStateListeners: ((state: string) => void)[];
+  let dateNowSpy: jest.SpyInstance;
 
   beforeEach(() => {
     appStateListeners = [];
     jest.spyOn(AppState, 'addEventListener').mockImplementation(
       (_event, handler) => {
         appStateListeners.push(handler as (state: string) => void);
-        return { remove: jest.fn() };
+        return { remove: jest.fn() } as any;
       }
     );
-    mockPresentRestExpiredNotification.mockClear();
+    dateNowSpy = jest.spyOn(Date, 'now');
+    mockScheduleRestExpiredNotification.mockClear();
+    mockCancelRestExpiredNotification.mockClear();
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  it('calls presentRestExpiredNotification when the timer reaches zero', async () => {
+  it('schedules notification when rest timer mounts', async () => {
+    dateNowSpy.mockReturnValue(1_000_000_000_000);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    expect(mockScheduleRestExpiredNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels notification when skip rest is pressed', async () => {
+    dateNowSpy.mockReturnValue(1_000_000_000_000);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    expect(mockCancelRestExpiredNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels notification when timer reaches zero in the foreground', async () => {
     const t0 = 1_000_000_000_000;
     const dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(t0);
 
@@ -972,11 +1000,10 @@ describe('rest timer — notification on expiry', () => {
 
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
 
-    // Advance wall clock past the 5 s DEV cap, then trigger recalc via foreground resume
+    // Advance past the 5 s DEV cap so remaining hits zero
     dateNowSpy.mockReturnValue(t0 + 5_001);
     await act(async () => { appStateListeners.forEach(fn => fn('active')); });
 
-    expect(mockPresentRestExpiredNotification).toHaveBeenCalledTimes(1);
-    dateNowSpy.mockRestore();
+    expect(mockCancelRestExpiredNotification).toHaveBeenCalledTimes(1);
   });
 });

@@ -38,7 +38,7 @@ import {
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import { DEFAULT_REST_SECONDS } from '@/src/types';
-import { presentRestExpiredNotification, setupNotificationChannel } from '@/src/notifications';
+import { scheduleRestExpiredNotification, cancelRestExpiredNotification, setupNotificationChannel } from '@/src/notifications';
 import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
@@ -91,6 +91,12 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
   }, [endsAt]);
 
   useEffect(() => {
+    scheduleRestExpiredNotification(effectiveDuration);
+    return () => { cancelRestExpiredNotification(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const sub = AppState.addEventListener('change', state => {
       if (state === 'active') recalc();
     });
@@ -99,7 +105,6 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
 
   useEffect(() => {
     if (remaining === 0) {
-      presentRestExpiredNotification();
       onSkip();
       return;
     }

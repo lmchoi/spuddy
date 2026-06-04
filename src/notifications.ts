@@ -47,7 +47,7 @@ export async function setupNotificationChannel(): Promise<void> {
   });
 }
 
-export async function presentRestExpiredNotification(): Promise<void> {
+export async function scheduleRestExpiredNotification(seconds: number): Promise<void> {
   const N = getN();
   if (!N) return;
   await N.scheduleNotificationAsync({
@@ -56,6 +56,12 @@ export async function presentRestExpiredNotification(): Promise<void> {
       title: 'Rest complete',
       body: 'Time to go.',
     },
-    trigger: null,
+    trigger: { type: N.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds, repeats: false },
   });
+}
+
+export async function cancelRestExpiredNotification(): Promise<void> {
+  const N = getN();
+  if (!N) return;
+  await N.cancelScheduledNotificationAsync(REST_EXPIRY_CHANNEL_ID);
 }
