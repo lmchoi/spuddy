@@ -31,6 +31,7 @@ const REST_EXPIRY_CHANNEL_ID = 'rest-timer-expiry';
 export async function setupNotificationChannel(): Promise<void> {
   const N = getN();
   if (!N) return;
+  await N.requestPermissionsAsync();
   N.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: true,
