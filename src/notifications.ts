@@ -66,3 +66,12 @@ export async function cancelRestExpiredNotification(): Promise<void> {
   if (!N) return;
   await N.cancelScheduledNotificationAsync(REST_EXPIRY_CHANNEL_ID);
 }
+
+export function setupNotificationResponseListener(navigate: () => void): () => void {
+  const N = getN();
+  if (!N) return () => {};
+  const sub = N.addNotificationResponseReceivedListener(() => {
+    navigate();
+  });
+  return () => sub.remove();
+}
