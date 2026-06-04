@@ -1,5 +1,3 @@
-import '@testing-library/jest-native/extend-expect';
-
 let consoleErrorSpy: jest.SpyInstance;
 
 beforeEach(() => {

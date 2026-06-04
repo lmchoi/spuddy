@@ -39,12 +39,12 @@ describe('TabBarPill', () => {
   describe('add button accessibilityState', () => {
     it('is selected when the add tab is focused', () => {
       render(<TabBarPill state={{ index: 1, routes: [...ROUTES] }} navigation={makeNav()} />);
-      expect(screen.getByLabelText('Add workout')).toHaveAccessibilityState({ selected: true });
+      expect(screen.getByLabelText('Add workout')).toBeSelected();
     });
 
     it('is not selected when another tab is focused', () => {
       render(<TabBarPill state={{ index: 0, routes: [...ROUTES] }} navigation={makeNav()} />);
-      expect(screen.getByLabelText('Add workout')).toHaveAccessibilityState({ selected: false });
+      expect(screen.getByLabelText('Add workout')).not.toBeSelected();
     });
   });
 
