@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { AppState } from 'react-native';
 
 type ExpoNotifications = typeof import('expo-notifications');
 let _N: ExpoNotifications | null = null;
@@ -34,7 +35,7 @@ export async function setupNotificationChannel(): Promise<void> {
   await N.requestPermissionsAsync();
   N.setNotificationHandler({
     handleNotification: async () => ({
-      shouldShowBanner: true,
+      shouldShowBanner: AppState.currentState !== 'active',
       shouldShowList: true,
       shouldPlaySound: false,
       shouldSetBadge: false,
