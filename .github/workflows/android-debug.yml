@@ -43,6 +43,8 @@ jobs:
         run: APP_VARIANT=prerelease npx expo prebuild --platform android --non-interactive
 
       - name: Build release APK
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: cd android && ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK
