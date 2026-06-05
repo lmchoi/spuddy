@@ -6,8 +6,14 @@ const mockGetPrograms = jest.fn();
 const mockImportProgramFromJson = jest.fn();
 const mockGetDocumentAsync = jest.fn();
 const mockPush = jest.fn();
+const mockExportData = jest.fn();
+let mockExporting = false;
+let mockExportError: string | null = null;
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
+jest.mock('@/src/hooks/useExportDatabase', () => ({
+  useExportDatabase: () => ({ exporting: mockExporting, error: mockExportError, exportData: mockExportData }),
+}));
 jest.mock('@/src/programStorage', () => ({
   getPrograms: (...args: unknown[]) => mockGetPrograms(...args),
 }));
@@ -213,5 +219,39 @@ describe('import interaction', () => {
     });
 
     expect(Alert.alert).toHaveBeenCalledWith('Import failed', 'Could not read or parse the file.');
+  });
+});
+
+// ─── Back up data ─────────────────────────────────────────────────────────────
+
+describe('back up data', () => {
+  beforeEach(() => {
+    mockExporting = false;
+    mockExportError = null;
+  });
+
+  it('shows Back up data row in the Data section', async () => {
+    render(<SettingsScreen />);
+    expect(await screen.findByText('Back up data')).toBeTruthy();
+  });
+
+  it('calls exportData when Back up data is pressed', async () => {
+    render(<SettingsScreen />);
+    const button = await screen.findByText('Back up data');
+    fireEvent.press(button);
+    expect(mockExportData).toHaveBeenCalled();
+  });
+
+  it('shows Backing up… and is disabled while exporting', async () => {
+    mockExporting = true;
+    render(<SettingsScreen />);
+    expect(await screen.findByText('Backing up…')).toBeTruthy();
+  });
+
+  it('shows an alert when export errors', async () => {
+    mockExportError = 'disk full';
+    render(<SettingsScreen />);
+    await screen.findByText('Back up data');
+    expect(Alert.alert).toHaveBeenCalledWith('Backup failed', 'disk full');
   });
 });

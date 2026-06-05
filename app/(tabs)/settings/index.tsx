@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Alert, Pressable, ScrollView, StatusBar, Text, View } from 'react-native';
 import { styles } from '@/styles/tabs/settings/index.styles';
 import * as DocumentPicker from 'expo-document-picker';
@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { importProgramFromJson } from '@/src/programImport';
 import { getPrograms } from '@/src/programStorage';
+import { useExportDatabase } from '@/src/hooks/useExportDatabase';
 import type { Program } from '@/src/types';
 
 export default function SettingsScreen() {
@@ -14,6 +15,11 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [importing, setImporting] = useState(false);
+  const { exporting, error: exportError, exportData } = useExportDatabase();
+
+  useEffect(() => {
+    if (exportError) Alert.alert('Backup failed', exportError);
+  }, [exportError]);
 
   useFocusEffect(
     useCallback(() => {
@@ -90,6 +96,17 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Data</Text>
           <View style={styles.dataList}>
+            <Pressable
+              style={({ pressed }) => [styles.dataRow, pressed && styles.dataRowPressed, exporting && styles.dataRowDisabled]}
+              onPress={exportData}
+              disabled={exporting}
+            >
+              <Text style={[styles.dataRowText, exporting && styles.dataRowTextDisabled]}>
+                {exporting ? 'Backing up…' : 'Back up data'}
+              </Text>
+              <Text style={styles.dataRowChevron}>›</Text>
+            </Pressable>
+            <View style={styles.dataSeparator} />
             <Pressable
               style={({ pressed }) => [styles.dataRow, pressed && styles.dataRowPressed, importing && styles.dataRowDisabled]}
               onPress={handleImport}
