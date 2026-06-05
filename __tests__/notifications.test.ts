@@ -72,22 +72,24 @@ describe('setupNotificationChannel — foreground suppression', () => {
   async function getHandler() {
     await setupNotificationChannel();
     return mockSetNotificationHandler.mock.calls[0][0] as {
-      handleNotification: () => Promise<{ shouldShowBanner: boolean }>;
+      handleNotification: () => Promise<{ shouldShowBanner: boolean; shouldShowList: boolean }>;
     };
   }
 
-  it('suppresses banner when app is active (foregrounded)', async () => {
+  it('suppresses banner and list entry when app is active (foregrounded)', async () => {
     mockAppState = 'active';
     const handler = await getHandler();
     const result = await handler.handleNotification();
     expect(result.shouldShowBanner).toBe(false);
+    expect(result.shouldShowList).toBe(false);
   });
 
-  it('shows banner when app is backgrounded', async () => {
+  it('shows banner and list entry when app is backgrounded', async () => {
     mockAppState = 'background';
     const handler = await getHandler();
     const result = await handler.handleNotification();
     expect(result.shouldShowBanner).toBe(true);
+    expect(result.shouldShowList).toBe(true);
   });
 });
 

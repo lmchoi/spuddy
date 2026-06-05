@@ -36,7 +36,7 @@ export async function setupNotificationChannel(): Promise<void> {
   N.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: AppState.currentState !== 'active',
-      shouldShowList: true,
+      shouldShowList: AppState.currentState !== 'active',
       shouldPlaySound: false,
       shouldSetBadge: false,
     }),
