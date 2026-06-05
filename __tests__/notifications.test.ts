@@ -9,6 +9,8 @@ jest.mock('expo-constants', () => ({
   default: { appOwnership: 'standalone' },
 }));
 
+let mockAppState = 'active';
+
 jest.mock('expo-notifications', () => ({
   scheduleNotificationAsync: (...args: unknown[]) => mockScheduleNotificationAsync(...args),
   cancelScheduledNotificationAsync: (...args: unknown[]) => mockCancelScheduledNotificationAsync(...args),
@@ -21,6 +23,7 @@ jest.mock('expo-notifications', () => ({
   SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
 }));
 
+import { AppState } from 'react-native';
 import {
   scheduleRestExpiredNotification,
   cancelRestExpiredNotification,
@@ -30,6 +33,7 @@ import {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  Object.defineProperty(AppState, 'currentState', { get: () => mockAppState, configurable: true });
 });
 
 describe('scheduleRestExpiredNotification', () => {
@@ -61,6 +65,29 @@ describe('setupNotificationChannel — permissions', () => {
   it('calls requestPermissionsAsync on every channel setup', async () => {
     await setupNotificationChannel();
     expect(mockRequestPermissionsAsync).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('setupNotificationChannel — foreground suppression', () => {
+  async function getHandler() {
+    await setupNotificationChannel();
+    return mockSetNotificationHandler.mock.calls[0][0] as {
+      handleNotification: () => Promise<{ shouldShowBanner: boolean }>;
+    };
+  }
+
+  it('suppresses banner when app is active (foregrounded)', async () => {
+    mockAppState = 'active';
+    const handler = await getHandler();
+    const result = await handler.handleNotification();
+    expect(result.shouldShowBanner).toBe(false);
+  });
+
+  it('shows banner when app is backgrounded', async () => {
+    mockAppState = 'background';
+    const handler = await getHandler();
+    const result = await handler.handleNotification();
+    expect(result.shouldShowBanner).toBe(true);
   });
 });
 
