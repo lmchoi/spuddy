@@ -35,8 +35,12 @@ export default function SettingsScreen() {
 
   async function handleNotificationSoundToggle(value: boolean) {
     setNotificationSoundState(value);
-    const db = await getDB();
-    await setNotificationSound(db, value);
+    try {
+      const db = await getDB();
+      await setNotificationSound(db, value);
+    } catch {
+      setNotificationSoundState(!value);
+    }
   }
 
   async function handleImport() {

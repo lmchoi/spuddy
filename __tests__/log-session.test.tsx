@@ -57,6 +57,12 @@ jest.mock('@/src/exerciseStorage', () => ({
   setExerciseNote: jest.fn(),
 }));
 
+const mockGetPreferences = jest.fn().mockResolvedValue({ notificationSound: false });
+
+jest.mock('@/src/preferences', () => ({
+  getPreferences: (...args: unknown[]) => mockGetPreferences(...args),
+}));
+
 const mockDay = {
   name: 'Day A',
   exercises: [
@@ -84,6 +90,7 @@ const mockProgram = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockGetPreferences.mockResolvedValue({ notificationSound: false });
   (getProgramDay as jest.Mock).mockResolvedValue(mockDay);
   (getPrograms as jest.Mock).mockResolvedValue([mockProgram]);
   (saveSession as jest.Mock).mockResolvedValue(undefined);
@@ -942,6 +949,30 @@ describe('rest timer — wall clock accuracy on foreground resume', () => {
 
     // No recalc fired — still shows initial value
     expect(screen.getByText('0:03')).toBeTruthy();
+  });
+});
+
+// ─── Rest timer — notification sound preference ───────────────────────────────
+
+describe('rest timer — notification sound preference', () => {
+  it('schedules notification with sound=true when preference is enabled', async () => {
+    mockGetPreferences.mockResolvedValue({ notificationSound: true });
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    expect(mockScheduleRestExpiredNotification).toHaveBeenCalledWith(
+      expect.any(Number), true
+    );
+  });
+
+  it('schedules notification with sound=false when preference is disabled', async () => {
+    mockGetPreferences.mockResolvedValue({ notificationSound: false });
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    expect(mockScheduleRestExpiredNotification).toHaveBeenCalledWith(
+      expect.any(Number), false
+    );
   });
 });
 

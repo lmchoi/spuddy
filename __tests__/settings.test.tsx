@@ -303,4 +303,13 @@ describe('notification sound toggle', () => {
     fireEvent(screen.getByRole('switch'), 'valueChange', false);
     await waitFor(() => expect(mockSetNotificationSound).toHaveBeenCalledWith(expect.anything(), false));
   });
+
+  it('reverts toggle to previous state when setNotificationSound throws', async () => {
+    mockGetPreferences.mockResolvedValue({ notificationSound: false });
+    mockSetNotificationSound.mockRejectedValueOnce(new Error('db error'));
+    render(<SettingsScreen />);
+    await screen.findByText('Sound when rest is complete');
+    fireEvent(screen.getByRole('switch'), 'valueChange', true);
+    await waitFor(() => expect(screen.getByRole('switch').props.value).toBe(false));
+  });
 });
