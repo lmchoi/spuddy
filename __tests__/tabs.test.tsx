@@ -11,12 +11,22 @@ jest.mock('@/src/programStorage', () => ({
   getProgram: jest.fn().mockResolvedValue(null),
   getPrograms: jest.fn().mockResolvedValue([]),
 }));
+jest.mock('@/src/preferences', () => ({
+  getPreferences: jest.fn().mockResolvedValue({ notificationSound: false }),
+  setNotificationSound: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock('@/src/hooks/useExportDatabase', () => ({
+  useExportDatabase: () => ({ exporting: false, error: null, exportData: jest.fn() }),
+}));
 jest.mock('expo-router', () => ({
   useFocusEffect: (cb: () => void) => cb(),
   useRouter: () => ({ push: jest.fn() }),
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+jest.mock('expo-document-picker', () => ({
+  getDocumentAsync: jest.fn(),
 }));
 
 describe('Progress screen', () => {
