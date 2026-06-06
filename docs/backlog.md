@@ -8,20 +8,14 @@ Sections are ordered by priority. New items land in **Inbox** first; triage move
 
 Core loop for a new user setting up via notes import or a simple program.
 
-- **Select program day** — allow the user to choose which program day to run (e.g. Day A / Day B) before starting a session, rather than always defaulting to the next scheduled day.
-- **Rest timer push notifications** — alert the user when rest expires even if they switch apps. Full spec in `docs/plans/rest-timer-notifications.md`. Depends on rest timer UI (done).
-- **Data export (safety net)** — export all sessions as JSON via the system share sheet. Primary motivation is protecting user data during schema migrations. Already specified in PRD §7.9 as Must Have; implement before any migration that changes the sessions table.
-- **Sentry error monitoring** — open PR exists; crash reporting configured, PII scrubbing resolved, session replay deferred. Remaining: decide on structured logging needs beyond crash reports.
-- **Back button: warn + resume** — pressing back during a session should warn the user and offer to save progress for later resumption. On next session start, offer resume or start fresh. More complex state management.
-- **Migrate to Drizzle ORM** — replace raw `CREATE TABLE IF NOT EXISTS` and manual queries with Drizzle ORM for type safety, automatic migration generation, and robust schema evolution. Do this before public release. Consider `PRAGMA user_version` raw SQL as a lighter alternative if keeping dependencies at zero.
-- **reconcileDraft: match exercises by identity not position** — `reconcileDraft` currently maps `loggedSets` and `extraSetCounts` by array index. Deleting an exercise from the middle of a day silently shifts all subsequent exercises' logged data. Fix by matching on `exerciseId` (or `name` as fallback). Superseded by program versioning if that lands first — see `docs/ideas/program-versioning.md`.
-- **Android UI alignment** — standardise spacing, typography, and touch targets per `docs/plans/android-ui-alignment.md`. Phase 1 (design tokens + ADR 014) is drafted; implementation not started. Every new screen without tokens is another one to retrofit.
-- **App versioning** — align the GitHub release tag, `app.json` `version`, and `android.versionCode` / `ios.buildNumber` so they stay in sync. Decide on a versioning policy (e.g. semver tags drive `app.json`). Gets messier the more releases are cut without a policy.
+- **Notification sound toggle** — let users enable/disable sound on rest-expiry notifications from Settings. Off by default (preserves current behaviour). Requires a new `preferences` SQLite table (groundwork for future settings) and a second Android notification channel. Full spec in `docs/plans/notification-sound-toggle.md`. Depends on rest-timer-notifications (done).
+- **Back button: session exit UX** — the current back-press behaviour during a live session is undefined/jarring. Needs UX design before implementation: what should happen (warn, auto-save draft, silent discard)? Resume already exists (v0.0.2); this is about defining and wiring the exit path consistently. Start with a UX spec before touching code.
 
 ## Next milestone (Strong parity)
 
 Features needed for a power user migrating from Strong with years of history.
 
+- **App versioning** — align the GitHub release tag, `app.json` `version`, and `android.versionCode` / `ios.buildNumber` so they stay in sync. Decide on a versioning policy (e.g. semver tags drive `app.json`). Gets messier the more releases are cut without a policy.
 - **Integrate canonical exercise library** — choose and bundle a canonical exercise library (e.g. free-exercise-db) with muscle group, equipment, and image data. Required before exercise DB matching, swap exercise, and any muscle-group-aware features can be built. See ADR-008 for context.
 - **Show PRs during session** — surface the user's best performance per exercise while logging. Cross-reference with `docs/plans/personal-records.md`.
 - **Strong import dedup** — re-importing the same file appends duplicate sessions. A content-hash or date-based dedup check can be added without any schema change.
@@ -37,12 +31,15 @@ Features needed for a power user migrating from Strong with years of history.
 - **Program editor: prevent empty day + warn on active draft** — the day editor should reject deleting the last exercise in a day (keeping empty days impossible), and show a warning when a session draft exists for that day. Short-term fix for program-session consistency; see `docs/ideas/program-versioning.md` for the preferred long-term approach.
 - **Save session as new day or replace** — when finishing, allow saving to a different date or overwriting an existing session for that date.
 - **Imported session target display preference** — currently we hide the "on target" card when a session has no targets (imported history). A future setting could let users choose: hide / assume met / show N/A. Defer until there's user demand. Designed to be cheap: one `AsyncStorage` key, three options, no data-model change.
+- **Semantic palette roles** — add `C.outline` and other M3-style roles to `palette.ts` alongside existing names. No visual change; groundwork for dark mode when that becomes a priority.
+- **potato.png → WebP** — convert the splash/empty-state potato image to WebP to cut bundle size. Not currently imported anywhere so no rush; revisit when the asset is wired up.
 
 ## Blocked
 
 Items that can't be picked up until a dependency lands.
 
 - **Swap exercise** — swap an exercise mid-session for an equivalent. Blocked on exercise DB integration (see Exercise DB matching above).
+- **reconcileDraft: match exercises by identity not position** — `reconcileDraft` maps `loggedSets` and `extraSetCounts` by array index; deleting a mid-day exercise would silently shift logged data onto the wrong exercises. Blocked on delete exercise (not yet built — no delete path exists in the codebase). Superseded by program versioning if that lands first — see `docs/ideas/program-versioning.md`.
 
 ## Inbox
 
