@@ -93,6 +93,59 @@ describe('setupNotificationChannel — foreground suppression', () => {
   });
 });
 
+describe('setupNotificationChannel — channel registration', () => {
+  it('registers both rest-timer-expiry and rest-timer-expiry-sound channels', async () => {
+    await setupNotificationChannel();
+    const channelIds = mockSetNotificationChannelAsync.mock.calls.map(
+      (call: unknown[]) => call[0]
+    );
+    expect(channelIds).toContain('rest-timer-expiry');
+    expect(channelIds).toContain('rest-timer-expiry-sound');
+  });
+});
+
+describe('scheduleRestExpiredNotification — sound routing', () => {
+  beforeEach(async () => {
+    await setupNotificationChannel();
+  });
+
+  it('routes to rest-timer-expiry-sound channel when sound is true', async () => {
+    await scheduleRestExpiredNotification(90, true);
+    const call = mockScheduleNotificationAsync.mock.calls[0][0] as { trigger: { channelId?: string } };
+    expect(call.trigger.channelId).toBe('rest-timer-expiry-sound');
+  });
+
+  it('routes to rest-timer-expiry channel when sound is false', async () => {
+    await scheduleRestExpiredNotification(90, false);
+    const call = mockScheduleNotificationAsync.mock.calls[0][0] as { trigger: { channelId?: string } };
+    expect(call.trigger.channelId).toBe('rest-timer-expiry');
+  });
+
+  it('defaults to rest-timer-expiry channel (backward-compatible)', async () => {
+    await scheduleRestExpiredNotification(90);
+    const call = mockScheduleNotificationAsync.mock.calls[0][0] as { trigger: { channelId?: string } };
+    expect(call.trigger.channelId).toBe('rest-timer-expiry');
+  });
+
+  it('handler shouldPlaySound is true after scheduling with sound: true', async () => {
+    await scheduleRestExpiredNotification(90, true);
+    const handler = mockSetNotificationHandler.mock.calls[0][0] as {
+      handleNotification: () => Promise<{ shouldPlaySound: boolean }>;
+    };
+    const result = await handler.handleNotification();
+    expect(result.shouldPlaySound).toBe(true);
+  });
+
+  it('handler shouldPlaySound is false after scheduling with sound: false', async () => {
+    await scheduleRestExpiredNotification(90, false);
+    const handler = mockSetNotificationHandler.mock.calls[0][0] as {
+      handleNotification: () => Promise<{ shouldPlaySound: boolean }>;
+    };
+    const result = await handler.handleNotification();
+    expect(result.shouldPlaySound).toBe(false);
+  });
+});
+
 describe('setupNotificationResponseListener', () => {
   it('calls navigate when a notification response is received', () => {
     const mockNavigate = jest.fn();

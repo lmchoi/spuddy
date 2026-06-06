@@ -7,6 +7,8 @@ const mockImportProgramFromJson = jest.fn();
 const mockGetDocumentAsync = jest.fn();
 const mockPush = jest.fn();
 const mockExportData = jest.fn();
+const mockGetPreferences = jest.fn();
+const mockSetNotificationSound = jest.fn();
 let mockExporting = false;
 let mockExportError: string | null = null;
 
@@ -33,6 +35,10 @@ jest.mock('expo-router', () => ({
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
+jest.mock('@/src/preferences', () => ({
+  getPreferences: (...args: unknown[]) => mockGetPreferences(...args),
+  setNotificationSound: (...args: unknown[]) => mockSetNotificationSound(...args),
+}));
 
 // Mock Alert
 jest.spyOn(Alert, 'alert').mockImplementation(() => {});
@@ -40,6 +46,8 @@ jest.spyOn(Alert, 'alert').mockImplementation(() => {});
 beforeEach(() => {
   jest.clearAllMocks();
   mockGetPrograms.mockResolvedValue([]);
+  mockGetPreferences.mockResolvedValue({ notificationSound: false });
+  mockSetNotificationSound.mockResolvedValue(undefined);
 });
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
@@ -253,5 +261,55 @@ describe('back up data', () => {
     render(<SettingsScreen />);
     await screen.findByText('Back up data');
     expect(Alert.alert).toHaveBeenCalledWith('Backup failed', 'disk full');
+  });
+});
+
+// ─── Notification sound toggle ────────────────────────────────────────────────
+
+describe('notification sound toggle', () => {
+  it('renders the Notifications section with the sound toggle label', async () => {
+    render(<SettingsScreen />);
+    expect(await screen.findByText('Sound when rest is complete')).toBeTruthy();
+  });
+
+  it('toggle is off when preference is false', async () => {
+    mockGetPreferences.mockResolvedValue({ notificationSound: false });
+    render(<SettingsScreen />);
+    await screen.findByText('Sound when rest is complete');
+    const toggle = screen.getByRole('switch');
+    expect(toggle.props.value).toBe(false);
+  });
+
+  it('toggle is on when preference is true', async () => {
+    mockGetPreferences.mockResolvedValue({ notificationSound: true });
+    render(<SettingsScreen />);
+    await screen.findByText('Sound when rest is complete');
+    const toggle = screen.getByRole('switch');
+    expect(toggle.props.value).toBe(true);
+  });
+
+  it('calls setNotificationSound with true when toggled on', async () => {
+    mockGetPreferences.mockResolvedValue({ notificationSound: false });
+    render(<SettingsScreen />);
+    await screen.findByText('Sound when rest is complete');
+    fireEvent(screen.getByRole('switch'), 'valueChange', true);
+    await waitFor(() => expect(mockSetNotificationSound).toHaveBeenCalledWith(expect.anything(), true));
+  });
+
+  it('calls setNotificationSound with false when toggled off', async () => {
+    mockGetPreferences.mockResolvedValue({ notificationSound: true });
+    render(<SettingsScreen />);
+    await screen.findByText('Sound when rest is complete');
+    fireEvent(screen.getByRole('switch'), 'valueChange', false);
+    await waitFor(() => expect(mockSetNotificationSound).toHaveBeenCalledWith(expect.anything(), false));
+  });
+
+  it('reverts toggle to previous state when setNotificationSound throws', async () => {
+    mockGetPreferences.mockResolvedValue({ notificationSound: false });
+    mockSetNotificationSound.mockRejectedValueOnce(new Error('db error'));
+    render(<SettingsScreen />);
+    await screen.findByText('Sound when rest is complete');
+    fireEvent(screen.getByRole('switch'), 'valueChange', true);
+    await waitFor(() => expect(screen.getByRole('switch').props.value).toBe(false));
   });
 });

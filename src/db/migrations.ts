@@ -13,6 +13,12 @@ export const migrations = {
         tag: '0001_exercise_notes',
         breakpoints: true,
       },
+      {
+        idx: 2,
+        when: 1780308101055,
+        tag: '0002_preferences',
+        breakpoints: true,
+      },
     ],
   },
   migrations: {
@@ -60,5 +66,6 @@ export const migrations = {
       "CREATE INDEX `idx_sessions_exercise` ON `sessions` (`exercise_id`);",
     ].join("\n"),
     m0001: "ALTER TABLE `exercises` ADD `notes` text;",
+    m0002: "CREATE TABLE `preferences` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`notification_sound` integer DEFAULT false NOT NULL\n);",
   },
 };

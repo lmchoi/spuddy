@@ -28,6 +28,9 @@ function getN(): ExpoNotifications | null {
 }
 
 const REST_EXPIRY_CHANNEL_ID = 'rest-timer-expiry';
+const REST_EXPIRY_SOUND_CHANNEL_ID = 'rest-timer-expiry-sound';
+
+let _currentShouldPlaySound = false;
 
 export async function setupNotificationChannel(): Promise<void> {
   const N = getN();
@@ -37,7 +40,7 @@ export async function setupNotificationChannel(): Promise<void> {
     handleNotification: async () => ({
       shouldShowBanner: AppState.currentState !== 'active',
       shouldShowList: AppState.currentState !== 'active',
-      shouldPlaySound: false,
+      shouldPlaySound: _currentShouldPlaySound,
       shouldSetBadge: false,
     }),
   });
@@ -47,18 +50,26 @@ export async function setupNotificationChannel(): Promise<void> {
     enableVibrate: true,
     sound: null,
   });
+  await N.setNotificationChannelAsync(REST_EXPIRY_SOUND_CHANNEL_ID, {
+    name: 'Rest complete (sound)',
+    importance: N.AndroidImportance.HIGH,
+    enableVibrate: true,
+    sound: 'default',
+  });
 }
 
-export async function scheduleRestExpiredNotification(seconds: number): Promise<void> {
+export async function scheduleRestExpiredNotification(seconds: number, sound = false): Promise<void> {
   const N = getN();
   if (!N) return;
+  _currentShouldPlaySound = sound;
+  const channelId = sound ? REST_EXPIRY_SOUND_CHANNEL_ID : REST_EXPIRY_CHANNEL_ID;
   await N.scheduleNotificationAsync({
     identifier: REST_EXPIRY_CHANNEL_ID,
     content: {
       title: 'Rest complete',
       body: 'Time to go.',
     },
-    trigger: { type: N.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds, repeats: false },
+    trigger: { type: N.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds, repeats: false, channelId },
   });
 }
 

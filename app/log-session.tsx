@@ -39,6 +39,7 @@ import {
 } from '@/src/domain/sessionLogger';
 import { DEFAULT_REST_SECONDS } from '@/src/types';
 import { scheduleRestExpiredNotification, cancelRestExpiredNotification, setupNotificationChannel } from '@/src/notifications';
+import { getPreferences } from '@/src/preferences';
 import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
@@ -81,7 +82,7 @@ function Stepper({
 
 // ─── RestTimer ────────────────────────────────────────────────────────────────
 
-function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void }) {
+function RestTimer({ duration, onSkip, sound }: { duration: number; onSkip: () => void; sound: boolean }) {
   const effectiveDuration = __DEV__ ? Math.min(duration, 5) : duration;
   const [endsAt] = useState(() => Date.now() + effectiveDuration * 1000);
   const [remaining, setRemaining] = useState(effectiveDuration);
@@ -91,7 +92,7 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
   }, [endsAt]);
 
   useEffect(() => {
-    scheduleRestExpiredNotification(effectiveDuration);
+    scheduleRestExpiredNotification(effectiveDuration, sound);
     return () => { cancelRestExpiredNotification(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -370,6 +371,7 @@ function BottomAction({
   onSkipRest,
   onNextExercise,
   onFinish,
+  notificationSound,
 }: {
   day: ProgramDay;
   sessionState: SessionState;
@@ -382,6 +384,7 @@ function BottomAction({
   onSkipRest: () => void;
   onNextExercise: () => void;
   onFinish: () => void;
+  notificationSound: boolean;
 }) {
   const exIdx = sessionState.currentExerciseIdx;
   const logged = sessionState.loggedSets[exIdx].length;
@@ -391,7 +394,7 @@ function BottomAction({
     const targets = day.exercises[exIdx].targets;
     const lastTarget = targets[Math.min(logged - 1, targets.length - 1)];
     const restDuration = lastTarget?.restSeconds ?? DEFAULT_REST_SECONDS;
-    return <RestTimer duration={restDuration} onSkip={onSkipRest} />;
+    return <RestTimer duration={restDuration} onSkip={onSkipRest} sound={notificationSound} />;
   }
 
   if (isSessionDone(sessionState, day)) {
@@ -448,7 +451,7 @@ function BottomAction({
 type ScreenState =
   | { status: 'loading' }
   | { status: 'empty' }
-  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string; resolvedDayIndex: number; totalDays: number; key: string; notes: Record<number, string> };
+  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string; resolvedDayIndex: number; totalDays: number; key: string; notes: Record<number, string>; notificationSound: boolean };
 
 function inputFromTarget(day: ProgramDay, session: SessionState): InputState {
   const exIdx = session.currentExerciseIdx;
@@ -495,7 +498,8 @@ export default function LogSession() {
             if (note) notes[ex.exerciseId] = note;
           }
         }
-        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, resolvedDayIndex, totalDays, key, notes });
+        const prefs = await getPreferences(db);
+        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, resolvedDayIndex, totalDays, key, notes, notificationSound: prefs.notificationSound });
         setupNotificationChannel();
       } catch {
         setState({ status: 'empty' });
@@ -637,7 +641,7 @@ export default function LogSession() {
     );
   }
 
-  const { day, session, input, notes } = state;
+  const { day, session, input, notes, notificationSound } = state;
   const exIdx = session.currentExerciseIdx;
   const ex = day.exercises[exIdx];
   const { done: doneSets, total: totalSets } = sessionProgress(session, day);
@@ -697,6 +701,7 @@ export default function LogSession() {
           onSkipRest={handleSkipRest}
           onNextExercise={handleNextExercise}
           onFinish={handleFinish}
+          notificationSound={notificationSound}
         />
       </View>
 

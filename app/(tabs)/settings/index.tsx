@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Alert, Pressable, ScrollView, StatusBar, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StatusBar, Switch, Text, View } from 'react-native';
 import { styles } from '@/styles/tabs/settings/index.styles';
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getDB } from '@/src/db';
 import { importProgramFromJson } from '@/src/programImport';
 import { getPrograms } from '@/src/programStorage';
+import { getPreferences, setNotificationSound } from '@/src/preferences';
 import { useExportDatabase } from '@/src/hooks/useExportDatabase';
 import type { Program } from '@/src/types';
 
@@ -15,6 +16,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [importing, setImporting] = useState(false);
+  const [notificationSound, setNotificationSoundState] = useState(false);
   const { exporting, error: exportError, exportData } = useExportDatabase();
 
   useEffect(() => {
@@ -23,9 +25,23 @@ export default function SettingsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      getDB().then(db => getPrograms(db)).then(setPrograms).catch(console.error);
+      getDB().then(async db => {
+        const [progs, prefs] = await Promise.all([getPrograms(db), getPreferences(db)]);
+        setPrograms(progs);
+        setNotificationSoundState(prefs.notificationSound);
+      }).catch(console.error);
     }, [])
   );
+
+  async function handleNotificationSoundToggle(value: boolean) {
+    setNotificationSoundState(value);
+    try {
+      const db = await getDB();
+      await setNotificationSound(db, value);
+    } catch {
+      setNotificationSoundState(!value);
+    }
+  }
 
   async function handleImport() {
     const result = await DocumentPicker.getDocumentAsync({
@@ -92,6 +108,19 @@ export default function SettingsScreen() {
             </View>
           ))
         )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Notifications</Text>
+          <View style={styles.dataList}>
+            <View style={styles.dataRow}>
+              <Text style={styles.dataRowText}>Sound when rest is complete</Text>
+              <Switch
+                value={notificationSound}
+                onValueChange={handleNotificationSoundToggle}
+              />
+            </View>
+          </View>
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Data</Text>
