@@ -15,6 +15,13 @@
       "when": 1780221701055,
       "tag": "0001_exercise_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1780308101055,
+      "tag": "0002_preferences",
+      "breakpoints": true
     }
   ]
 }

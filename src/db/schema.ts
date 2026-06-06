@@ -49,3 +49,8 @@ export const programExercises = sqliteTable('program_exercises', {
     .references(() => exercises.id),
   targetsJson: text('targets_json').notNull(),
 });
+
+export const preferences = sqliteTable('preferences', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  notificationSound: integer('notification_sound', { mode: 'boolean' }).notNull().default(false),
+});
