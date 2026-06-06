@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spuddy · Exercise Card Interactions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #181109;
+  --bg2:      #1F1610;
+  --surface:  #251A12;
+  --card:     #2E2218;
+  --card2:    #382A1B;
+  --border:   #3A2C1F;
+  --borderHi: #52402C;
+  --text:     #F5EDDD;
+  --text2:    #D6C2A2;
+  --sub:      #A89175;
+  --muted:    #6B5639;
+  --hit:      #B7D26A;
+  --hitBg:    #2F3D1B;
+  --below:    #E8884A;
+  --belowBg:  #3D2517;
+  --push:     #B7D26A;
+  --pull:     #4FC3D8;
+  --legs:     #E8884A;
+  --pushBg:   #232E14;
+  --pullBg:   #112830;
+  --legsBg:   #3D2517;
+}
+
+html { background: #0D0A06; font-family: 'IBM Plex Mono', monospace; }
+body {
+  min-height: 100vh; padding: 48px 24px 80px;
+  background: #0D0A06;
+  background-image: radial-gradient(ellipse 50% 30% at 15% 5%, rgba(183,210,106,0.05) 0%, transparent 70%);
+}
+
+.page-title { text-align:center; color:var(--sub); font-size:9px; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:4px; }
+.page-sub   { text-align:center; color:var(--muted); font-size:9px; letter-spacing:0.1em; margin-bottom:52px; }
+
+.layout { display:flex; gap:48px; justify-content:center; align-items:flex-start; flex-wrap:wrap; }
+
+/* annotation column */
+.annotations {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 114px; /* align with first card */
+}
+.ann {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+.ann:last-child { border-bottom: 1px solid var(--border); }
+.ann-arrow { color: var(--hit); font-size: 14px; flex-shrink: 0; margin-top:1px; }
+.ann-text { color: var(--sub); font-size: 10px; line-height: 1.6; letter-spacing: 0.04em; }
+.ann-text strong { color: var(--text2); display:block; margin-bottom:2px; font-size:10px; }
+
+/* PHONE */
+.phone {
+  width: 375px; background: var(--bg); border-radius: 40px;
+  overflow: hidden; border: 1px solid var(--borderHi);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.9), 0 40px 100px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04);
+  position: relative;
+}
+
+/* STATUS */
+.sbar { height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; }
+.sbar-time { color:var(--text); font-size:12px; font-weight:600; }
+.sbar-r { display:flex; gap:5px; color:var(--text); font-size:10px; }
+
+/* HEADER */
+.s-header { padding: 4px 8px 0; background: var(--bg); }
+.s-header-row { display:flex; align-items:center; gap:4px; }
+.s-back { font-size:28px; color:var(--text); padding:4px 8px 4px 4px; font-weight:300; }
+.s-title { font-size:18px; font-weight:600; color:var(--text); }
+.s-sub { font-size:13px; color:var(--sub); margin-left:2px; }
+
+/* BALANCE BAR */
+.bal {
+  padding: 8px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.bal-row { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+.bal-lbl { font-size:9px; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; flex:1; }
+.bal-warn { font-size:9px; color:var(--below); letter-spacing:0.1em; }
+.bal-bar {
+  height:4px; border-radius:2px; background:var(--border);
+  overflow:hidden; display:flex; gap:1px;
+}
+.bal-seg { height:100%; border-radius:1px; }
+.bal-seg.push { background:var(--push); }
+.bal-seg.pull { background:var(--pull); }
+.bal-seg.grey { background:var(--muted); opacity:0.35; }
+.bal-legend { display:flex; gap:10px; margin-top:5px; }
+.bal-item { display:flex; align-items:center; gap:3px; font-size:8px; letter-spacing:0.06em; }
+.bal-item span { color:var(--sub); }
+.bal-item.dim span { color:var(--muted); }
+.bal-dot { width:5px; height:5px; border-radius:50%; }
+
+/* LIST */
+.s-body { padding: 10px 14px 24px; display:flex; flex-direction:column; gap:6px; }
+
+/* CARD */
+.ex-card {
+  background: var(--card); border-radius:12px;
+  border: 1px solid var(--border); overflow:hidden;
+  transition: border-color 0.12s;
+}
+
+/* The whole header row — tapping it expands/collapses */
+.ex-row {
+  display:flex; align-items:center;
+  padding: 12px 12px 12px 12px;
+  gap: 8px; cursor: pointer;
+  user-select: none;
+}
+.ex-row:hover { background: rgba(255,255,255,0.01); }
+.ex-row:active { opacity: 0.8; }
+
+.ex-tri {
+  font-size:13px; color:var(--sub); width:14px; flex-shrink:0;
+  transition: transform 0.15s;
+}
+.ex-card.open .ex-tri { transform: rotate(90deg); }
+
+.ex-body { flex:1; min-width:0; }
+
+/* The name — separate pressable inside the row */
+.ex-name-btn {
+  display: inline-block;
+  font-size:15px; font-weight:500; color:var(--text);
+  cursor: pointer;
+  /* subtle underline to hint it's a separate tap target */
+  border-bottom: 1px solid var(--borderHi);
+  padding-bottom: 1px;
+  transition: color 0.12s, border-color 0.12s;
+}
+.ex-name-btn:hover { color:var(--text2); border-bottom-color: var(--sub); }
+
+.ex-sum { font-size:12px; color:var(--sub); margin-top:3px; }
+.ex-notarget { font-size:11px; color:var(--muted); letter-spacing:0.03em; margin-top:3px; }
+
+.ex-chev { font-size:18px; color:var(--muted); font-weight:300; flex-shrink:0; }
+
+/* EXPANDED GRID */
+.ex-grid {
+  border-top: 1px solid rgba(58,44,31,0.6);
+  padding: 8px 10px 10px;
+  display: none;
+}
+.ex-card.open .ex-grid { display: block; }
+
+.g-head { display:grid; grid-template-columns:32px 80px 90px 72px 36px; margin-bottom:4px; }
+.g-lbl { font-size:10px; font-weight:600; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase; text-align:center; }
+.g-row {
+  display:grid; grid-template-columns:32px 80px 90px 72px 36px;
+  align-items:center; min-height:34px;
+  border-bottom:1px solid rgba(58,44,31,0.3);
+}
+.g-row:last-child { border:none; }
+.g-cell { font-size:14px; color:var(--text); text-align:center; }
+.g-dim  { font-size:14px; color:var(--muted); text-align:center; }
+.g-actions { display:flex; align-items:center; gap:16px; padding-top:8px; padding-left:32px; }
+.g-addset { font-size:13px; color:var(--sub); font-weight:500; background:none; border:none; font-family:inherit; cursor:pointer; padding:4px 0; }
+.g-delex  { font-size:13px; color:var(--below); background:none; border:none; font-family:inherit; cursor:pointer; padding:4px 0; }
+
+.add-ex { padding:14px; text-align:center; color:var(--sub); font-size:14px; font-weight:500; cursor:pointer; }
+
+
+/* ── OVERLAY + SHEET ── */
+.overlay {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0.55); backdrop-filter:blur(3px);
+  display:none; align-items:flex-end;
+  z-index:100; border-radius:40px; overflow:hidden;
+}
+.overlay.open { display:flex; }
+
+.sheet {
+  width:100%; background:var(--surface);
+  border-top:1px solid var(--borderHi);
+  border-radius:22px 22px 0 0;
+  animation: up 0.22s cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes up { from { transform:translateY(110%); } to { transform:translateY(0); } }
+
+.sheet-handle { width:36px; height:4px; background:var(--borderHi); border-radius:2px; margin:12px auto 0; }
+
+.sheet-sec { padding:16px 20px; }
+.sheet-sec + .sheet-sec { border-top:1px solid var(--border); }
+.sheet-sec-lbl { font-size:9px; color:var(--muted); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:10px; }
+
+.sheet-input {
+  font-family:inherit; font-size:16px; font-weight:500;
+  color:var(--text); background:var(--card);
+  border:1px solid var(--borderHi); border-radius:8px;
+  padding:10px 12px; width:100%; outline:none;
+}
+.sheet-input:focus { border-color:var(--hit); }
+
+.match-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:12px;
+}
+.match-card-head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:8px; }
+.match-card-name { font-size:13px; font-weight:500; color:var(--text); }
+.match-card-src  { font-size:9px; color:var(--muted); letter-spacing:0.06em; margin-top:2px; }
+.conf { font-size:9px; letter-spacing:0.1em; background:var(--hitBg); color:var(--hit); border-radius:4px; padding:2px 7px; flex-shrink:0; }
+
+.pills { display:flex; flex-wrap:wrap; gap:4px; }
+.pill {
+  font-size:8px; letter-spacing:0.1em; text-transform:uppercase;
+  border-radius:4px; padding:2px 6px; font-weight:500;
+}
+.pill.push { background:var(--pushBg); color:var(--push); border:1px solid rgba(183,210,106,0.18); }
+.pill.pull { background:var(--pullBg); color:var(--pull); border:1px solid rgba(79,195,216,0.18); }
+.pill.legs { background:var(--legsBg); color:var(--legs); border:1px solid rgba(232,136,74,0.18); }
+
+.no-match {
+  background:var(--card); border:1px dashed var(--border);
+  border-radius:10px; padding:16px; text-align:center;
+}
+.no-match-text { font-size:11px; color:var(--muted); letter-spacing:0.04em; line-height:1.7; }
+
+.sheet-btns { display:flex; gap:8px; padding:12px 20px 28px; }
+.btn-primary {
+  flex:1; background:var(--hit); color:#162006;
+  border:none; border-radius:9px; padding:12px;
+  font-family:inherit; font-size:11px; font-weight:700;
+  letter-spacing:0.12em; text-transform:uppercase; cursor:pointer;
+}
+.btn-secondary {
+  background:transparent; color:var(--sub);
+  border:1px solid var(--border); border-radius:9px;
+  padding:12px 16px; font-family:inherit; font-size:11px;
+  letter-spacing:0.1em; cursor:pointer;
+}
+.btn-dismiss {
+  width:100%; background:transparent; color:var(--muted);
+  border:none; font-family:inherit; font-size:10px;
+  letter-spacing:0.1em; padding:0 20px 20px;
+  cursor:pointer; text-align:center; display:block;
+}
+
+/* tap zone flash feedback */
+.flash { animation: flash 0.25s ease; }
+@keyframes flash { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+</style>
+</head>
+<body>
+
+<div class="page-title">Spuddy · Exercise Card — Two Tap Zones</div>
+<div class="page-sub">Tap the underlined name → edit sheet &nbsp;·&nbsp; Tap anywhere else on the row → expand sets</div>
+
+<div class="layout">
+
+  <!-- ANNOTATIONS LEFT -->
+  <div class="annotations">
+    <div class="ann">
+      <div class="ann-arrow">→</div>
+      <div class="ann-text">
+        <strong>Tap name</strong>
+        Opens edit sheet — rename + library match. Name has a subtle underline to hint it's pressable.
+      </div>
+    </div>
+    <div class="ann">
+      <div class="ann-arrow">→</div>
+      <div class="ann-text">
+        <strong>Tap anywhere else on row</strong>
+        Expands / collapses the set grid. Same behaviour as today.
+      </div>
+    </div>
+    <div class="ann">
+      <div class="ann-arrow">→</div>
+      <div class="ann-text">
+        <strong>Unmatched exercise</strong>
+        Cards look identical — no warning on the card itself. The greyed segment in the balance bar is the only signal.
+      </div>
+    </div>
+    <div class="ann">
+      <div class="ann-arrow">→</div>
+      <div class="ann-text">
+        <strong>Tap unmatched name</strong>
+        Sheet shows "no match found" with a Search button. Dismissing leaves the exercise unchanged.
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE -->
+  <div class="phone">
+    <div class="sbar">
+      <span class="sbar-time">9:41</span>
+      <div class="sbar-r"><span>▲▲▲</span><span>WiFi</span><span>⬛</span></div>
+    </div>
+
+    <div class="s-header">
+      <div class="s-header-row">
+        <div class="s-back">‹</div>
+        <span class="s-title">Push Day</span>
+        <span class="s-sub">· 4 exercises</span>
+      </div>
+      <div class="bal">
+        <div class="bal-row">
+          <span class="bal-lbl">Muscle balance</span>
+          <span class="bal-warn">1 unmatched</span>
+        </div>
+        <div class="bal-bar">
+          <div class="bal-seg push" style="width:38%"></div>
+          <div class="bal-seg pull" style="width:18%"></div>
+          <div class="bal-seg grey" style="width:24%"></div>
+          <div class="bal-seg push" style="width:8%"></div>
+        </div>
+        <div class="bal-legend">
+          <div class="bal-item"><div class="bal-dot" style="background:var(--push)"></div><span>PUSH</span></div>
+          <div class="bal-item"><div class="bal-dot" style="background:var(--pull)"></div><span>PULL</span></div>
+          <div class="bal-item dim"><div class="bal-dot" style="background:var(--muted);opacity:0.4"></div><span>LEGS</span></div>
+          <div class="bal-item"><div class="bal-dot" style="background:var(--push);opacity:0.6"></div><span>CORE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s-body">
+
+      <!-- Bench Press — matched, starts expanded -->
+      <div class="ex-card open" id="card-bench">
+        <div class="ex-row" onclick="toggleCard('card-bench')">
+          <div class="ex-tri">▸</div>
+          <div class="ex-body">
+            <span class="ex-name-btn" onclick="event.stopPropagation(); openSheet('sheet-bench')">Bench Press</span>
+            <div class="ex-sum">3×5 · 80 kg</div>
+          </div>
+          <div class="ex-chev">›</div>
+        </div>
+        <div class="ex-grid">
+          <div class="g-head">
+            <div class="g-lbl">SET</div><div class="g-lbl">REPS</div>
+            <div class="g-lbl">WEIGHT</div><div class="g-lbl">REST</div><div></div>
+          </div>
+          <div class="g-row">
+            <div class="g-dim">1</div><div class="g-cell">5</div>
+            <div class="g-cell">80 kg</div><div class="g-cell">3m</div>
+            <div class="g-dim">×</div>
+          </div>
+          <div class="g-row">
+            <div class="g-dim">2</div><div class="g-cell">5</div>
+            <div class="g-cell">80 kg</div><div class="g-cell">3m</div>
+            <div class="g-dim">×</div>
+          </div>
+          <div class="g-row">
+            <div class="g-dim">3</div><div class="g-cell">5</div>
+            <div class="g-cell">80 kg</div><div class="g-cell">3m</div>
+            <div class="g-dim">×</div>
+          </div>
+          <div class="g-actions">
+            <button class="g-addset">+ Set</button>
+            <button class="g-delex">Delete exercise</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- OHP — matched, collapsed -->
+      <div class="ex-card" id="card-ohp">
+        <div class="ex-row" onclick="toggleCard('card-ohp')">
+          <div class="ex-tri">▸</div>
+          <div class="ex-body">
+            <span class="ex-name-btn" onclick="event.stopPropagation(); openSheet('sheet-ohp')">Overhead Press</span>
+            <div class="ex-sum">4×8–12 · 40 kg</div>
+          </div>
+          <div class="ex-chev">›</div>
+        </div>
+        <div class="ex-grid">
+          <div class="g-actions">
+            <button class="g-addset">+ Set</button>
+            <button class="g-delex">Delete exercise</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pull-ups — matched, collapsed -->
+      <div class="ex-card" id="card-pullup">
+        <div class="ex-row" onclick="toggleCard('card-pullup')">
+          <div class="ex-tri">▸</div>
+          <div class="ex-body">
+            <span class="ex-name-btn" onclick="event.stopPropagation(); openSheet('sheet-pullup')">Pull-ups</span>
+            <div class="ex-sum">3×6 · BW</div>
+          </div>
+          <div class="ex-chev">›</div>
+        </div>
+        <div class="ex-grid">
+          <div class="g-actions">
+            <button class="g-addset">+ Set</button>
+            <button class="g-delex">Delete exercise</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Squat — UNMATCHED, card looks identical -->
+      <div class="ex-card" id="card-squat">
+        <div class="ex-row" onclick="toggleCard('card-squat')">
+          <div class="ex-tri">▸</div>
+          <div class="ex-body">
+            <span class="ex-name-btn" onclick="event.stopPropagation(); openSheet('sheet-squat')">Squat</span>
+            <div class="ex-notarget">NO TARGETS · TAP + TO ADD</div>
+          </div>
+          <div class="ex-chev">›</div>
+        </div>
+        <div class="ex-grid">
+          <div class="g-actions">
+            <button class="g-addset">+ Set</button>
+            <button class="g-delex">Delete exercise</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-ex">+ Add exercise</div>
+    </div>
+
+    <!-- SHEET: Bench Press (matched) -->
+    <div class="overlay" id="sheet-bench" onclick="closeSheet('sheet-bench')">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="sheet-sec">
+          <div class="sheet-sec-lbl">Exercise name</div>
+          <input class="sheet-input" value="Bench Press">
+        </div>
+        <div class="sheet-sec">
+          <div class="sheet-sec-lbl">Library match</div>
+          <div class="match-card">
+            <div class="match-card-head">
+              <div>
+                <div class="match-card-name">Barbell Bench Press</div>
+                <div class="match-card-src">free-exercise-db · Barbell</div>
+              </div>
+              <div class="conf">98%</div>
+            </div>
+            <div class="pills">
+              <span class="pill push">CHEST</span>
+              <span class="pill push">TRICEPS</span>
+              <span class="pill push">SHOULDERS</span>
+            </div>
+          </div>
+        </div>
+        <div class="sheet-btns">
+          <button class="btn-primary" onclick="closeSheet('sheet-bench')">Save</button>
+          <button class="btn-secondary">Change match</button>
+        </div>
+        <button class="btn-dismiss" onclick="closeSheet('sheet-bench')">dismiss</button>
+      </div>
+    </div>
+
+    <!-- SHEET: OHP (matched) -->
+    <div class="overlay" id="sheet-ohp" onclick="closeSheet('sheet-ohp')">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="sheet-sec">
+          <div class="sheet-sec-lbl">Exercise name</div>
+          <input class="sheet-input" value="Overhead Press">
+        </div>
+        <div class="sheet-sec">
+          <div class="sheet-sec-lbl">Library match</div>
+          <div class="match-card">
+            <div class="match-card-head">
+              <div>
+                <div class="match-card-name">Barbell Standing Press</div>
+                <div class="match-card-src">free-exercise-db · Barbell</div>
+              </div>
+              <div class="conf">94%</div>
+            </div>
+            <div class="pills">
+              <span class="pill push">SHOULDERS</span>
+              <span class="pill push">TRICEPS</span>
+            </div>
+          </div>
+        </div>
+        <div class="sheet-btns">
+          <button class="btn-primary" onclick="closeSheet('sheet-ohp')">Save</button>
+          <button class="btn-secondary">Change match</button>
+        </div>
+        <button class="btn-dismiss" onclick="closeSheet('sheet-ohp')">dismiss</button>
+      </div>
+    </div>
+
+    <!-- SHEET: Pull-ups (matched) -->
+    <div class="overlay" id="sheet-pullup" onclick="closeSheet('sheet-pullup')">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="sheet-sec">
+          <div class="sheet-sec-lbl">Exercise name</div>
+          <input class="sheet-input" value="Pull-ups">
+        </div>
+        <div class="sheet-sec">
+          <div class="sheet-sec-lbl">Library match</div>
+          <div class="match-card">
+            <div class="match-card-head">
+              <div>
+                <div class="match-card-name">Pull Up</div>
+                <div class="match-card-src">free-exercise-db · Bodyweight</div>
+              </div>
+              <div class="conf">96%</div>
+            </div>
+            <div class="pills">
+              <span class="pill pull">LATS</span>
+              <span class="pill pull">BICEPS</span>
+            </div>
+          </div>
+        </div>
+        <div class="sheet-btns">
+          <button class="btn-primary" onclick="closeSheet('sheet-pullup')">Save</button>
+          <button class="btn-secondary">Change match</button>
+        </div>
+        <button class="btn-dismiss" onclick="closeSheet('sheet-pullup')">dismiss</button>
+      </div>
+    </div>
+
+    <!-- SHEET: Squat (NO MATCH) -->
+    <div class="overlay" id="sheet-squat" onclick="closeSheet('sheet-squat')">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div class="sheet-sec">
+          <div class="sheet-sec-lbl">Exercise name</div>
+          <input class="sheet-input" value="Squat">
+        </div>
+        <div class="sheet-sec">
+          <div class="sheet-sec-lbl">Library match</div>
+          <div class="no-match">
+            <div class="no-match-text">
+              No library match found.<br>
+              Muscle group data won't appear until<br>this exercise is linked.
+            </div>
+          </div>
+        </div>
+        <div class="sheet-btns">
+          <button class="btn-primary" onclick="closeSheet('sheet-squat')">Save name</button>
+          <button class="btn-secondary">Search library</button>
+        </div>
+        <button class="btn-dismiss" onclick="closeSheet('sheet-squat')">dismiss</button>
+      </div>
+    </div>
+
+  </div><!-- end phone -->
+
+</div><!-- end layout -->
+
+<script>
+  function toggleCard(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+  function openSheet(id) {
+    document.getElementById(id).classList.add('open');
+  }
+  function closeSheet(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+</script>
+</body>
+</html>
