@@ -1,0 +1,24 @@
+appId: host.exp.exponent
+---
+# Open the dev server URL in Expo Go
+- launchApp:
+    clearState: false
+- openLink: "exp://10.0.2.2:8081"
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Should land on Progress tab (the default)
+- assertVisible: "Progress"
+
+# Tap + tab — should navigate to select-day screen
+- tapOn: "Add workout"
+- assertVisible: "Choose day"
+- assertVisible: "Next up"
+
+# Switch to a different day pill and verify exercise list updates
+- tapOn: "Day 2"
+- assertVisible: "Day 2"
+
+# Start the workout and verify log-session opens
+- tapOn: "Start Day 2"
+- assertVisible: "0 of"
