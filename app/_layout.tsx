@@ -53,7 +53,7 @@ export default Sentry.wrap(function RootLayout() {
 
 function RootLayoutNav() {
   const router = useRouter();
-  useEffect(() => setupNotificationResponseListener(() => router.push('/log-session')), [router.push]);
+  useEffect(() => setupNotificationResponseListener(() => router.navigate('/log-session')), [router.navigate]);
 
   return (
     <ThemeProvider value={WarmDarkTheme}>
@@ -65,6 +65,7 @@ function RootLayoutNav() {
         <Stack.Screen name="notes-import-review" options={{ headerShown: false }} />
         <Stack.Screen name="strong-import" options={{ title: 'Import from Strong', headerShown: true }} />
         <Stack.Screen name="select-day" options={{ headerShown: false }} />
+        <Stack.Screen name="log-session" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );
