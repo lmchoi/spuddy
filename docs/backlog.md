@@ -9,7 +9,7 @@ Sections are ordered by priority. New items land in **Inbox** first; triage move
 Core loop for a new user setting up via notes import or a simple program.
 
 - **Notification sound toggle** — let users enable/disable sound on rest-expiry notifications from Settings. Off by default (preserves current behaviour). Requires a new `preferences` SQLite table (groundwork for future settings) and a second Android notification channel. Full spec in `docs/plans/notification-sound-toggle.md`. Depends on rest-timer-notifications (done).
-- **Back button: session exit UX** — the current back-press behaviour during a live session is undefined/jarring. Needs UX design before implementation: what should happen (warn, auto-save draft, silent discard)? Resume already exists (v0.0.2); this is about defining and wiring the exit path consistently. Start with a UX spec before touching code.
+- **Back button: session exit UX** — plan written (`docs/plans/back-button-session-ux.md`). Three concrete bugs identified: duplicate stack on notification tap, missing Stack.Screen registration for log-session, and context-blind back button on progress detail post-finish.
 
 ## Next milestone (Strong parity)
 
