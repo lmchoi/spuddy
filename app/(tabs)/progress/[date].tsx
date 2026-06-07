@@ -189,7 +189,7 @@ export default function SessionDetailScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/progress')} style={styles.backBtn} hitSlop={12}>
           <Text style={styles.backArrow}>←</Text>
         </Pressable>
         <View style={styles.headerText}>
