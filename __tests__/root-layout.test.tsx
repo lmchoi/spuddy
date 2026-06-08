@@ -3,6 +3,15 @@ import { render } from '@testing-library/react-native';
 import * as Sentry from '@sentry/react-native';
 import RootLayout, { unstable_settings } from '../app/_layout';
 
+let capturedNotificationCallback: (() => void) | null = null;
+
+jest.mock('@/src/notifications', () => ({
+  setupNotificationResponseListener: jest.fn((cb: () => void) => {
+    capturedNotificationCallback = cb;
+    return () => {};
+  }),
+}));
+
 jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
   wrap: jest.fn((component: unknown) => component),
@@ -19,6 +28,8 @@ jest.mock('expo-splash-screen', () => ({
 
 const capturedScreens: { name: string; options?: Record<string, unknown> }[] = [];
 
+const mockNavigate = jest.fn();
+
 jest.mock('expo-router', () => {
   const MockScreen = ({ name, options }: any) => {
     capturedScreens.push({ name, options });
@@ -30,7 +41,7 @@ jest.mock('expo-router', () => {
     }),
     ThemeProvider: ({ children }: any) => <>{children}</>,
     DarkTheme: { colors: { background: '#000' } },
-    useRouter: () => ({ push: jest.fn() }),
+    useRouter: () => ({ push: jest.fn(), navigate: mockNavigate }),
   };
 });
 
@@ -39,6 +50,7 @@ jest.mock('react-native-reanimated', () => ({}));
 
 beforeEach(() => {
   capturedScreens.length = 0;
+  capturedNotificationCallback = null;
 });
 
 describe('Sentry initialisation', () => {
@@ -85,5 +97,21 @@ describe('RootLayoutNav screen registration', () => {
     const screen = capturedScreens.find((s) => s.name === 'select-day');
     expect(screen).toBeDefined();
     expect(screen?.options?.headerShown).toBe(false);
+  });
+
+  it('registers log-session with headerShown: false', () => {
+    render(<RootLayout />);
+    const screen = capturedScreens.find((s) => s.name === 'log-session');
+    expect(screen).toBeDefined();
+    expect(screen?.options?.headerShown).toBe(false);
+  });
+});
+
+describe('notification response listener', () => {
+  it('navigates to /log-session when a notification is tapped', () => {
+    render(<RootLayout />);
+    expect(capturedNotificationCallback).not.toBeNull();
+    capturedNotificationCallback!();
+    expect(mockNavigate).toHaveBeenCalledWith('/log-session');
   });
 });
