@@ -617,15 +617,15 @@ export default function LogSession() {
 
   if (state.status === 'loading') {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator color={C.hit} />
+      <View style={[styles.container, styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator testID="loading-spinner" color={C.hit} />
       </View>
     );
   }
 
   if (state.status === 'empty') {
     return (
-      <View style={[styles.container, styles.centered, { padding: 40 }]}>
+      <View style={[styles.container, styles.centered, { padding: 40, paddingTop: Math.max(insets.top, 40) }]}>
         <Text style={styles.emptyTitle}>No program found</Text>
         <Text style={styles.emptyText}>Import a program from Settings first.</Text>
         <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/settings')} style={[styles.confirmBtn, { width: '100%', marginTop: 20 }]}>

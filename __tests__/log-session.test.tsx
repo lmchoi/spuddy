@@ -117,6 +117,13 @@ describe('renders with a mocked ProgramDay', () => {
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
   });
 
+  it('shows loading spinner before data resolves', async () => {
+    // Never resolves — captures the loading state
+    (getProgramDay as jest.Mock).mockReturnValue(new Promise(() => {}));
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByTestId('loading-spinner')).toBeTruthy());
+  });
+
   it('shows empty state when no program day found', async () => {
     (getProgramDay as jest.Mock).mockResolvedValue(null);
     render(<LogSession />);
