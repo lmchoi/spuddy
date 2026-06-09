@@ -22,6 +22,13 @@
       "when": 1780308101055,
       "tag": "0002_exercise_library",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1781018447278,
+      "tag": "0003_typical_skaar",
+      "breakpoints": true
     }
   ]
 }

@@ -34,7 +34,7 @@ Add `source` and `source_id` columns to `sessions`. A unique constraint on `(sou
 ### PR 1 — Refactor: split save vs import (DONE)
 Extract `importPrograms` in the import layer; `savePrograms` stays as the internal persistence primitive. No behaviour change. All existing tests pass unchanged.
 
-### PR 2 — Session dedup
+### PR 2 — Session dedup (DONE)
 - Schema migration: add `source TEXT NOT NULL DEFAULT 'manual'` and `source_id TEXT` to `sessions`; unique constraint on `(source, source_id)`; backfill existing rows with `source = 'manual'`
 - Update `saveSession` to accept optional `source`/`source_id`, use `onConflictDoNothing`
 - Tests: saving same session twice with same `source_id` produces one row; two manual sessions both persist

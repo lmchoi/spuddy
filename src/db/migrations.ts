@@ -19,6 +19,12 @@ export const migrations = {
         tag: '0002_exercise_library',
         breakpoints: true,
       },
+      {
+        idx: 3,
+        when: 1781018447278,
+        tag: '0003_typical_skaar',
+        breakpoints: true,
+      },
     ],
   },
   migrations: {
@@ -74,6 +80,11 @@ export const migrations = {
       "ALTER TABLE `exercises` ADD `library_id` text;",
       "--> statement-breakpoint",
       "ALTER TABLE `exercises` ADD `library_confidence` integer;",
+    ].join("\n"),
+    m0003: [
+      "ALTER TABLE `sessions` ADD `source` text DEFAULT 'manual' NOT NULL;--> statement-breakpoint",
+      "ALTER TABLE `sessions` ADD `source_id` text;--> statement-breakpoint",
+      "CREATE UNIQUE INDEX `idx_sessions_source_id` ON `sessions` (`source`,`source_id`);"
     ].join("\n"),
   },
 };

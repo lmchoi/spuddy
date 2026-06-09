@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 
 export const exercises = sqliteTable('exercises', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -20,10 +20,13 @@ export const sessions = sqliteTable(
       .references(() => exercises.id),
     setsJson: text('sets_json').notNull(),
     targetsJson: text('targets_json').notNull(),
+    source: text('source').notNull().default('manual'),
+    sourceId: text('source_id'),
   },
   t => [
     index('idx_sessions_date').on(t.date),
     index('idx_sessions_exercise').on(t.exerciseId),
+    unique('idx_sessions_source_id').on(t.source, t.sourceId),
   ]
 );
 

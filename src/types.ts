@@ -29,6 +29,8 @@ export type ExerciseEntry = {
 export type Session = {
   date: string; // YYYY-MM-DD
   exercises: ExerciseEntry[];
+  source?: string;
+  sourceId?: string;
 };
 
 export type ProgramExercise = {
