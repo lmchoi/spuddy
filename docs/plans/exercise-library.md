@@ -10,7 +10,19 @@ Show muscle group balance on the program day screen and let users link exercises
 - Search library implementation (button present, not wired)
 - Muscle group volume analytics screen (separate backlog item)
 - Exercise images
-- Full free-exercise-db bundle
+
+## Data source
+
+Full `exercises.json` from [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (873 exercises, Unlicense — public domain, no attribution required). Downloaded and checked in at `src/data/exercises.json`.
+
+Each exercise has: `id`, `name`, `force` (push/pull/null), `primaryMuscles`, `secondaryMuscles`, `equipment`, `category`, `level`, `mechanic`, `instructions`, `images`.
+
+**Muscle group → balance category mapping** (derived from `primaryMuscles`, since `force` only covers push/pull):
+- `push` — chest, triceps, shoulders (when force = push or primaryMuscles contains these)
+- `pull` — lats, biceps, middle back, lower back, traps, forearms (when force = pull)
+- `legs` — quadriceps, hamstrings, glutes, calves, adductors, abductors
+- `core` — abdominals, lower back (when not already pull)
+- `unmatched` — no library link found
 
 ## Design
 
@@ -22,7 +34,7 @@ The program day screen gains two additions:
 
 **Exercise edit sheet** — replaces the existing inline name edit (`Pressable → setEditingExName`). Tapping the exercise name (underlined, separate tap target from the expand/collapse row) opens a bottom sheet with:
 - Editable name field at top
-- Library match section below (matched: shows library name + confidence + muscle group pills; unmatched: "no match found" + disabled Search button)
+- Library match section below (matched: shows library name + source `free-exercise-db · <equipment>` + confidence + muscle group pills; unmatched: "no match found" + disabled Search button)
 
 The rest of the card row (triangle, chevron, everywhere except the name) continues to expand/collapse the set grid as today.
 
@@ -30,13 +42,13 @@ The rest of the card row (triangle, chevron, everywhere except the name) continu
 
 Schema extension on `exercises`:
 - `muscle_groups TEXT` — JSON array e.g. `["chest","triceps","shoulders"]`
-- `equipment TEXT` — e.g. `"barbell"`, `"bodyweight"`
+- `equipment TEXT` — e.g. `"barbell"`, `"body only"`
 - `library_id TEXT` — foreign key into the seeded library (nullable; null = unmatched)
 - `library_confidence INTEGER` — match confidence 0–100 (nullable)
 
 New migration adds these columns (all nullable, no existing rows affected — aligns with ADR-016 no-hard-delete).
 
-Seed table: a static JSON file of ~40 common exercises (the set that covers most Strong/Hevy imports) with muscle group and equipment data, checked in at `src/data/exerciseLibrary.ts`. On DB init, exact-name match runs over existing `exercises` rows and populates `library_id`, `muscle_groups`, `equipment`, and `library_confidence` where a match is found.
+Seed data: full `exercises.json` from free-exercise-db checked in at `src/data/exercises.json`. On DB init, exact-name match runs over existing `exercises` rows and populates `library_id`, `muscle_groups`, `equipment`, and `library_confidence` where a match is found.
 
 ### Wiring (commit 5)
 
@@ -48,9 +60,9 @@ This plan introduces the library schema — record as ADR-018.
 
 ## Files affected
 
+- `src/data/exercises.json` — full free-exercise-db dataset
 - `src/db/schema.ts` — add columns to `exercises`
 - `src/db/migrations.ts` — new migration
-- `src/data/exerciseLibrary.ts` — new seed file
 - `src/domain/exerciseLibrary.ts` — exact-match + balance selector
 - `app/(tabs)/settings/[programName]/[dayIndex].tsx` — balance bar + sheet
 - `styles/tabs/settings/programName/dayIndex.styles.ts` — new styles
@@ -64,6 +76,6 @@ This plan introduces the library schema — record as ADR-018.
 
 3. **Schema: add muscle group + library columns to exercises** — migration adds `muscle_groups`, `equipment`, `library_id`, `library_confidence` (all nullable). Test: migration runs without error; existing exercise rows are unchanged.
 
-4. **Data: seed library + exact-match on init** — add `src/data/exerciseLibrary.ts` (~40 exercises); run exact-match on DB init to populate columns. Test: `exactMatch('Bench Press')` returns correct library entry; `exactMatch('unknown exercise')` returns null.
+4. **Data: seed library + exact-match on init** — download `exercises.json` from free-exercise-db into `src/data/`; run exact-name match on DB init to populate columns. Test: `exactMatch('Bench Press')` returns correct library entry; `exactMatch('unknown exercise')` returns null.
 
 5. **Wire: balance bar + edit sheet read from exercises table** — replace stub data with real queries. Test: balance bar reflects actual matched/unmatched counts; sheet shows real muscle group pills for a matched exercise.
