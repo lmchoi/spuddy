@@ -136,6 +136,26 @@ describe('seedMigrationsIfNeeded', () => {
     expect(row.muscle_groups).toBeNull();
   });
 
+  it('seedLibraryMatches is atomic — no rows written if an error is thrown mid-loop', () => {
+    const sqlite = new BetterSqlite(':memory:');
+    const db = drizzle(sqlite, { schema });
+    migrate(db, { migrationsFolder: './drizzle' });
+    sqlite.prepare('INSERT INTO exercises (name) VALUES (?)').run('Barbell Squat');
+    sqlite.prepare('INSERT INTO exercises (name) VALUES (?)').run('Barbell Bench Press - Medium Grip');
+    // Intercept exactMatch to throw after the first successful match
+    const libraryModule = require('../src/domain/exerciseLibrary');
+    let callCount = 0;
+    jest.spyOn(libraryModule, 'exactMatch').mockImplementation((name: unknown) => {
+      callCount++;
+      if (callCount === 2) throw new Error('simulated failure');
+      return callCount === 1 ? { id: 'x', primaryMuscles: [], equipment: null } : null;
+    });
+    expect(() => seedLibraryMatches(db as any)).toThrow('simulated failure');
+    jest.restoreAllMocks();
+    const rows = sqlite.prepare('SELECT library_id FROM exercises').all() as any[];
+    expect(rows.every((r: any) => r.library_id === null)).toBe(true);
+  });
+
   it('does nothing when __drizzle_migrations already exists', () => {
     const sqlite = buildOldSchemaDB();
     // Run migrator once to set up __drizzle_migrations (fresh DB to avoid the "exists" error)
