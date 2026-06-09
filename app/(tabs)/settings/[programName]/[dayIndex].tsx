@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import {
-  Pressable, ScrollView, StatusBar, Text,
+  KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text,
   TextInput, View,
 } from 'react-native';
 import { styles } from '@/styles/tabs/settings/programName/dayIndex.styles';
@@ -10,6 +10,7 @@ import type { ProgramDay, ProgramExercise, Target } from '@/src/types';
 import { summaryLine } from '@/src/domain/programDay';
 import { getDB } from '@/src/db';
 import { getProgramDay, updateProgramDay } from '@/src/programStorage';
+import { getExercisesLibraryData, type ExerciseLibraryRow } from '@/src/exerciseStorage';
 
 // ─── Cell sub-components ─────────────────────────────────────────────────────
 
@@ -85,6 +86,97 @@ function RestCell({ restSeconds, isEditing, onEdit, onUpdate, onDone }: RestCell
   );
 }
 
+// ─── Exercise edit sheet ──────────────────────────────────────────────────────
+
+type ExerciseEditSheetProps = {
+  exIdx: number | null;
+  exercises: ProgramExercise[];
+  libraryRow: ExerciseLibraryRow | null;
+  onRename: (exIdx: number, name: string) => void;
+  onClose: () => void;
+};
+
+
+function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onClose }: ExerciseEditSheetProps) {
+  const exercise = exIdx !== null ? exercises[exIdx] : null;
+  const [draft, setDraft] = useState(exercise?.name ?? '');
+
+  if (exIdx === null || !exercise) return null;
+
+  const isMatched = libraryRow?.libraryId != null;
+  let muscles: string[] = [];
+  try {
+    muscles = libraryRow?.muscleGroups ? (JSON.parse(libraryRow.muscleGroups) as string[]) : [];
+  } catch {
+    muscles = [];
+  }
+
+  function handleSave() {
+    if (exIdx !== null) onRename(exIdx, draft);
+    onClose();
+  }
+
+  return (
+    <KeyboardAvoidingView style={styles.sheetOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <Pressable style={styles.sheetBackdrop} onPress={onClose} />
+      <View style={styles.sheet}>
+          <View style={styles.sheetHandle} />
+          <View style={styles.sheetSection}>
+            <Text style={styles.sheetSectionLabel}>Exercise name</Text>
+            <TextInput
+              style={styles.sheetInput}
+              value={draft}
+              onChangeText={setDraft}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleSave}
+            />
+          </View>
+          <View style={styles.sheetSectionDivider} />
+          <View style={styles.sheetSection}>
+            <Text style={styles.sheetSectionLabel}>Library match</Text>
+            {isMatched ? (
+              <View style={styles.matchCard}>
+                <View style={styles.matchCardHead}>
+                  <View>
+                    <Text style={styles.matchCardName}>{exercise.name}</Text>
+                  </View>
+                  <View style={styles.matchConfBadge}>
+                    <Text style={styles.matchConfText}>{libraryRow!.libraryConfidence}%</Text>
+                  </View>
+                </View>
+                <View style={styles.pillsRow}>
+                  {muscles.map(m => (
+                    <View key={m} style={styles.pillCore}>
+                      <Text style={styles.pillCoreText}>{m}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ) : (
+              <View style={styles.noMatchCard}>
+                <Text style={styles.noMatchText}>
+                  {'No library match found.\nMuscle group data won\'t appear until\nthis exercise is linked.'}
+                </Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.sheetBtns}>
+            <Pressable style={styles.btnPrimary} onPress={handleSave}>
+              <Text style={styles.btnPrimaryText}>{isMatched ? 'Save' : 'Save name'}</Text>
+            </Pressable>
+            <Pressable style={[styles.btnSecondary, styles.btnSecondaryDisabled]} disabled>
+              <Text style={styles.btnSecondaryText}>{isMatched ? 'Change match' : 'Search library'}</Text>
+            </Pressable>
+          </View>
+          <Pressable style={styles.btnDismiss} onPress={onClose}>
+            <Text style={styles.btnDismissText}>dismiss</Text>
+          </Pressable>
+        </View>
+    </KeyboardAvoidingView>
+  );
+}
+
 // ─── Sample shown until real DB data arrives ─────────────────────────────────
 
 const SAMPLE_DAY: ProgramDay = {
@@ -136,10 +228,11 @@ export default function ProgramDayDetailScreen() {
   const { programName, dayIndex } = useLocalSearchParams<{ programName: string; dayIndex: string }>();
 
   const [day, setDay] = useState<ProgramDay>(SAMPLE_DAY);
+  const [libraryData, setLibraryData] = useState<Map<string, ExerciseLibraryRow>>(new Map());
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [editingDayName, setEditingDayName] = useState(false);
   const [draftDayName, setDraftDayName] = useState('');
-  const [editingExName, setEditingExName] = useState<number | null>(null);
+  const [sheetExIdx, setSheetExIdx] = useState<number | null>(null);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
 
   const name = decodeURIComponent(programName ?? '');
@@ -148,8 +241,14 @@ export default function ProgramDayDetailScreen() {
   useFocusEffect(
     useCallback(() => {
       getDB()
-        .then(db => getProgramDay(db, name, idx))
-        .then(d => { if (d) setDay(d); })
+        .then(async db => {
+          const d = await getProgramDay(db, name, idx);
+          if (d) {
+            setDay(d);
+            const rows = getExercisesLibraryData(db, d.exercises.map(e => e.name));
+            setLibraryData(new Map(rows.map(r => [r.name, r])));
+          }
+        })
         .catch(console.error);
     }, [name, idx])
   );
@@ -172,6 +271,19 @@ export default function ProgramDayDetailScreen() {
       persistToDb(next);
       return next;
     });
+    if (updates.name) {
+      setLibraryData(prev => {
+        const oldName = day.exercises[exIdx]?.name;
+        if (!oldName || updates.name === oldName) return prev;
+        const next = new Map(prev);
+        const row = next.get(oldName);
+        if (row) {
+          next.delete(oldName);
+          next.set(updates.name!, row);
+        }
+        return next;
+      });
+    }
   }
 
   function updateTarget(exIdx: number, setIdx: number, updates: Partial<Target>) {
@@ -225,7 +337,7 @@ export default function ProgramDayDetailScreen() {
       return next;
     });
     setExpandedIdx(null);
-    setEditingExName(null);
+    setSheetExIdx(null);
     setEditingCell(null);
   }
 
@@ -305,21 +417,9 @@ export default function ProgramDayDetailScreen() {
                 <Text style={styles.triangle}>{expanded ? '▾' : '▸'}</Text>
 
                 <View style={styles.exerciseHeaderContent}>
-                  {editingExName === exIdx ? (
-                    <TextInput
-                      style={styles.exerciseNameInput}
-                      value={exercise.name}
-                      onChangeText={name => updateExercise(exIdx, { name })}
-                      onBlur={() => setEditingExName(null)}
-                      autoFocus
-                      returnKeyType="done"
-                      onSubmitEditing={() => setEditingExName(null)}
-                    />
-                  ) : (
-                    <Pressable onPress={() => { setEditingExName(exIdx); }}>
-                      <Text style={styles.exerciseName}>{exercise.name}</Text>
-                    </Pressable>
-                  )}
+                  <Pressable onPress={() => setSheetExIdx(exIdx)}>
+                    <Text style={styles.exerciseNameTappable}>{exercise.name}</Text>
+                  </Pressable>
 
                   {summaryEl}
                 </View>
@@ -486,6 +586,14 @@ export default function ProgramDayDetailScreen() {
           <Text style={styles.addExerciseText}>+ Add exercise</Text>
         </Pressable>
       </ScrollView>
+      <ExerciseEditSheet
+        key={sheetExIdx ?? -1}
+        exIdx={sheetExIdx}
+        exercises={day.exercises}
+        libraryRow={sheetExIdx !== null ? (libraryData.get(day.exercises[sheetExIdx]?.name ?? '') ?? null) : null}
+        onRename={(i, exName) => updateExercise(i, { name: exName })}
+        onClose={() => setSheetExIdx(null)}
+      />
     </View>
   );
 }

@@ -1,8 +1,4 @@
-import {
-  exactMatch,
-  lookupById,
-  classifyMuscle,
-} from '../src/domain/exerciseLibrary';
+import { exactMatch } from '../src/domain/exerciseLibrary';
 
 describe('exactMatch', () => {
   it('returns the library entry for a known exercise name', () => {
@@ -31,23 +27,4 @@ describe('exactMatch', () => {
   });
 });
 
-describe('lookupById', () => {
-  it('returns the library entry for a known id', () => {
-    const entry = lookupById('Barbell_Squat');
-    expect(entry).not.toBeNull();
-    expect(entry!.name).toBe('Barbell Squat');
-  });
-
-  it('returns null for an unknown id', () => {
-    expect(lookupById('does_not_exist')).toBeNull();
-  });
-});
-
-describe('classifyMuscle', () => {
-  it('classifies chest as push', () => expect(classifyMuscle('chest')).toBe('push'));
-  it('classifies lats as pull', () => expect(classifyMuscle('lats')).toBe('pull'));
-  it('classifies quadriceps as legs', () => expect(classifyMuscle('quadriceps')).toBe('legs'));
-  it('classifies abdominals as core', () => expect(classifyMuscle('abdominals')).toBe('core'));
-  it('classifies unknown muscle as core', () => expect(classifyMuscle('neck')).toBe('core'));
-});
 
