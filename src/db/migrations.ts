@@ -13,6 +13,12 @@ export const migrations = {
         tag: '0001_exercise_notes',
         breakpoints: true,
       },
+      {
+        idx: 2,
+        when: 1780308101055,
+        tag: '0002_exercise_library',
+        breakpoints: true,
+      },
     ],
   },
   migrations: {
@@ -60,5 +66,14 @@ export const migrations = {
       "CREATE INDEX `idx_sessions_exercise` ON `sessions` (`exercise_id`);",
     ].join("\n"),
     m0001: "ALTER TABLE `exercises` ADD `notes` text;",
+    m0002: [
+      "ALTER TABLE `exercises` ADD `muscle_groups` text;",
+      "--> statement-breakpoint",
+      "ALTER TABLE `exercises` ADD `equipment` text;",
+      "--> statement-breakpoint",
+      "ALTER TABLE `exercises` ADD `library_id` text;",
+      "--> statement-breakpoint",
+      "ALTER TABLE `exercises` ADD `library_confidence` integer;",
+    ].join("\n"),
   },
 };

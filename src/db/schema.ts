@@ -4,6 +4,10 @@ export const exercises = sqliteTable('exercises', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').unique().notNull(),
   notes: text('notes'),
+  muscleGroups: text('muscle_groups'),
+  equipment: text('equipment'),
+  libraryId: text('library_id'),
+  libraryConfidence: integer('library_confidence'),
 });
 
 export const sessions = sqliteTable(
