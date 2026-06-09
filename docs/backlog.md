@@ -8,6 +8,7 @@ Sections are ordered by priority. New items land in **Inbox** first; triage move
 
 Core loop for a new user setting up via notes import or a simple program.
 
+- **Immediate exercise matching** — Trigger the library matching logic (`seedLibraryMatches`) immediately when an exercise is renamed or created, rather than waiting for an app restart. This ensures muscle group data and library metadata appear instantly in the UI.
 - **Notification sound toggle** — let users enable/disable sound on rest-expiry notifications from Settings. Off by default (preserves current behaviour). Requires a new `preferences` SQLite table (groundwork for future settings) and a second Android notification channel. Full spec in `docs/plans/notification-sound-toggle.md`. Depends on rest-timer-notifications (done).
 - **Back button: session exit UX** — the current back-press behaviour during a live session is undefined/jarring. Needs UX design before implementation: what should happen (warn, auto-save draft, silent discard)? Resume already exists (v0.0.2); this is about defining and wiring the exit path consistently. Start with a UX spec before touching code.
 
@@ -23,6 +24,7 @@ Features needed for a power user migrating from Strong with years of history.
 
 ## Nice to have
 
+- **Migrate exercise library from JSON to SQLite** — Move the static `exercises.json` (~1MB) into a dedicated read-only SQLite table. This follows mobile best practices by reducing memory usage at startup and preventing the event-loop from blocking during JSON parsing.
 - **Sentry session replay + feedback widget** — replay integration and the feedback button were stripped from the initial Sentry setup to keep scope small. Revisit once crash reporting is stable; consider a settings-based feedback option rather than the floating widget. See `feat/sentry-setup` PR discussion for context.
 - **E2E tests (Maestro)** — add Maestro flows for the most-repeated manual checks. No fully successful run yet; may need environment setup before writing flows. See `docs/decisions/006-e2e-testing-approach.md` and `docs/plans/maestro-ui-tests.md`.
 - **New app icon and assets** — replace placeholder icons; convert large PNG assets to WebP to reduce bundle size.
