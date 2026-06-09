@@ -220,7 +220,6 @@ describe('exercise edit sheet', () => {
       exercises: [{ name: 'Bench Press', targets: [] }],
     });
     render(<ProgramDayDetailScreen />);
-    // Open sheet immediately; match card only appears once libraryData loads
     fireEvent.press(screen.getByText('Bench Press'));
     await waitFor(() => expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(1));
     expect(screen.getByText('100%')).toBeTruthy();

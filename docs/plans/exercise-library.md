@@ -72,10 +72,12 @@ This plan introduces the library schema — record as ADR-018.
 
 1. **UI: exercise edit sheet (stub data)** — replace inline rename with a bottom sheet; name input + hardcoded matched/unmatched states. Test: renders sheet on name tap; closing sheet does not toggle expand state.
 
-2. **UI: muscle balance bar (stub data)** — add balance bar below day title with hardcoded push/pull/legs/core counts. Test: balance bar renders; greyed segment present when `unmatched > 0`.
+2. **UI: muscle balance bar (stub data)** — add balance bar below day title with hardcoded push/pull/legs/core counts. Test: balance bar renders; greyed segment present when `unmatched > 0`. _(deferred to backlog — not implemented in this branch)_
 
-3. **Schema: add muscle group + library columns to exercises** — migration adds `muscle_groups`, `equipment`, `library_id`, `library_confidence` (all nullable). Test: migration runs without error; existing exercise rows are unchanged.
+3. **Schema: add muscle group + library columns to exercises** — migration adds `muscle_groups`, `equipment`, `library_id`, `library_confidence` (all nullable). Test: migration runs without error; existing exercise rows are unchanged. ✅ `04044e5`
 
-4. **Data: seed library + exact-match on init** — download `exercises.json` from free-exercise-db into `src/data/`; run exact-name match on DB init to populate columns. Test: `exactMatch('Bench Press')` returns correct library entry; `exactMatch('unknown exercise')` returns null.
+4. **Data: seed library + exact-match on init** — download `exercises.json` from free-exercise-db into `src/data/`; run exact-name match on DB init to populate columns. Test: `exactMatch('Bench Press')` returns correct library entry; `exactMatch('unknown exercise')` returns null. ✅ `79c11f3`
 
-5. **Wire: balance bar + edit sheet read from exercises table** — replace stub data with real queries. Test: balance bar reflects actual matched/unmatched counts; sheet shows real muscle group pills for a matched exercise.
+5. **Wire: exercise edit sheet reads from exercises table** — edit sheet shows real muscle group pills for a matched exercise; balance bar deferred. ✅ `8d29b01`
+
+   _Deviations from plan:_ stub phase (commits 1–2) was collapsed; edit sheet and wiring landed together. Balance bar (commit 2) is deferred to backlog. A follow-up refactor was added: `8cbea81` (extract `renameLibraryEntry` + `parseMuscleGroups` to domain layer).
