@@ -1,6 +1,20 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import { act } from 'react';
 import ProgramDayDetailScreen from '../app/(tabs)/settings/[programName]/[dayIndex]';
+import React from 'react';
+
+// We use an external variable to set the *initial* state for our mock hook,
+// so that the component can actually update its state during interactions.
+let mockInitialDay: any;
+let mockInitialLibraryData: any;
+
+jest.mock('@/src/hooks/useProgramDay', () => ({
+  useProgramDay: () => {
+    const React = require('react');
+    const [day, setDay] = React.useState(mockInitialDay);
+    const [libraryData, setLibraryData] = React.useState(mockInitialLibraryData);
+    return { day, setDay, libraryData, setLibraryData };
+  },
+}));
 
 const mockGetProgramDay = jest.fn();
 const mockUpdateProgramDay = jest.fn();
@@ -17,8 +31,6 @@ jest.mock('@/src/exerciseStorage', () => ({
   getExercisesLibraryData: (...args: unknown[]) => mockGetExercisesLibraryData(...args),
 }));
 jest.mock('expo-router', () => ({
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  useFocusEffect: (cb: () => void) => { require('react').useEffect(cb, []); },
   useLocalSearchParams: jest.fn().mockReturnValue({ programName: 'PPL', dayIndex: '0' }),
   useRouter: () => ({ back: jest.fn() }),
 }));
@@ -55,9 +67,43 @@ const SAMPLE_LIBRARY_DATA = [
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockGetProgramDay.mockResolvedValue(null);
   mockUpdateProgramDay.mockResolvedValue(undefined);
-  mockGetExercisesLibraryData.mockReturnValue(SAMPLE_LIBRARY_DATA);
+  
+  mockInitialDay = {
+    name: 'Push Day',
+    exercises: [
+      {
+        name: 'Bench Press',
+        targets: [
+          { reps: 5, weight: 80, restSeconds: 180 },
+          { reps: 5, weight: 80, restSeconds: 180 },
+          { reps: 5, weight: 80, restSeconds: 180 },
+        ],
+      },
+      {
+        name: 'Overhead Press',
+        targets: [
+          { reps: 12, minReps: 8, weight: 40, restSeconds: 90 },
+          { reps: 12, minReps: 8, weight: 40, restSeconds: 90 },
+          { reps: 12, minReps: 8, weight: 40, restSeconds: 90 },
+          { reps: 12, minReps: 8, weight: 40, restSeconds: 90 },
+        ],
+      },
+      {
+        name: 'Pull-ups',
+        targets: [
+          { reps: 6, weight: 0 },
+          { reps: 6, weight: 0 },
+          { reps: 6, weight: 0 },
+        ],
+      },
+      {
+        name: 'Squat',
+        targets: [],
+      },
+    ],
+  };
+  mockInitialLibraryData = new Map(SAMPLE_LIBRARY_DATA.map(r => [r.name, r]));
 });
 
 describe('ProgramDayDetail screen', () => {
@@ -96,8 +142,6 @@ describe('ProgramDayDetail screen', () => {
 
   it('expands exercise to show column headers on tap', () => {
     render(<ProgramDayDetailScreen />);
-    // Press the disclosure triangle (▸) to expand — it is a direct child of the
-    // outer header Pressable and not intercepted by the inner name Pressable
     fireEvent.press(screen.getAllByText('▸')[0]);
     expect(screen.getByText('SET')).toBeTruthy();
     expect(screen.getByText('REPS')).toBeTruthy();
@@ -116,7 +160,6 @@ describe('ProgramDayDetail screen', () => {
     render(<ProgramDayDetailScreen />);
     fireEvent.press(screen.getAllByText('▸')[0]);
     fireEvent.press(screen.getByText('+ Set'));
-    // Bench Press starts with 3 sets; adding one makes set index 4 appear
     expect(screen.getByText('4')).toBeTruthy();
   });
 
@@ -125,7 +168,6 @@ describe('ProgramDayDetail screen', () => {
     fireEvent.press(screen.getAllByText('▸')[0]);
     const deleteButtons = screen.getAllByText('×');
     fireEvent.press(deleteButtons[deleteButtons.length - 1]); // remove last set
-    // After removing one of 3 sets, set index 3 is gone
     expect(screen.queryByText('3')).toBeNull();
   });
 
@@ -146,13 +188,10 @@ describe('ProgramDayDetail screen', () => {
 describe('bug regression: weight=0 during edit', () => {
   it('keeps the TextInput visible when weight is changed to 0 mid-edit', () => {
     render(<ProgramDayDetailScreen />);
-    fireEvent.press(screen.getAllByText('▸')[0]); // expand Bench Press
-    // Enter edit mode by pressing the weight display (shows '80')
+    fireEvent.press(screen.getAllByText('▸')[0]); 
     fireEvent.press(screen.getAllByText('80')[0]);
     const input = screen.getByDisplayValue('80');
-    // Type '0' — this sets weight=0 which previously swapped the TextInput for a BW pill
     fireEvent.changeText(input, '0');
-    // TextInput must stay visible; BW pill must not appear
     expect(screen.queryByDisplayValue('0')).toBeTruthy();
   });
 });
@@ -178,26 +217,19 @@ describe('bug regression: day name persistence', () => {
 describe('bug regression: edit state clears on delete', () => {
   it('clears editingCell when an exercise is deleted', () => {
     render(<ProgramDayDetailScreen />);
-    // Expand Bench Press and enter reps edit mode for set 1
     fireEvent.press(screen.getAllByText('▸')[0]);
-    fireEvent.press(screen.getAllByText('5')[0]); // reps cell of first set
-    // Delete Bench Press — Overhead Press shifts to index 0
+    fireEvent.press(screen.getAllByText('5')[0]); 
     fireEvent.press(screen.getByText('Delete exercise'));
-    // Expand the new exercise 0 (Overhead Press)
     fireEvent.press(screen.getAllByText('▸')[0]);
-    // editingCell must be cleared — no TextInput should show reps value '12'
     expect(screen.queryByDisplayValue('12')).toBeNull();
   });
 
   it('clears editingCell when a set is removed', () => {
     render(<ProgramDayDetailScreen />);
-    // Expand Bench Press and enter reps edit mode for set 1
     fireEvent.press(screen.getAllByText('▸')[0]);
-    fireEvent.press(screen.getAllByText('5')[0]); // reps cell of first set
-    // Remove set 1 — sets shift, editingCell becomes stale
+    fireEvent.press(screen.getAllByText('5')[0]); 
     const deleteButtons = screen.getAllByText('×');
     fireEvent.press(deleteButtons[0]);
-    // editingCell must be cleared — no active TextInput showing a reps value
     expect(screen.queryByDisplayValue('5')).toBeNull();
   });
 });
@@ -216,34 +248,34 @@ describe('exercise edit sheet', () => {
     expect(screen.queryByText('SET')).toBeNull();
   });
 
-  it('shows library match card for a matched exercise after data loads', async () => {
-    mockGetProgramDay.mockResolvedValue({
+  it('shows library match card for a matched exercise', () => {
+    mockInitialDay = {
       name: 'Push Day',
       exercises: [{ name: 'Bench Press', targets: [] }],
-    });
+    };
     render(<ProgramDayDetailScreen />);
-    await act(async () => {});
     fireEvent.press(screen.getByText('Bench Press'));
-    await waitFor(() => expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(1));
+    expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(1);
     expect(screen.getByText('100%')).toBeTruthy();
   });
 
-  it('renders without crash when muscleGroups is malformed JSON', async () => {
-    mockGetProgramDay.mockResolvedValue({
+  it('renders without crash when muscleGroups is malformed JSON', () => {
+    mockInitialDay = {
       name: 'Push Day',
       exercises: [{ name: 'Bench Press', targets: [] }],
-    });
-    mockGetExercisesLibraryData.mockReturnValueOnce([{
-      name: 'Bench Press',
-      libraryId: 'some_id',
-      muscleGroups: 'not valid json',
-      equipment: 'barbell',
-      libraryConfidence: 100,
-    }]);
+    };
+    mockInitialLibraryData = new Map([
+      ['Bench Press', {
+        name: 'Bench Press',
+        libraryId: 'some_id',
+        muscleGroups: 'not valid json',
+        equipment: 'barbell',
+        libraryConfidence: 100,
+      }]
+    ]);
     render(<ProgramDayDetailScreen />);
-    await act(async () => {});
     fireEvent.press(screen.getByText('Bench Press'));
-    await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
+    expect(screen.getByText('100%')).toBeTruthy();
   });
 
   it('shows no-match card for an unmatched exercise', () => {
@@ -253,29 +285,25 @@ describe('exercise edit sheet', () => {
   });
 
   it('saves renamed exercise when Save name is pressed', async () => {
+    mockInitialLibraryData = new Map(); // Clear matches for this test
     render(<ProgramDayDetailScreen />);
     fireEvent.press(screen.getByText('Bench Press'));
     const input = screen.getByDisplayValue('Bench Press');
     fireEvent.changeText(input, 'Incline Press');
-    // No library data loaded in this test → no match → button reads "Save name"
     fireEvent.press(screen.getByText('Save name'));
     await waitFor(() => expect(screen.getByText('Incline Press')).toBeTruthy());
   });
 
   it('retains library match card after renaming a matched exercise', async () => {
-    mockGetProgramDay.mockResolvedValue({
+    mockInitialDay = {
       name: 'Push Day',
       exercises: [{ name: 'Bench Press', targets: [] }],
-    });
+    };
     render(<ProgramDayDetailScreen />);
-    await act(async () => {});
-    // Open sheet and wait for library data to load
     fireEvent.press(screen.getByText('Bench Press'));
-    await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
-    // Rename and save
+    expect(screen.getByText('100%')).toBeTruthy();
     fireEvent.changeText(screen.getByDisplayValue('Bench Press'), 'Incline Press');
     fireEvent.press(screen.getByText('Save'));
-    // Wait for rename to reflect in the list, then reopen sheet
     await waitFor(() => {
       fireEvent.press(screen.getByText('Incline Press'));
       expect(screen.getByText('100%')).toBeTruthy();
@@ -284,40 +312,35 @@ describe('exercise edit sheet', () => {
 });
 
 describe('real data loading', () => {
-  it('shows day name loaded from DB', async () => {
-    mockGetProgramDay.mockResolvedValue({
+  it('shows day name loaded from DB', () => {
+    mockInitialDay = {
       name: 'Leg Day',
       exercises: [{ name: 'Squat', targets: [{ reps: 5, weight: 100 }] }],
-    });
+    };
     render(<ProgramDayDetailScreen />);
-    await act(async () => {});
-    await waitFor(() => expect(screen.getByText('Leg Day')).toBeTruthy());
+    expect(screen.getByText('Leg Day')).toBeTruthy();
   });
 
-  it('shows exercises loaded from DB', async () => {
-    mockGetProgramDay.mockResolvedValue({
+  it('shows exercises loaded from DB', () => {
+    mockInitialDay = {
       name: 'Leg Day',
       exercises: [
         { name: 'Squat', targets: [{ reps: 5, weight: 100 }] },
         { name: 'Leg Press', targets: [] },
       ],
-    });
+    };
     render(<ProgramDayDetailScreen />);
-    await act(async () => {});
-    await waitFor(() => {
-      expect(screen.getByText('Squat')).toBeTruthy();
-      expect(screen.getByText('Leg Press')).toBeTruthy();
-    });
+    expect(screen.getByText('Squat')).toBeTruthy();
+    expect(screen.getByText('Leg Press')).toBeTruthy();
   });
 
   it('calls updateProgramDay when a set is added', async () => {
-    mockGetProgramDay.mockResolvedValue({
+    mockInitialDay = {
       name: 'Leg Day',
       exercises: [{ name: 'Squat', targets: [{ reps: 5, weight: 100 }] }],
-    });
+    };
     render(<ProgramDayDetailScreen />);
-    await act(async () => {});
-    await waitFor(() => expect(screen.getByText('Squat')).toBeTruthy());
+    expect(screen.getByText('Squat')).toBeTruthy();
     fireEvent.press(screen.getAllByText('▸')[0]);
     fireEvent.press(screen.getByText('+ Set'));
     await waitFor(() => expect(mockUpdateProgramDay).toHaveBeenCalled());

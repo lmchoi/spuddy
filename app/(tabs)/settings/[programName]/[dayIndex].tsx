@@ -1,16 +1,17 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import {
   KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text,
   TextInput, View,
 } from 'react-native';
 import { styles } from '@/styles/tabs/settings/programName/dayIndex.styles';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useProgramDay } from '@/src/hooks/useProgramDay';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ProgramDay, ProgramExercise, Target } from '@/src/types';
 import { summaryLine } from '@/src/domain/programDay';
 import { getDB } from '@/src/db';
-import { getProgramDay, updateProgramDay } from '@/src/programStorage';
-import { getExercisesLibraryData, type ExerciseLibraryRow } from '@/src/exerciseStorage';
+import { updateProgramDay } from '@/src/programStorage';
+import { type ExerciseLibraryRow } from '@/src/exerciseStorage';
 import { renameLibraryEntry, parseMuscleGroups } from '@/src/domain/exerciseLibrary';
 
 // ─── Cell sub-components ─────────────────────────────────────────────────────
@@ -175,41 +176,6 @@ function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onClose }: 
 
 // ─── Sample shown until real DB data arrives ─────────────────────────────────
 
-const SAMPLE_DAY: ProgramDay = {
-  name: 'Push Day',
-  exercises: [
-    {
-      name: 'Bench Press',
-      targets: [
-        { reps: 5, weight: 80, restSeconds: 180 },
-        { reps: 5, weight: 80, restSeconds: 180 },
-        { reps: 5, weight: 80, restSeconds: 180 },
-      ],
-    },
-    {
-      name: 'Overhead Press',
-      targets: [
-        { reps: 12, minReps: 8, weight: 40, restSeconds: 90 },
-        { reps: 12, minReps: 8, weight: 40, restSeconds: 90 },
-        { reps: 12, minReps: 8, weight: 40, restSeconds: 90 },
-        { reps: 12, minReps: 8, weight: 40, restSeconds: 90 },
-      ],
-    },
-    {
-      name: 'Pull-ups',
-      targets: [
-        { reps: 6, weight: 0 },
-        { reps: 6, weight: 0 },
-        { reps: 6, weight: 0 },
-      ],
-    },
-    {
-      name: 'Squat',
-      targets: [],
-    },
-  ],
-};
-
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 type EditingCell = {
@@ -223,8 +189,7 @@ export default function ProgramDayDetailScreen() {
   const router = useRouter();
   const { programName, dayIndex } = useLocalSearchParams<{ programName: string; dayIndex: string }>();
 
-  const [day, setDay] = useState<ProgramDay>(SAMPLE_DAY);
-  const [libraryData, setLibraryData] = useState<Map<string, ExerciseLibraryRow>>(new Map());
+  
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [editingDayName, setEditingDayName] = useState(false);
   const [draftDayName, setDraftDayName] = useState('');
@@ -234,20 +199,7 @@ export default function ProgramDayDetailScreen() {
   const name = decodeURIComponent(programName ?? '');
   const idx = parseInt(dayIndex ?? '0', 10);
 
-  useFocusEffect(
-    useCallback(() => {
-      getDB()
-        .then(async db => {
-          const d = await getProgramDay(db, name, idx);
-          if (d) {
-            setDay(d);
-            const rows = getExercisesLibraryData(db, d.exercises.map(e => e.name));
-            setLibraryData(new Map(rows.map(r => [r.name, r])));
-          }
-        })
-        .catch(console.error);
-    }, [name, idx])
-  );
+  const { day, setDay, libraryData, setLibraryData } = useProgramDay(name, idx);
 
   async function persistToDb(next: ProgramDay) {
     try {
