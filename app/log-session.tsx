@@ -506,20 +506,23 @@ export default function LogSession() {
 
   const handleLogSet = useCallback(() => {
     if (state.status !== 'ready') return;
-    const { day, session, input, key } = state;
+    const { session, input, key } = state;
     const exIdx = session.currentExerciseIdx;
     const next = logSet(session, exIdx, input.reps, input.weight);
-    const nextInput = inputFromTarget(day, next);
+    // Carry forward what the user just entered rather than re-deriving from the
+    // plan target. inputFromTarget is only appropriate on first load and on
+    // exercise transitions (handleNextExercise / handleJump), not here.
     saveDraft(key, next);
-    setState({ ...state, session: next, input: nextInput });
+    setState({ ...state, session: next, input });
   }, [state]);
 
   const handleSkipRest = useCallback(() => {
     if (state.status !== 'ready') return;
     const next = skipRest(state.session);
-    const nextInput = inputFromTarget(state.day, next);
+    // Carry the existing input forward — skip rest doesn't change exercise or
+    // target, so there's no reason to re-derive the input from the plan.
     saveDraft(state.key, next);
-    setState({ ...state, session: next, input: nextInput });
+    setState({ ...state, session: next });
   }, [state]);
 
   const handleJump = useCallback((idx: number) => {

@@ -805,6 +805,55 @@ describe('exercise note row', () => {
   });
 });
 
+// ─── Stepper carry-forward after logging ─────────────────────────────────────
+//
+// After logging a set, the stepper for the *next* set should show the values
+// the user just entered — not reset to the program target. The target should
+// only seed the stepper on first load and on exercise transitions.
+
+describe('stepper carry-forward after logging a set', () => {
+  it('carries forward user-entered reps after logging set 1 (not reset to target)', async () => {
+    // mockDay: Squat has 2 target sets, each 5 reps × 100 kg
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Adjust reps away from target: 5 → 7 (press + twice on reps stepper)
+    const incButtons = screen.getAllByText('+');
+    await act(async () => { fireEvent.press(incButtons[0]); }); // 5 → 6
+    await act(async () => { fireEvent.press(incButtons[0]); }); // 6 → 7
+
+    // Confirm the reps stepper now shows 7
+    expect(screen.getByText('7')).toBeTruthy();
+
+    // Log set 1
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    // After logging, the stepper for set 2 should still show 7 (carried forward),
+    // NOT 5 (the original plan target). The "5" that was the target should not appear
+    // as the reps stepper value.
+    expect(screen.getByText('7')).toBeTruthy();
+  });
+
+  it('carries forward user-entered weight after logging set 1', async () => {
+    // mockDay: Squat has 2 target sets, each 5 reps × 100 kg
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Adjust weight down from 100: press − once on weight stepper → 97.5 kg
+    const decButtons = screen.getAllByText('−');
+    await act(async () => { fireEvent.press(decButtons[1]); }); // weight stepper −
+
+    // Log set 1
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+
+    // After logging, the weight stepper for set 2 should carry forward the adjusted
+    // value, not reset to the target weight of 100.
+    expect(screen.queryByText('100')).toBeNull();
+  });
+});
+
 // ─── Rest timer duration ──────────────────────────────────────────────────────
 
 describe('rest timer duration', () => {
