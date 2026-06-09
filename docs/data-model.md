@@ -1,6 +1,6 @@
 # Data model
 
-> **State:** current as of v0.3 — five tables; exercises is the canonical name registry.
+> **State:** current as of v0.4 — includes exercise library enrichment columns.
 
 ## Tables
 
@@ -9,6 +9,10 @@ erDiagram
     exercises {
         int     id              PK
         text    name
+        text    library_id
+        text    muscle_groups
+        text    equipment
+        int     library_confidence
     }
 
     sessions {
@@ -48,9 +52,10 @@ erDiagram
 
 ## Notes
 
-**`exercises` is the canonical name registry.** Both `sessions` and `program_exercises` reference `exercises.id` via foreign key instead of storing a name string. This ensures a single source of truth for exercise identity and makes renaming an exercise possible without rewriting history.
+**`exercises` is the canonical name registry and library bridge.** Both `sessions` and `program_exercises` reference `exercises.id` via foreign key. The table is enriched with metadata from the bundled `exercises.json` library (via `library_id`, `muscle_groups`, etc.) during app initialization. This enrichment is "lazy" and depends on an exact name match.
 
-**Sessions and programs are still separate domains.** Sessions are immutable historical facts; programs are plans. A program change or deletion must not touch session rows. The shared FK into `exercises` is a naming contract, not a behavioural coupling.
+**Sessions and programs are still separate domains.**
+ Sessions are immutable historical facts; programs are plans. A program change or deletion must not touch session rows. The shared FK into `exercises` is a naming contract, not a behavioural coupling.
 
 **Same exercise across days.** If an exercise appears on multiple program days (e.g. Squat on Day 1 and Day 3), `program_exercises` has independent rows for each. Progression state will key on `exercise_id` so both days advance together — to be resolved when the progression engine is built.
 
