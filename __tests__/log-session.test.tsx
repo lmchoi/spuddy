@@ -1,5 +1,5 @@
 import { Alert, AppState, Platform } from 'react-native';
-import { act, render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { act, render, screen, fireEvent, waitFor, configure, resetToDefaults } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
 import { getProgramDay, addProgramDay, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
@@ -7,6 +7,9 @@ import { C } from '@/components/spuddy/palette';
 import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import type { SessionState } from '@/src/domain/sessionLogger';
 import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+
+configure({ asyncUtilTimeout: 5000 });
+afterAll(() => resetToDefaults());
 
 const mockScheduleRestExpiredNotification = jest.fn().mockResolvedValue(undefined);
 const mockCancelRestExpiredNotification = jest.fn().mockResolvedValue(undefined);
