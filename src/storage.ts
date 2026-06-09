@@ -79,14 +79,17 @@ export async function hasAnySessions(db: DrizzleDB): Promise<boolean> {
 
 export async function saveSession(db: DrizzleDB, session: Session): Promise<void> {
   db.transaction(tx => {
-    for (const entry of session.exercises) {
+    for (let i = 0; i < session.exercises.length; i++) {
+      const entry = session.exercises[i];
       const exerciseId = resolveOrCreateExercise(tx as DrizzleDB, entry.name);
       (tx as DrizzleDB).insert(sessions).values({
         date: session.date,
         exerciseId,
         setsJson: JSON.stringify(entry.sets),
         targetsJson: JSON.stringify(entry.targets),
-      }).run();
+        source: session.source ?? 'manual',
+        sourceId: session.sourceId ? `${session.sourceId}_${i}` : null,
+      }).onConflictDoNothing().run();
     }
   });
 }

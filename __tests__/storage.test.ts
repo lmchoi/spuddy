@@ -219,4 +219,26 @@ describe('SQLite storage', () => {
     });
   });
 
+  describe('session deduplication by source_id', () => {
+    it('saving same session twice with same source_id produces one row per exercise', async () => {
+      const sessionWithSource: Session = {
+        ...SESSION_A,
+        source: 'liftosaur',
+        sourceId: 'src_123',
+      };
+      await saveSession(db, sessionWithSource);
+      await saveSession(db, sessionWithSource);
+      
+      const rows = db.all(sql`SELECT * FROM sessions`);
+      expect(rows).toHaveLength(2); // SESSION_A has 2 exercises, they are inserted as src_123_0 and src_123_1
+    });
+    
+    it('saving two manual sessions with null sourceId both persist', async () => {
+      await saveSession(db, SESSION_A);
+      await saveSession(db, SESSION_A);
+      const rows = db.all(sql`SELECT * FROM sessions`);
+      expect(rows).toHaveLength(4); // Manual sessions should duplicate
+    });
+  });
+
 });
