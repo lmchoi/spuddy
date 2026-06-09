@@ -3,11 +3,17 @@ import ProgramDayDetailScreen from '../app/(tabs)/settings/[programName]/[dayInd
 
 const mockGetProgramDay = jest.fn();
 const mockUpdateProgramDay = jest.fn();
+const mockGetExercisesLibraryData = jest.fn();
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/programStorage', () => ({
   getProgramDay: (...args: unknown[]) => mockGetProgramDay(...args),
   updateProgramDay: (...args: unknown[]) => mockUpdateProgramDay(...args),
+}));
+jest.mock('@/src/exerciseStorage', () => ({
+  getExerciseNote: jest.fn(),
+  setExerciseNote: jest.fn(),
+  getExercisesLibraryData: (...args: unknown[]) => mockGetExercisesLibraryData(...args),
 }));
 jest.mock('expo-router', () => ({
   useFocusEffect: (cb: () => void) => { cb(); },
@@ -18,10 +24,38 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
+// Library data matching the SAMPLE_DAY exercises:
+// push=2 (Bench Press, Overhead Press), pull=1 (Pull-ups), unmatched=1 (Squat)
+const SAMPLE_LIBRARY_DATA = [
+  {
+    name: 'Bench Press',
+    libraryId: 'Barbell_Bench_Press_-_Medium_Grip',
+    muscleGroups: JSON.stringify(['chest', 'shoulders', 'triceps']),
+    equipment: 'barbell',
+    libraryConfidence: 100,
+  },
+  {
+    name: 'Overhead Press',
+    libraryId: 'Standing_Military_Press',
+    muscleGroups: JSON.stringify(['shoulders', 'triceps']),
+    equipment: 'barbell',
+    libraryConfidence: 100,
+  },
+  {
+    name: 'Pull-ups',
+    libraryId: 'Wide-Grip_Rear_Pull-Up',
+    muscleGroups: JSON.stringify(['lats', 'biceps']),
+    equipment: 'body only',
+    libraryConfidence: 100,
+  },
+  // Squat: no entry → unmatched
+];
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockGetProgramDay.mockResolvedValue(null);
   mockUpdateProgramDay.mockResolvedValue(undefined);
+  mockGetExercisesLibraryData.mockReturnValue(SAMPLE_LIBRARY_DATA);
 });
 
 describe('ProgramDayDetail screen', () => {
@@ -163,6 +197,85 @@ describe('bug regression: edit state clears on delete', () => {
     fireEvent.press(deleteButtons[0]);
     // editingCell must be cleared — no active TextInput showing a reps value
     expect(screen.queryByDisplayValue('5')).toBeNull();
+  });
+});
+
+describe('exercise edit sheet', () => {
+  it('opens sheet on exercise name tap', () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Bench Press'));
+    expect(screen.getByDisplayValue('Bench Press')).toBeTruthy();
+  });
+
+  it('closing the sheet does not toggle expand state', () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Bench Press'));
+    fireEvent.press(screen.getByText('dismiss'));
+    expect(screen.queryByText('SET')).toBeNull();
+  });
+
+  it('shows library match card for a matched exercise after data loads', async () => {
+    mockGetProgramDay.mockResolvedValue({
+      name: 'Push Day',
+      exercises: [{ name: 'Bench Press', targets: [] }],
+    });
+    render(<ProgramDayDetailScreen />);
+    // Open sheet immediately; match card only appears once libraryData loads
+    fireEvent.press(screen.getByText('Bench Press'));
+    await waitFor(() => expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(1));
+    expect(screen.getByText('100%')).toBeTruthy();
+  });
+
+  it('renders without crash when muscleGroups is malformed JSON', async () => {
+    mockGetProgramDay.mockResolvedValue({
+      name: 'Push Day',
+      exercises: [{ name: 'Bench Press', targets: [] }],
+    });
+    mockGetExercisesLibraryData.mockReturnValueOnce([{
+      name: 'Bench Press',
+      libraryId: 'some_id',
+      muscleGroups: 'not valid json',
+      equipment: 'barbell',
+      libraryConfidence: 100,
+    }]);
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Bench Press'));
+    await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
+  });
+
+  it('shows no-match card for an unmatched exercise', () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    expect(screen.getByText(/No library match found/)).toBeTruthy();
+  });
+
+  it('saves renamed exercise when Save name is pressed', async () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Bench Press'));
+    const input = screen.getByDisplayValue('Bench Press');
+    fireEvent.changeText(input, 'Incline Press');
+    // No library data loaded in this test → no match → button reads "Save name"
+    fireEvent.press(screen.getByText('Save name'));
+    await waitFor(() => expect(screen.getByText('Incline Press')).toBeTruthy());
+  });
+
+  it('retains library match card after renaming a matched exercise', async () => {
+    mockGetProgramDay.mockResolvedValue({
+      name: 'Push Day',
+      exercises: [{ name: 'Bench Press', targets: [] }],
+    });
+    render(<ProgramDayDetailScreen />);
+    // Open sheet and wait for library data to load
+    fireEvent.press(screen.getByText('Bench Press'));
+    await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
+    // Rename and save
+    fireEvent.changeText(screen.getByDisplayValue('Bench Press'), 'Incline Press');
+    fireEvent.press(screen.getByText('Save'));
+    // Wait for rename to reflect in the list, then reopen sheet
+    await waitFor(() => {
+      fireEvent.press(screen.getByText('Incline Press'));
+      expect(screen.getByText('100%')).toBeTruthy();
+    });
   });
 });
 
