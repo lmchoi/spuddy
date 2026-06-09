@@ -46,3 +46,9 @@ Items that can't be picked up until a dependency lands.
 ## Inbox
 
 New items land here. Triage before picking up.
+
+- **Idempotent re-import** — make re-importing a Liftosaur JSON safe: sessions deduplicate by `(source, source_id)`, programs rename-on-clash rather than wiping, Spuddy-created data never touched. Plan: `docs/plans/idempotent-reimport.md`. 4 PRs.
+- **Liftosaur history import** — extend the import to bring in workout history (`history[]`) from the backup, not just programs. Depends on idempotent re-import landing first. Plan: `docs/plans/liftosaur-history-import.md`. 3 commits.
+
+- **Sentry: navigation tracking + breadcrumbs** — wire up `reactNavigationIntegration()` so every crash report includes a route history, and add `addBreadcrumb` calls on the 5 key user actions (log session, notes import, Strong import, rest timer start, add exercise). Plan: `docs/plans/sentry-instrumentation.md`.
+- **Sentry: custom performance spans** — once the above lands and crash reports are readable, add `Sentry.startSpan` around slow DB queries (progress history load, Strong import parse). No plan yet; pick up only if a perf problem surfaces.
