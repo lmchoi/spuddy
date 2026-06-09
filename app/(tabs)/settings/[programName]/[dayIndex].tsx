@@ -11,6 +11,7 @@ import { summaryLine } from '@/src/domain/programDay';
 import { getDB } from '@/src/db';
 import { getProgramDay, updateProgramDay } from '@/src/programStorage';
 import { getExercisesLibraryData, type ExerciseLibraryRow } from '@/src/exerciseStorage';
+import { renameLibraryEntry, parseMuscleGroups } from '@/src/domain/exerciseLibrary';
 
 // ─── Cell sub-components ─────────────────────────────────────────────────────
 
@@ -104,12 +105,7 @@ function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onClose }: 
   if (exIdx === null || !exercise) return null;
 
   const isMatched = libraryRow?.libraryId != null;
-  let muscles: string[] = [];
-  try {
-    muscles = libraryRow?.muscleGroups ? (JSON.parse(libraryRow.muscleGroups) as string[]) : [];
-  } catch {
-    muscles = [];
-  }
+  const muscles = parseMuscleGroups(libraryRow?.muscleGroups ?? null);
 
   function handleSave() {
     if (exIdx !== null) onRename(exIdx, draft);
@@ -272,17 +268,8 @@ export default function ProgramDayDetailScreen() {
       return next;
     });
     if (updates.name) {
-      setLibraryData(prev => {
-        const oldName = day.exercises[exIdx]?.name;
-        if (!oldName || updates.name === oldName) return prev;
-        const next = new Map(prev);
-        const row = next.get(oldName);
-        if (row) {
-          next.delete(oldName);
-          next.set(updates.name!, row);
-        }
-        return next;
-      });
+      const oldName = day.exercises[exIdx]?.name;
+      if (oldName) setLibraryData(prev => renameLibraryEntry(prev, oldName, updates.name!));
     }
   }
 
