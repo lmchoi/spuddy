@@ -2,7 +2,7 @@ import BetterSqlite from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from '../src/db/schema';
-import { seedMigrationsIfNeeded } from '../src/storage';
+import { seedMigrationsIfNeeded, seedLibraryMatches } from '../src/storage';
 
 // Simulates a database left by the pre-Drizzle app: all tables exist
 // but __drizzle_migrations does not (Drizzle was not managing migrations yet).
@@ -83,6 +83,57 @@ describe('seedMigrationsIfNeeded', () => {
       "SELECT name FROM sqlite_master WHERE type='table' AND name='__drizzle_migrations'"
     ).get();
     expect(row).toBeUndefined();
+  });
+
+  it('migration 0002 runs without error on a DB with existing exercises', () => {
+    const sqlite = buildOldSchemaDB();
+    seedMigrationsIfNeeded(
+      sql => sqlite.prepare(sql).get() as Record<string, unknown> | undefined,
+      (sql, ...params) => { sqlite.prepare(sql).run(...params); }
+    );
+    const db = drizzle(sqlite, { schema });
+    expect(() => migrate(db, { migrationsFolder: './drizzle' })).not.toThrow();
+  });
+
+  it('migration 0002 leaves existing exercise rows unchanged with null new columns', () => {
+    const sqlite = buildOldSchemaDB();
+    seedMigrationsIfNeeded(
+      sql => sqlite.prepare(sql).get() as Record<string, unknown> | undefined,
+      (sql, ...params) => { sqlite.prepare(sql).run(...params); }
+    );
+    const db = drizzle(sqlite, { schema });
+    migrate(db, { migrationsFolder: './drizzle' });
+    const rows = db.select().from(schema.exercises).all();
+    expect(rows[0].name).toBe('Squat');
+    expect(rows[0].muscleGroups).toBeNull();
+    expect(rows[0].equipment).toBeNull();
+    expect(rows[0].libraryId).toBeNull();
+    expect(rows[0].libraryConfidence).toBeNull();
+  });
+
+  it('seedLibraryMatches populates columns for an exercise with an exact name match', () => {
+    const sqlite = new BetterSqlite(':memory:');
+    const db = drizzle(sqlite, { schema });
+    migrate(db, { migrationsFolder: './drizzle' });
+    // Insert an exercise whose name exists in the library
+    sqlite.prepare('INSERT INTO exercises (name) VALUES (?)').run('Barbell Squat');
+    seedLibraryMatches(db as any);
+    const row = sqlite.prepare('SELECT library_id, muscle_groups, equipment, library_confidence FROM exercises WHERE name = ?').get('Barbell Squat') as any;
+    expect(row.library_id).toBe('Barbell_Squat');
+    expect(JSON.parse(row.muscle_groups)).toContain('quadriceps');
+    expect(row.equipment).toBe('barbell');
+    expect(row.library_confidence).toBe(100);
+  });
+
+  it('seedLibraryMatches leaves unmatched exercises with null library columns', () => {
+    const sqlite = new BetterSqlite(':memory:');
+    const db = drizzle(sqlite, { schema });
+    migrate(db, { migrationsFolder: './drizzle' });
+    sqlite.prepare('INSERT INTO exercises (name) VALUES (?)').run('Unknown Exercise XYZ');
+    seedLibraryMatches(db as any);
+    const row = sqlite.prepare('SELECT library_id, muscle_groups FROM exercises WHERE name = ?').get('Unknown Exercise XYZ') as any;
+    expect(row.library_id).toBeNull();
+    expect(row.muscle_groups).toBeNull();
   });
 
   it('does nothing when __drizzle_migrations already exists', () => {
