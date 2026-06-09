@@ -7,8 +7,6 @@ import * as schema from './db/schema';
 import { exercises, sessions } from './db/schema';
 import { migrations } from './db/migrations';
 import type { Session, Target, WorkingSet } from './types';
-import { exactMatch } from './domain/exerciseLibrary';
-
 export type DrizzleDB = BaseSQLiteDatabase<'sync', any, typeof schema>;
 
 // Exported for testing; called with raw SQLite accessors to stay adapter-agnostic.
@@ -26,6 +24,8 @@ export function seedMigrationsIfNeeded(
 }
 
 export function seedLibraryMatches(db: DrizzleDB): void {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { exactMatch } = require('./domain/exerciseLibrary') as typeof import('./domain/exerciseLibrary');
   const rows = db.select({
     id: exercises.id,
     name: exercises.name,
