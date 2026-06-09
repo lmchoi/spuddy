@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { act } from 'react';
 import ProgramDayDetailScreen from '../app/(tabs)/settings/[programName]/[dayIndex]';
 
 const mockGetProgramDay = jest.fn();
@@ -16,7 +17,8 @@ jest.mock('@/src/exerciseStorage', () => ({
   getExercisesLibraryData: (...args: unknown[]) => mockGetExercisesLibraryData(...args),
 }));
 jest.mock('expo-router', () => ({
-  useFocusEffect: (cb: () => void) => { cb(); },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  useFocusEffect: (cb: () => void) => { require('react').useEffect(cb, []); },
   useLocalSearchParams: jest.fn().mockReturnValue({ programName: 'PPL', dayIndex: '0' }),
   useRouter: () => ({ back: jest.fn() }),
 }));
@@ -220,6 +222,7 @@ describe('exercise edit sheet', () => {
       exercises: [{ name: 'Bench Press', targets: [] }],
     });
     render(<ProgramDayDetailScreen />);
+    await act(async () => {});
     fireEvent.press(screen.getByText('Bench Press'));
     await waitFor(() => expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(1));
     expect(screen.getByText('100%')).toBeTruthy();
@@ -238,6 +241,7 @@ describe('exercise edit sheet', () => {
       libraryConfidence: 100,
     }]);
     render(<ProgramDayDetailScreen />);
+    await act(async () => {});
     fireEvent.press(screen.getByText('Bench Press'));
     await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
   });
@@ -264,6 +268,7 @@ describe('exercise edit sheet', () => {
       exercises: [{ name: 'Bench Press', targets: [] }],
     });
     render(<ProgramDayDetailScreen />);
+    await act(async () => {});
     // Open sheet and wait for library data to load
     fireEvent.press(screen.getByText('Bench Press'));
     await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
@@ -285,6 +290,7 @@ describe('real data loading', () => {
       exercises: [{ name: 'Squat', targets: [{ reps: 5, weight: 100 }] }],
     });
     render(<ProgramDayDetailScreen />);
+    await act(async () => {});
     await waitFor(() => expect(screen.getByText('Leg Day')).toBeTruthy());
   });
 
@@ -297,6 +303,7 @@ describe('real data loading', () => {
       ],
     });
     render(<ProgramDayDetailScreen />);
+    await act(async () => {});
     await waitFor(() => {
       expect(screen.getByText('Squat')).toBeTruthy();
       expect(screen.getByText('Leg Press')).toBeTruthy();
@@ -309,6 +316,7 @@ describe('real data loading', () => {
       exercises: [{ name: 'Squat', targets: [{ reps: 5, weight: 100 }] }],
     });
     render(<ProgramDayDetailScreen />);
+    await act(async () => {});
     await waitFor(() => expect(screen.getByText('Squat')).toBeTruthy());
     fireEvent.press(screen.getAllByText('▸')[0]);
     fireEvent.press(screen.getByText('+ Set'));
