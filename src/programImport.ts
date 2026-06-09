@@ -12,6 +12,10 @@ export async function importProgramFromJson(db: DrizzleDB, json: unknown): Promi
   if ('error' in parsed) {
     return { success: false, error: parsed.error };
   }
-  await savePrograms(db, parsed);
+  await importPrograms(db, parsed);
   return { success: true, programs: parsed };
+}
+
+export async function importPrograms(db: DrizzleDB, programs: Program[]): Promise<void> {
+  await savePrograms(db, programs);
 }
