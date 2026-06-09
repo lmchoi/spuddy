@@ -50,9 +50,9 @@ Existing workout apps are either too complex or too limited for intermediate hom
 
 ## 5. Data Principles
 
-- **No hard-delete on structured data** — program days and exercises are archived/disabled, not deleted. Their indices must remain stable because session history references them by position. Deleting a day shifts all subsequent indices and silently corrupts history.
+- **No hard-delete on structured data** — program days and exercises are archived/disabled, not deleted. Their indices must remain stable because session history references them by position.
 - **Session history is immutable** — past sessions are never edited or removed.
-- **Re-import replaces, not merges** — importing a new program from an external source replaces the entire program record. This is the only path to structural deletion.
+- **Re-import merges and renames** — importing from an external source merges with existing data. To prevent data loss, existing programs are renamed on clash rather than overwritten. Session history is deduplicated by source ID.
 
 ---
 
@@ -80,7 +80,7 @@ Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 - Does not write back to Liftosaur
 - Does not require Liftosaur premium
 
-**Post-import:** The app is the source of truth for both session history and program structure. Liftosaur edits will not be reflected unless re-imported (which would overwrite in-app changes).
+**Post-import:** The app is the source of truth for both session history and program structure. Liftosaur edits can be re-imported safely; existing programs with matching names are archived/renamed to prevent accidental loss of in-app changes.
 
 **Long term:** Liftosaur becomes fully optional once the app has enough program evolution capability to replace it.
 

@@ -1,0 +1,43 @@
+# ADR 019 — Idempotent re-import: session deduplication and program rename-on-clash
+
+**Date:** 2026-06-09  
+**Status:** Decided  
+**Supersedes:** [ADR 008](008-third-party-import-data-model.md) (Duplicate handling section)
+
+---
+
+## Context
+
+Spuddy bootstraps its data from external sources (primarily Liftosaur JSON exports). Users may re-import the same file multiple times as they update their program or history in the source app.
+
+Previously (per ADR 008), we used content-based hashing to deduplicate sessions. This was fragile: if a user fixed a typo in a note or slightly adjusted a weight in the source app, the hash would change, and re-import would produce a duplicate session in Spuddy.
+
+Furthermore, importing a program used to "nuke and pave" — deleting all existing programs and re-inserting from the file. This would destroy any in-app modifications or Spuddy-exclusive programs.
+
+## Decision
+
+### 1. Session Deduplication by Source ID
+
+Instead of content hashing, we now use explicit source tracking:
+- Add `source` (TEXT, default 'manual') and `source_id` (TEXT) columns to the `sessions` table.
+- A unique constraint is placed on `(source, source_id)`.
+- For imported sessions, `source` is set to the provider (e.g., 'liftosaur') and `source_id` is the provider's internal ID.
+- Since a "Session" in Spuddy's UI corresponds to multiple rows in the `sessions` table (one per exercise), the `source_id` stored in the DB is suffixed with the exercise index (e.g., `originalId_0`, `originalId_1`).
+- `onConflictDoNothing()` is used during insert. If the `source_id` already exists, the row is skipped.
+
+SQLite treats `NULL` values as distinct in unique constraints. Manual sessions (where `source_id` is NULL) will never collide with each other or with imported sessions.
+
+### 2. Program Rename-on-Clash
+
+Instead of overwriting programs, we preserve existing ones:
+- When importing a program whose name already exists in Spuddy, the *existing* program is renamed to include a timestamp suffix (e.g., `"Hypertrophy" -> "Hypertrophy (2026-06-09)"`).
+- If the suffixed name also exists, a counter is appended (`"Hypertrophy (2026-06-09 2)"`).
+- The new program is then inserted with the original name.
+- Programs created in Spuddy that are not present in the import are never touched.
+
+## Consequences
+
+- Re-importing the same file is now perfectly idempotent and safe.
+- Fixing a typo in a source session and re-importing will *not* update the session in Spuddy (it will be skipped as a duplicate). This is acceptable as Spuddy is intended to become the source of truth post-import.
+- In-app program changes are never lost; they are archived by name when a new version is imported.
+- Schema migration 0003 is required to add `source` and `source_id` columns and the unique index.

@@ -45,4 +45,4 @@ Extract `importPrograms` in the import layer; `savePrograms` stays as the intern
 
 ### PR 4 — Docs
 - Update PRD section 5: replace "re-import replaces, not merges" with the new policy
-- New ADR (018): supersedes ADR-008 dedup approach; records rename-on-clash for programs and `(source, source_id)` for sessions
+- New ADR (019): supersedes ADR-008 dedup approach; records rename-on-clash for programs and `(source, source_id)` for sessions
