@@ -31,3 +31,6 @@ Increase code coverage for critical logic and screens to ensure reliability.
 
 ### 6. test: add coverage for modal screen
 - [ ] Basic rendering tests for `app/modal.tsx`.
+
+### 7. fix: suppress act() warnings in program-day-detail tests
+`program-day-detail.test.tsx` produces `act(...)` console errors because the async `useEffect` in `[dayIndex].tsx` (lines 241–248) calls `setDay` and `setLibraryData` outside of act. Fix by wrapping the renders with `waitFor` / `act` in the test, or by extracting the async load into a hook that can be flushed cleanly. Tests pass today but the noise obscures real failures.
