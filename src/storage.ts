@@ -2,11 +2,12 @@ import * as SQLite from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { migrate as drizzleMigrate } from 'drizzle-orm/expo-sqlite/migrator';
 import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
-import { eq, desc, asc, sql } from 'drizzle-orm';
+import { eq, desc, asc, sql, isNull } from 'drizzle-orm';
 import * as schema from './db/schema';
 import { exercises, sessions } from './db/schema';
 import { migrations } from './db/migrations';
 import type { Session, Target, WorkingSet } from './types';
+import { exactMatch } from './domain/exerciseLibrary';
 
 export type DrizzleDB = BaseSQLiteDatabase<'sync', any, typeof schema>;
 
@@ -24,6 +25,29 @@ export function seedMigrationsIfNeeded(
   run('INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)', '', 1780135301055);
 }
 
+export function seedLibraryMatches(db: DrizzleDB): void {
+  const rows = db.select({
+    id: exercises.id,
+    name: exercises.name,
+  }).from(exercises).where(isNull(exercises.libraryId)).all();
+
+  db.transaction(tx => {
+    for (const row of rows) {
+      const match = exactMatch(row.name);
+      if (!match) continue;
+      tx.update(exercises)
+        .set({
+          libraryId: match.id,
+          muscleGroups: JSON.stringify(match.primaryMuscles),
+          equipment: match.equipment,
+          libraryConfidence: 100,
+        })
+        .where(eq(exercises.id, row.id))
+        .run();
+    }
+  });
+}
+
 export async function initDB(): Promise<DrizzleDB> {
   const client = SQLite.openDatabaseSync('spuddy.db');
   seedMigrationsIfNeeded(
@@ -32,6 +56,7 @@ export async function initDB(): Promise<DrizzleDB> {
   );
   const db = drizzle(client, { schema });
   await drizzleMigrate(db, migrations);
+  seedLibraryMatches(db);
   return db;
 }
 
