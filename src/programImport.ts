@@ -7,7 +7,7 @@ import { saveSession } from './storage';
 import { sql } from 'drizzle-orm';
 
 type ImportResult =
-  | { success: true; programs: Program[]; sessionsImported: number }
+  | { success: true; programs: Program[]; sessionsImported: number; historyWarning?: string }
   | { success: false; error: string };
 
 export async function importProgramFromJson(db: DrizzleDB, json: unknown): Promise<ImportResult> {
@@ -19,6 +19,7 @@ export async function importProgramFromJson(db: DrizzleDB, json: unknown): Promi
 
   const sessions = parseHistoryFromBackup(json);
   let sessionsImported = 0;
+  let historyWarning: string | undefined;
   if (Array.isArray(sessions)) {
     for (const session of sessions) {
       const firstSourceId = session.sourceId ? `${session.sourceId}_0` : null;
@@ -29,9 +30,12 @@ export async function importProgramFromJson(db: DrizzleDB, json: unknown): Promi
       await saveSession(db, session);
       if (isNew) sessionsImported++;
     }
+  } else {
+    console.warn('[liftosaur] history parse failed:', sessions.error);
+    historyWarning = sessions.error;
   }
 
-  return { success: true, programs: parsed, sessionsImported };
+  return { success: true, programs: parsed, sessionsImported, historyWarning };
 }
 
 export async function importPrograms(db: DrizzleDB, programs: Program[]): Promise<void> {

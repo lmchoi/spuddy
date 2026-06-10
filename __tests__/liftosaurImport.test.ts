@@ -60,4 +60,19 @@ describe('importProgramFromJson — liftosaur history', () => {
     if (!result.success) return;
     expect(result.sessionsImported).toBe(0);
   });
+
+  it('returns historyWarning when history field is missing from backup', async () => {
+    const noHistory = { programs: fixture.programs };
+    const result = await importProgramFromJson(db, noHistory);
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.historyWarning).toBeTruthy();
+  });
+
+  it('returns no historyWarning on a valid backup', async () => {
+    const result = await importProgramFromJson(db, fixture);
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.historyWarning).toBeUndefined();
+  });
 });

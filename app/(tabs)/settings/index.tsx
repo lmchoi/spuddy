@@ -44,10 +44,16 @@ export default function SettingsScreen() {
 
       if (importResult.success) {
         setPrograms(importResult.programs);
-        const summary = importResult.programs
+        const programSummary = importResult.programs
           .map(p => `${p.name} (${p.days.length} days)`)
           .join(', ');
-        Alert.alert('Programs imported', summary);
+        const sessionLine = importResult.sessionsImported > 0
+          ? `\n${importResult.sessionsImported} sessions imported`
+          : '';
+        const warningLine = importResult.historyWarning
+          ? '\nCould not read session history from this backup.'
+          : '';
+        Alert.alert('Programs imported', `${programSummary}${sessionLine}${warningLine}`);
       } else {
         Alert.alert('Import failed', importResult.error);
       }
