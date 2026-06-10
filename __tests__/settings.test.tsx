@@ -177,15 +177,65 @@ describe('import interaction', () => {
         activeDayIndex: 0,
       },
     ];
-    mockImportProgramFromJson.mockResolvedValue({ success: true, programs: importedPrograms });
+    mockImportProgramFromJson.mockResolvedValue({ success: true, programs: importedPrograms, sessionsImported: 7 });
 
     render(<SettingsScreen />);
     await act(async () => {
       fireEvent.press(screen.getByText('Import Liftosaur JSON'));
     });
 
-    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('Programs imported', 'Test Program (0 days)'));
+    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('Programs imported', 'Test Program (0 days)\n7 sessions imported'));
     expect(await screen.findByText('Test Program')).toBeTruthy();
+  });
+
+  it('shows history warning line in alert when historyWarning is set', async () => {
+    mockGetDocumentAsync.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file://test.json' }],
+    });
+    (global as { fetch?: any }).fetch = jest.fn().mockResolvedValue({
+      text: () => Promise.resolve('{}'),
+    });
+    mockImportProgramFromJson.mockResolvedValue({
+      success: true,
+      programs: [{ name: 'My Program', days: [], activeDayIndex: 0 }],
+      sessionsImported: 0,
+      historyWarning: 'Invalid backup: history field is not an array',
+    });
+
+    render(<SettingsScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByText('Import Liftosaur JSON'));
+    });
+
+    await waitFor(() =>
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Programs imported',
+        'My Program (0 days)\nCould not read session history from this backup.'
+      )
+    );
+  });
+
+  it('omits session line from alert when sessionsImported is 0', async () => {
+    mockGetDocumentAsync.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file://test.json' }],
+    });
+    (global as { fetch?: any }).fetch = jest.fn().mockResolvedValue({
+      text: () => Promise.resolve('{}'),
+    });
+    mockImportProgramFromJson.mockResolvedValue({
+      success: true,
+      programs: [{ name: 'No History', days: [], activeDayIndex: 0 }],
+      sessionsImported: 0,
+    });
+
+    render(<SettingsScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByText('Import Liftosaur JSON'));
+    });
+
+    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('Programs imported', 'No History (0 days)'));
   });
 
   it('shows alert on import failure', async () => {
