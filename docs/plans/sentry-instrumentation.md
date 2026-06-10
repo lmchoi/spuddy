@@ -1,23 +1,25 @@
-# Plan: Sentry instrumentation — navigation tracking + breadcrumbs
+# Plan: Sentry instrumentation — crash context + notification debugging
 
 ## Goal
 
-Give crash reports enough context to understand what a user was doing before
-an error. Right now Sentry only catches unhandled errors; there are no
-breadcrumbs, no navigation history, and no indication of which features were
-touched. Two additions fix this:
+Two specific debugging scenarios drive this work:
 
-1. **Navigation tracking** — auto-capture every screen transition as a Sentry
-   span/breadcrumb so crash reports always include a route history.
-2. **Manual breadcrumbs** — record the 5 most important user actions so the
-   event timeline shows what the user did, not just where they were.
+1. **Crash reports lack context** — when an error is reported, there's no
+   navigation history or record of what the user did beforehand. Navigation
+   tracking and breadcrumbs on key actions fix this.
+2. **"Notification didn't fire" reports** — users can't describe what happened
+   technically. A `captureMessage` at scheduling time creates a passive audit
+   trail in Sentry so you can look up what was scheduled without asking the user.
+
+Usage analytics (which features are used, set values, defaults shown) is **not**
+in scope here — that belongs in PostHog. See `docs/plans/posthog-analytics.md`.
 
 ## Out of scope
 
-- Session replay (heavyweight, not worth it for a personal app)
-- Custom performance spans (no perf problem to solve yet)
-- Explicit user identity (`setUser`) — Sentry already generates a stable
-  anonymous installation ID automatically
+- Session replay
+- Custom performance spans
+- Explicit user identity (`setUser`) — Sentry auto-generates a stable anonymous
+  installation ID
 - Any changes to error sampling rates or alerting rules
 
 ## Design
@@ -27,45 +29,56 @@ touched. Two additions fix this:
 Expo Router is built on React Navigation, so Sentry's
 `reactNavigationIntegration()` works directly.
 
-**`app/_layout.tsx` changes:**
+Add to `Sentry.init` in `app/_layout.tsx`:
 
 ```ts
-// in Sentry.init options
 integrations: [Sentry.reactNavigationIntegration()],
-tracesSampleRate: 1.0,          // 100% during dev; can lower in prod
+tracesSampleRate: 1.0,
 ```
 
-Wrap the `<Stack>` (or its parent) with `Sentry.NavigationContainer` —
-a drop-in replacement for React Navigation's `NavigationContainer` that
-handles registration automatically. Since Expo Router owns the container,
-the right hook point is the `ref` forwarded to the root `<Stack>`.
-
-Actually, the correct Expo Router approach: use the `reactNavigationIntegration`
-and call `navigationIntegration.registerNavigationContainer(ref)` in the
-root layout's `onLayout` / via a `ref` on the navigator, per Sentry docs for
-Expo Router setups.
+Register the navigation container ref with the integration in `RootLayoutNav`.
+Check Sentry docs for the exact Expo Router snippet before implementing —
+the API differs slightly from bare React Navigation.
 
 **What this captures automatically:**
 - Every screen transition as a breadcrumb and span
-- Time spent on each screen
 - Navigation history visible in every crash report
 
-### 2. Manual breadcrumbs
+App foreground/background transitions are already captured automatically by
+the native SDK — no extra work needed.
 
-Call `Sentry.addBreadcrumb(...)` at the 5 key moments. These live in the
-screen/hook that already owns the action — no new abstraction needed.
+### 2. Manual breadcrumbs on key actions
 
-| Action | Location | category | message |
-|---|---|---|---|
-| Session logged (finish) | `log-session.tsx` `handleFinish` | `"session"` | `"Session logged"` |
-| Notes imported | `notes-import-review.tsx` on confirm | `"import"` | `"Notes import confirmed"` |
-| Strong CSV imported | `strong-import.tsx` on success | `"import"` | `"Strong import confirmed"` |
-| Rest timer started | rest timer hook/screen | `"rest-timer"` | `"Rest timer started"` |
-| Exercise added | add exercise screen on save | `"exercise"` | `"Exercise added"` |
+`Sentry.addBreadcrumb(...)` at 5 moments. Each gets `level: "info"` and a
+`data` object with 1-2 relevant counts — useful context, nothing personal.
 
-Each breadcrumb gets `level: "info"` and a `data` object with 1-2 relevant
-counts (e.g. `{ sets: 4 }`, `{ exercises: 12 }`) — enough to be useful
-without logging anything personal.
+| Action | Location | category | message | data |
+|---|---|---|---|---|
+| Session logged | `log-session.tsx` `handleFinish` | `"session"` | `"Session logged"` | `{ exercises, sets }` |
+| Notes imported | `notes-import-review.tsx` on confirm | `"import"` | `"Notes import confirmed"` | `{ sessions }` |
+| Strong CSV imported | `strong-import.tsx` on success | `"import"` | `"Strong import confirmed"` | `{ sessions }` |
+| Rest timer started | rest timer hook | `"rest-timer"` | `"Rest timer started"` | `{ duration_s }` |
+| Exercise added | add exercise screen on save | `"exercise"` | `"Exercise added"` | — |
+
+### 3. Notification scheduling audit trail
+
+Call `Sentry.captureMessage` (not just a breadcrumb) when a notification is
+scheduled. This lands in Sentry regardless of whether an error ever occurs,
+giving you a passive log to look up when a user reports a missed notification.
+
+```ts
+Sentry.captureMessage('Rest timer notification scheduled', {
+  level: 'info',
+  extra: {
+    scheduled_for: targetFireTime.toISOString(),
+    duration_s: durationSeconds,
+    permissions_granted: permissionsStatus,
+  },
+});
+```
+
+This means every scheduled notification creates a Sentry event. On a personal
+app with low volume this is fine; revisit if volume grows.
 
 ## Commit breakdown
 
@@ -77,20 +90,15 @@ without logging anything personal.
 
 2. **`feat(sentry): add breadcrumbs for key user actions`**
    - Add `addBreadcrumb` calls at the 5 locations above
-   - Tests: verify breadcrumb is called with correct shape for each action
-     (mock `@sentry/react-native` and assert on `addBreadcrumb`)
+   - Tests: mock `@sentry/react-native` and assert breadcrumb shape for each
+
+3. **`feat(sentry): capture notification scheduling as Sentry event`**
+   - Add `captureMessage` call in the notification scheduling path
+   - Tests: assert `captureMessage` is called with correct level and extra fields
 
 ## Testing strategy
 
-- Unit: mock `@sentry/react-native` and assert `addBreadcrumb` shape for each
-  action (category, message, level, data keys present)
-- Manual: trigger each action in dev build, check Sentry dashboard breadcrumb
-  trail on a test event
-
-## Open questions
-
-- **`tracesSampleRate` in prod** — 1.0 is fine for a personal app with low
-  traffic; no need to lower it.
-- **Expo Router navigation container ref** — need to confirm the exact API for
-  registering the ref with Sentry when Expo Router owns the container (check
-  Sentry docs for the Expo Router-specific snippet before implementing).
+- Unit: mock `@sentry/react-native`; assert `addBreadcrumb` / `captureMessage`
+  shape (category, message, level, data keys) for each instrumented action
+- Manual: trigger each action in dev build, verify events appear in Sentry
+  dashboard with expected properties
