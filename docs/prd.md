@@ -1,4 +1,5 @@
 # Product Requirements Document
+
 ## Spuddy — Workout Tracker
 
 **Status:** Active development — M1 shipped, M2 in progress
@@ -52,7 +53,7 @@ Existing workout apps are either too complex or too limited for intermediate hom
 
 - **No hard-delete on structured data** — program days and exercises are archived/disabled, not deleted. Their indices must remain stable because session history references them by position.
 - **Session history is immutable** — past sessions are never edited or removed.
-- **Re-import merges and renames** — importing from an external source merges with existing data. To prevent data loss, existing programs are renamed on clash rather than overwritten. Session history is deduplicated by source ID.
+- **Re-import merges and appends** — importing from an external source merges with existing data. To prevent data loss, incoming programs are appended rather than overwriting existing ones. Multiple programs with the same name can coexist, distinguished by their creation timestamp. Session history is deduplicated by source ID.
 
 ---
 
@@ -72,15 +73,17 @@ Existing workout apps are either too complex or too limited for intermediate hom
 Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 
 **What Liftosaur is used for:**
+
 - Creating the initial program structure and exporting existing session history
 - That file is imported once; after that the app is fully standalone and owns the program
 
 **What the app does not do:**
+
 - Does not call the Liftosaur REST API
 - Does not write back to Liftosaur
 - Does not require Liftosaur premium
 
-**Post-import:** The app is the source of truth for both session history and program structure. Liftosaur edits can be re-imported safely; existing programs with matching names are archived/renamed to prevent accidental loss of in-app changes.
+**Post-import:** The app is the source of truth for both session history and program structure. Liftosaur edits can be re-imported safely; new programs are added as fresh copies, preserving existing programs with the same name to prevent accidental loss of in-app changes.
 
 **Long term:** Liftosaur becomes fully optional once the app has enough program evolution capability to replace it.
 
@@ -91,6 +94,7 @@ Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 ### 7.1 Session Logging
 
 **Shipped (M1):**
+
 - Log sets: reps, weight, optional notes
 - Per-exercise target display (e.g. "3 × 10–12 @ 60s rest")
 - Visual indicator per set: on target / exceeded / below target
@@ -99,11 +103,13 @@ Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 - Previous session's weights shown as default input values
 
 **Must have (M2):**
+
 - Rest timer push notifications (background alert when rest expires)
 - Select which program day to run before starting a session
 - Finish workout button always visible (not just after final set)
 
 **Nice to have (post-MVP):**
+
 - Warm-up set flag (excluded from working-set analysis)
 - Swipe to complete a set
 - Garmin watch BLE companion — real-time rep count sent to app, user corrects between sets
@@ -114,6 +120,7 @@ Liftosaur is used as a **one-time bootstrap** — not an ongoing dependency.
 Makes progression suggestions genuinely useful rather than generic.
 
 **Must have:**
+
 - Define available equipment: resistance bands, bodyweight, pull-up bar, bench, barbell (toggle)
 - Adjustable dumbbells: specify plates owned — app calculates achievable weights from combinations
 - Barbell: specify plates owned — app calculates achievable loads
@@ -123,21 +130,25 @@ Makes progression suggestions genuinely useful rather than generic.
 ### 7.3 Program Import
 
 **Must have:**
+
 - Import from Liftosaur file export
 - Mirror Liftosaur's program structure — don't invent our own model
 - Import session history — full backfill from Liftosaur export
 
 **Nice to have:**
+
 - Import from generic CSV
 - Import from Strong or Hevy export format
 
 ### 7.4 Exercise History & Analytics
 
 **Shipped (M1):**
+
 - Per-exercise view: all logged sessions, newest first
 - Each entry: date, sets × reps @ weight, on-target indicator
 
 **M2+:**
+
 - Weight and reps progression charts with target reference lines
 - Best set record
 - Volume per muscle group per week
@@ -147,10 +158,12 @@ Makes progression suggestions genuinely useful rather than generic.
 When a session is finished and the app detects that the user changed sets, reps, or weight from the program targets, prompt them to save those changes back to the program.
 
 **Two options presented:**
+
 - **Update this day** — overwrite the current `ProgramDay` targets to match what was actually done
 - **Save as new day** — prompt the user to name the new day, then create a new `ProgramDay` with that name, leaving the original intact
 
 **Detection rule:** Compare working sets (non-warmup) against the day's targets. A prompt is shown if any of these are true:
+
 - An exercise in the program has **zero sets logged** (skipped entirely)
 - A logged exercise has a **different weight or rep target** than the program specifies
 - A logged exercise is **not in the program** (added mid-session)

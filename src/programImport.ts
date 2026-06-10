@@ -1,7 +1,7 @@
 import type { DrizzleDB } from './storage';
 import type { Program } from './types';
 import { parseProgramFromBackup } from './programParser';
-import { savePrograms } from './programStorage';
+import { insertPrograms } from './programStorage';
 import { parseHistoryFromBackup } from './liftosaurParser';
 import { saveSession } from './storage';
 import { sql } from 'drizzle-orm';
@@ -38,6 +38,8 @@ export async function importProgramFromJson(db: DrizzleDB, json: unknown): Promi
   return { success: true, programs: parsed, sessionsImported, historyWarning };
 }
 
-export async function importPrograms(db: DrizzleDB, programs: Program[]): Promise<void> {
-  await savePrograms(db, programs);
+export async function importPrograms(db: DrizzleDB, newPrograms: Program[]): Promise<void> {
+  return db.transaction((tx) => {
+    insertPrograms(tx as DrizzleDB, newPrograms);
+  });
 }

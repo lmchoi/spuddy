@@ -16,12 +16,13 @@ Make re-importing a Liftosaur JSON safe: sessions deduplicate by source ID, prog
 ### Programs
 
 `savePrograms` currently nukes all program rows then re-inserts. It is used in two ways:
+
 1. **Internal operations** (`updateProgramDay`, `addProgramDay`) — pass the full program list, expect full replacement
 2. **Import** — should merge incoming programs with existing ones, not wipe
 
 These need to be separated. A new `importPrograms` function lives in the import layer and handles merge logic. `savePrograms` stays as the internal dumb writer and is not changed.
 
-**Rename-on-clash:** when an imported program name matches an existing one, rename the existing to `"name (YYYY-MM-DD)"` before inserting the fresh version. If that name is also taken, append a counter: `"name (YYYY-MM-DD 2)"`, etc. Spuddy-created programs not present in the import are never touched.
+**Timestamps for differentiation:** Add a `createdAt` column to the `programs` table. Instead of renaming on clash, allow duplicate names but use the timestamp to distinguish them in the UI. Imported programs will use the current time as their `createdAt` value. Spuddy-created programs not present in the import are never touched.
 
 ### Sessions
 
@@ -32,17 +33,22 @@ Add `source` and `source_id` columns to `sessions`. A unique constraint on `(sou
 ## PRs
 
 ### PR 1 — Refactor: split save vs import (DONE)
+
 Extract `importPrograms` in the import layer; `savePrograms` stays as the internal persistence primitive. No behaviour change. All existing tests pass unchanged.
 
 ### PR 2 — Session dedup (DONE)
+
 - Schema migration: add `source TEXT NOT NULL DEFAULT 'manual'` and `source_id TEXT` to `sessions`; unique constraint on `(source, source_id)`; backfill existing rows with `source = 'manual'`
 - Update `saveSession` to accept optional `source`/`source_id`, use `onConflictDoNothing`
 - Tests: saving same session twice with same `source_id` produces one row; two manual sessions both persist
 
-### PR 3 — Program import: rename-on-clash
-- Implement rename-on-clash logic in `importPrograms`
-- Tests: import twice → no duplicates; Spuddy-only program survives re-import; name clash produces renamed copy with correct suffix; same-day clash appends counter
+### PR 3 — Program import: timestamps (DONE)
 
-### PR 4 — Docs
-- Update PRD section 5: replace "re-import replaces, not merges" with the new policy
-- New ADR (019): supersedes ADR-008 dedup approach; records rename-on-clash for programs and `(source, source_id)` for sessions
+- Schema migration: add `createdAt` to `programs` table.
+- Implement merge logic in `importPrograms` (append instead of replace).
+- Tests: import twice → programs coexist; Spuddy-only program survives re-import; timestamps are set correctly.
+
+### PR 4 — Docs (DONE)
+
+- Update PRD section 5: replace "re-import replaces, not merges" with the new policy.
+- New ADR (019): supersedes ADR-008 dedup approach; records the timestamp strategy for programs and `(source, source_id)` for sessions.

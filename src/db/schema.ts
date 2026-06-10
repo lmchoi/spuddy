@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 
 export const exercises = sqliteTable('exercises', {
@@ -23,7 +24,7 @@ export const sessions = sqliteTable(
     source: text('source').notNull().default('manual'),
     sourceId: text('source_id'),
   },
-  t => [
+  (t) => [
     index('idx_sessions_date').on(t.date),
     index('idx_sessions_exercise').on(t.exerciseId),
     unique('idx_sessions_source_id').on(t.source, t.sourceId),
@@ -34,6 +35,9 @@ export const programs = sqliteTable('programs', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   activeDayIndex: integer('active_day_index').notNull().default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
 });
 
 export const programDays = sqliteTable('program_days', {

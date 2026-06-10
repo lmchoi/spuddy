@@ -1,6 +1,6 @@
 import { type DrizzleDB } from '../src/storage';
 import { importProgramFromJson } from '../src/programImport';
-import { getPrograms } from '../src/programStorage';
+import { getPrograms, savePrograms } from '../src/programStorage';
 import * as fs from 'fs';
 import * as path from 'path';
 import { makeInMemoryDB } from './helpers/makeInMemoryDB';
@@ -29,13 +29,36 @@ describe('importProgramFromJson', () => {
     expect(stored[0].days).toHaveLength(3);
   });
 
-  it('importing again replaces all existing programs', async () => {
-    await importProgramFromJson(db, fixture);
+  it('leaves existing Spuddy-only programs untouched', async () => {
+    await savePrograms(db, [{ name: 'Spuddy PPL', activeDayIndex: 0, days: [] }]);
+    
     await importProgramFromJson(db, fixture);
 
     const stored = await getPrograms(db);
-    const rows = db.all<{ count: number }>('SELECT COUNT(*) AS count FROM programs');
-    expect(rows[0].count).toBe(stored.length);
+    const spuddyProgram = stored.find((p) => p.name === 'Spuddy PPL');
+    expect(spuddyProgram).toBeDefined();
+    
+    const importedProgram = stored.find((p) => p.name === 'v1');
+    expect(importedProgram).toBeDefined();
+  });
+
+  it('allows duplicate names and coexists distinct programs on import twice', async () => {
+    await importProgramFromJson(db, fixture);
+    
+    // Fake a small delay to simulate timestamps being distinct
+    // Though makeInMemoryDB and sql`(unixepoch() * 1000)` might just get the same ms if it's too fast,
+    // actually drizzle SQLite handles default timestamps. Let's just do a second import.
+    await importProgramFromJson(db, fixture);
+
+    const stored = await getPrograms(db);
+    
+    // Since fixture has 'v1' and 'another', importing twice means we should have two 'v1's.
+    const v1Programs = stored.filter((p) => p.name === 'v1');
+    expect(v1Programs).toHaveLength(2);
+    
+    // We expect both to have their own days
+    expect(v1Programs[0].days).toHaveLength(3);
+    expect(v1Programs[1].days).toHaveLength(3);
   });
 
   it('returns error and leaves storage unchanged for malformed input', async () => {
