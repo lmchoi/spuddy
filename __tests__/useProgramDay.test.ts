@@ -33,7 +33,7 @@ describe('useProgramDay', () => {
       resolveDB = resolve;
     }));
 
-    const { result } = renderHook(() => useProgramDay('MyProgram', 0));
+    const { result } = renderHook(() => useProgramDay(123, 0));
 
     expect(result.current.day).toEqual(SAMPLE_DAY);
     expect(result.current.libraryData.size).toBe(0);
@@ -51,40 +51,40 @@ describe('useProgramDay', () => {
     mockGetProgramDay.mockResolvedValue(mockDay as any);
     mockGetExercisesLibraryData.mockReturnValue(mockLibraryData as any);
 
-    const { result } = renderHook(() => useProgramDay('MyProgram', 0));
+    const { result } = renderHook(() => useProgramDay(123, 0));
 
     await waitFor(() => {
       expect(result.current.day).toEqual(mockDay);
     });
 
     expect(result.current.libraryData.get('Squat')).toEqual(mockLibraryData[0]);
-    expect(mockGetProgramDay).toHaveBeenCalledWith(mockDb, 'MyProgram', 0);
+    expect(mockGetProgramDay).toHaveBeenCalledWith(mockDb, 123, 0);
     expect(mockGetExercisesLibraryData).toHaveBeenCalledWith(mockDb, ['Squat']);
   });
 
-  it('re-fetches when name or idx changes', async () => {
+  it('re-fetches when programId or idx changes', async () => {
     const mockDb = {} as any;
     mockGetDB.mockResolvedValue(mockDb);
     mockGetProgramDay.mockResolvedValue({ name: 'Init', exercises: [] } as any);
     mockGetExercisesLibraryData.mockReturnValue([]);
 
     const { rerender } = renderHook(
-      ({ name, idx }: { name: string; idx: number }) => useProgramDay(name, idx),
-      { initialProps: { name: 'ProgA', idx: 0 } }
+      ({ programId, idx }: { programId: number; idx: number }) => useProgramDay(programId, idx),
+      { initialProps: { programId: 123, idx: 0 } }
     );
 
     await waitFor(() => {
-      expect(mockGetProgramDay).toHaveBeenCalledWith(mockDb, 'ProgA', 0);
+      expect(mockGetProgramDay).toHaveBeenCalledWith(mockDb, 123, 0);
     });
 
     mockGetProgramDay.mockClear();
     mockGetExercisesLibraryData.mockClear();
 
     // Change props
-    rerender({ name: 'ProgB', idx: 1 });
+    rerender({ programId: 456, idx: 1 });
 
     await waitFor(() => {
-      expect(mockGetProgramDay).toHaveBeenCalledWith(mockDb, 'ProgB', 1);
+      expect(mockGetProgramDay).toHaveBeenCalledWith(mockDb, 456, 1);
     });
   });
 });

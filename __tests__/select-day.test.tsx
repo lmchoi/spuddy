@@ -26,6 +26,7 @@ jest.mock('@/src/programStorage', () => ({
 }));
 
 const mockProgram = {
+  id: 1,
   name: 'Strength A',
   activeDayIndex: 1,
   days: [
@@ -96,7 +97,7 @@ describe('SelectDay screen', () => {
     fireEvent.press(screen.getByText(/Start Day B/));
 
     expect(mockPush).toHaveBeenCalledWith(
-      '/log-session?programName=Strength%20A&dayIndex=1'
+      '/log-session?programId=1&dayIndex=1'
     );
   });
 
@@ -111,7 +112,7 @@ describe('SelectDay screen', () => {
     fireEvent.press(screen.getByText(/Start Day A/));
 
     expect(mockPush).toHaveBeenCalledWith(
-      '/log-session?programName=Strength%20A&dayIndex=0'
+      '/log-session?programId=1&dayIndex=0'
     );
   });
 

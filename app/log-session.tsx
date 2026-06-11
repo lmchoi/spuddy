@@ -448,7 +448,7 @@ function BottomAction({
 type ScreenState =
   | { status: 'loading' }
   | { status: 'empty' }
-  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramName: string; resolvedDayIndex: number; totalDays: number; key: string; notes: Record<number, string> };
+  | { status: 'ready'; day: ProgramDay; session: SessionState; input: InputState; resolvedProgramId: number; resolvedDayIndex: number; totalDays: number; key: string; notes: Record<number, string> };
 
 function inputFromTarget(day: ProgramDay, session: SessionState): InputState {
   const exIdx = session.currentExerciseIdx;
@@ -459,7 +459,7 @@ function inputFromTarget(day: ProgramDay, session: SessionState): InputState {
 export default function LogSession() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { programName, dayIndex } = useLocalSearchParams<{ programName: string; dayIndex: string }>();
+  const { programId, dayIndex } = useLocalSearchParams<{ programId: string; dayIndex: string }>();
 
   const [state, setState] = useReducer(
     (_: ScreenState, next: ScreenState) => next,
@@ -470,21 +470,21 @@ export default function LogSession() {
     async function load() {
       try {
         const db = await getDB();
-        let resolvedName = programName;
+        let resolvedId = Number(programId);
         let resolvedDayIndex = Number(dayIndex ?? 0);
         let totalDays = 0;
-        if (!resolvedName) {
+        if (isNaN(resolvedId)) {
           const programs = await getPrograms(db);
           if (programs.length === 0) { setState({ status: 'empty' }); return; }
-          resolvedName = programs[0].name;
+          resolvedId = programs[0].id!;
           resolvedDayIndex = programs[0].activeDayIndex;
           totalDays = programs[0].days.length;
         } else {
-          totalDays = await getProgramTotalDays(db, resolvedName);
+          totalDays = await getProgramTotalDays(db, resolvedId);
         }
-        const day = await getProgramDay(db, resolvedName, resolvedDayIndex);
+        const day = await getProgramDay(db, resolvedId, resolvedDayIndex);
         if (!day) { setState({ status: 'empty' }); return; }
-        const key = draftKey(resolvedName, resolvedDayIndex);
+        const key = draftKey(resolvedId, resolvedDayIndex);
         const draft = await loadDraft(key);
         const session = draft ? reconcileDraft(draft, day) : initSession(day);
         const input = inputFromTarget(day, session);
@@ -495,14 +495,14 @@ export default function LogSession() {
             if (note) notes[ex.exerciseId] = note;
           }
         }
-        setState({ status: 'ready', day, session, input, resolvedProgramName: resolvedName, resolvedDayIndex, totalDays, key, notes });
+        setState({ status: 'ready', day, session, input, resolvedProgramId: resolvedId, resolvedDayIndex, totalDays, key, notes });
         setupNotificationChannel();
       } catch {
         setState({ status: 'empty' });
       }
     }
     load();
-  }, [programName, dayIndex]);
+  }, [programId, dayIndex]);
 
   const handleLogSet = useCallback(() => {
     if (state.status !== 'ready') return;
@@ -568,7 +568,7 @@ export default function LogSession() {
 
   const handleFinish = useCallback(async () => {
     if (state.status !== 'ready') return;
-    const { day, session, resolvedProgramName, resolvedDayIndex, totalDays, key } = state;
+    const { day, session, resolvedProgramId, resolvedDayIndex, totalDays, key } = state;
     const today = new Date().toISOString().slice(0, 10);
     const payload = buildSavePayload(session, day, today);
     let db;
@@ -582,7 +582,7 @@ export default function LogSession() {
     await clearDraft(key).catch(() => {});
     if (totalDays > 0) {
       const nextIdx = nextActiveDayIndex(resolvedDayIndex, totalDays);
-      try { updateActiveDayIndex(db, resolvedProgramName, nextIdx); } catch {}
+      try { updateActiveDayIndex(db, resolvedProgramId, nextIdx); } catch {}
     }
     if (resolvePostSessionAction(session) === 'navigate') {
       router.replace(`/progress/${today}`);
@@ -591,7 +591,7 @@ export default function LogSession() {
     const doSave = async (name: string | null) => {
       if (name) {
         try {
-          await addProgramDay(db!, resolvedProgramName, buildNewDay(session, day, name));
+          await addProgramDay(db!, resolvedProgramId, buildNewDay(session, day, name));
         } catch {
           // navigate anyway — saving the new day is best-effort
         }

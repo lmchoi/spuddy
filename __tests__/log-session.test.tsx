@@ -22,7 +22,7 @@ jest.mock('@/src/notifications', () => ({
 }));
 
 jest.mock('@/src/sessionDraft', () => ({
-  draftKey: jest.fn((name: string, idx: number) => `draft_session__${name}__${idx}`),
+  draftKey: jest.fn((id: number, idx: number) => `draft_session__${id}__${idx}`),
   loadDraft: jest.fn().mockResolvedValue(null),
   saveDraft: jest.fn().mockResolvedValue(undefined),
   clearDraft: jest.fn().mockResolvedValue(undefined),
@@ -36,7 +36,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({ programName: 'Test Program', dayIndex: '0' }),
+  useLocalSearchParams: () => ({ programId: '1', dayIndex: '0' }),
   useRouter: () => ({ replace: mockReplace, back: mockBack }),
   Stack: { Screen: () => null },
 }));
@@ -256,7 +256,7 @@ describe('finish session', () => {
     await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
 
     // dayIndex=0, totalDays=2 → nextActiveDayIndex = 1
-    expect(updateActiveDayIndex).toHaveBeenCalledWith(expect.anything(), 'Test Program', 1);
+    expect(updateActiveDayIndex).toHaveBeenCalledWith(expect.anything(), 1, 1);
   });
 });
 

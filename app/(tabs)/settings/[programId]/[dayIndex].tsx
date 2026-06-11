@@ -3,7 +3,7 @@ import {
   KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text,
   TextInput, View,
 } from 'react-native';
-import { styles } from '@/styles/tabs/settings/programName/dayIndex.styles';
+import { styles } from '@/styles/tabs/settings/programId/dayIndex.styles';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useProgramDay } from '@/src/hooks/useProgramDay';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -187,7 +187,7 @@ type EditingCell = {
 export default function ProgramDayDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { programName, dayIndex } = useLocalSearchParams<{ programName: string; dayIndex: string }>();
+  const { programId, dayIndex } = useLocalSearchParams<{ programId: string; dayIndex: string }>();
 
   
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
@@ -196,15 +196,15 @@ export default function ProgramDayDetailScreen() {
   const [sheetExIdx, setSheetExIdx] = useState<number | null>(null);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
 
-  const name = decodeURIComponent(programName ?? '');
+  const pId = parseInt(programId ?? '0', 10);
   const idx = parseInt(dayIndex ?? '0', 10);
 
-  const { day, setDay, libraryData, setLibraryData } = useProgramDay(name, idx);
+  const { day, setDay, libraryData, setLibraryData } = useProgramDay(pId, idx);
 
   async function persistToDb(next: ProgramDay) {
     try {
       const db = await getDB();
-      await updateProgramDay(db, name, idx, next);
+      await updateProgramDay(db, pId, idx, next);
     } catch (e) {
       console.error(e);
     }

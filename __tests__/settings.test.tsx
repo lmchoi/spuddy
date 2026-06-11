@@ -74,6 +74,7 @@ describe('empty state', () => {
 describe('programs loaded', () => {
   const PROGRAMS = [
     {
+      id: 42,
       name: 'Push Pull Legs',
       days: [
         { name: 'Push', exercises: [{ name: 'Bench Press' }, { name: 'OHP' }] },
@@ -106,7 +107,7 @@ describe('programs loaded', () => {
     render(<SettingsScreen />);
     await screen.findByText('Push');
     fireEvent.press(screen.getByText('Push'));
-    expect(mockPush).toHaveBeenCalledWith('/settings/Push%20Pull%20Legs/0');
+    expect(mockPush).toHaveBeenCalledWith('/settings/42/0');
   });
 });
 

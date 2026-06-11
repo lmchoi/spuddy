@@ -45,9 +45,11 @@ export type ProgramDay = {
 };
 
 export type Program = {
+  id?: number;
   name: string;
   days: ProgramDay[];
   activeDayIndex: number;
+  createdAt?: number;
 };
 
 export type ImportedWorkoutGroup = {

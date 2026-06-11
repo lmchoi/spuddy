@@ -60,25 +60,25 @@ export async function getPrograms(db: DrizzleDB): Promise<Program[]> {
       exercises: loadExercises(db, dayRow.id),
     }));
 
-    return { name: programRow.name, days, activeDayIndex: programRow.activeDayIndex };
+    return {
+      id: programRow.id,
+      name: programRow.name,
+      days,
+      activeDayIndex: programRow.activeDayIndex,
+      createdAt: programRow.createdAt.getTime(),
+    };
   });
 }
 
 export async function getProgramDay(
   db: DrizzleDB,
-  programName: string,
+  programId: number,
   dayIndex: number
 ): Promise<ProgramDay | null> {
-  const programRows = await db
-    .select({ id: programs.id })
-    .from(programs)
-    .where(eq(programs.name, programName));
-  if (programRows.length === 0) return null;
-
   const dayRows = await db
     .select({ id: programDays.id, name: programDays.name })
     .from(programDays)
-    .where(and(eq(programDays.programId, programRows[0].id), eq(programDays.dayIndex, dayIndex)));
+    .where(and(eq(programDays.programId, programId), eq(programDays.dayIndex, dayIndex)));
   if (dayRows.length === 0) return null;
   const dayRow = dayRows[0];
 
@@ -87,43 +87,91 @@ export async function getProgramDay(
 
 export async function updateProgramDay(
   db: DrizzleDB,
-  programName: string,
+  programId: number,
   dayIndex: number,
   day: ProgramDay
 ): Promise<void> {
-  const programList = await getPrograms(db);
-  const target = programList.find((p) => p.name === programName);
-  if (!target) throw new Error(`Program not found: ${programName}`);
-  target.days[dayIndex] = day;
-  await savePrograms(db, programList);
+  return db.transaction((tx) => {
+    const tdb = tx as unknown as DrizzleDB;
+    // 1. Find the day row
+    const dayRows = tdb
+      .select({ id: programDays.id })
+      .from(programDays)
+      .where(and(eq(programDays.programId, programId), eq(programDays.dayIndex, dayIndex)))
+      .all();
+
+    if (dayRows.length === 0) throw new Error(`Day ${dayIndex} not found for program ${programId}`);
+    const dayRowId = dayRows[0].id;
+
+    // 2. Update day name
+    tdb.update(programDays).set({ name: day.name }).where(eq(programDays.id, dayRowId)).run();
+
+    // 3. Delete existing exercises for this day
+    tdb.delete(programExercises).where(eq(programExercises.programDayId, dayRowId)).run();
+
+    // 4. Insert new exercises
+    for (let ei = 0; ei < day.exercises.length; ei++) {
+      const exercise = day.exercises[ei];
+      const exerciseId = resolveOrCreateExercise(tdb, exercise.name);
+      tdb
+        .insert(programExercises)
+        .values({
+          programDayId: dayRowId,
+          exerciseIndex: ei,
+          exerciseId,
+          targetsJson: JSON.stringify(exercise.targets),
+        })
+        .run();
+    }
+  });
 }
 
-export function updateActiveDayIndex(db: DrizzleDB, programName: string, dayIndex: number): void {
-  db.update(programs).set({ activeDayIndex: dayIndex }).where(eq(programs.name, programName)).run();
+export function updateActiveDayIndex(db: DrizzleDB, programId: number, dayIndex: number): void {
+  db.update(programs).set({ activeDayIndex: dayIndex }).where(eq(programs.id, programId)).run();
 }
 
-export async function getProgramTotalDays(db: DrizzleDB, programName: string): Promise<number> {
-  const programRows = await db
-    .select({ id: programs.id })
-    .from(programs)
-    .where(eq(programs.name, programName));
-  if (programRows.length === 0) return 0;
+export async function getProgramTotalDays(db: DrizzleDB, programId: number): Promise<number> {
   const rows = db.all<{ n: number }>(
-    sql`SELECT COUNT(*) AS n FROM program_days WHERE program_id = ${programRows[0].id}`
+    sql`SELECT COUNT(*) AS n FROM program_days WHERE program_id = ${programId}`
   );
   return rows[0]?.n ?? 0;
 }
 
 export async function addProgramDay(
   db: DrizzleDB,
-  programName: string,
+  programId: number,
   day: ProgramDay
 ): Promise<void> {
-  const programList = await getPrograms(db);
-  const target = programList.find((p) => p.name === programName);
-  if (!target) throw new Error(`Program not found: ${programName}`);
-  target.days.push(day);
-  await savePrograms(db, programList);
+  return db.transaction((tx) => {
+    const tdb = tx as unknown as DrizzleDB;
+    // 1. Find current max dayIndex
+    const rows = tdb.all<{ n: number }>(
+      sql`SELECT MAX(day_index) AS n FROM program_days WHERE program_id = ${programId}`
+    );
+    const nextIndex = (rows[0]?.n ?? -1) + 1;
+
+    // 2. Insert new day
+    const dayRow = tdb
+      .insert(programDays)
+      .values({ programId, dayIndex: nextIndex, name: day.name })
+      .returning({ insertedId: programDays.id })
+      .get()!;
+
+    // 3. Insert exercises
+    for (let ei = 0; ei < day.exercises.length; ei++) {
+      const exercise = day.exercises[ei];
+      const exerciseId = resolveOrCreateExercise(tdb, exercise.name);
+      tdb
+        .insert(programExercises)
+        .values({
+          programDayId: dayRow.insertedId,
+          exerciseIndex: ei,
+          exerciseId,
+          targetsJson: JSON.stringify(exercise.targets),
+        })
+        .run();
+    }
+  });
 }
 
 function loadExercises(db: DrizzleDB, dayId: number): ProgramExercise[] {

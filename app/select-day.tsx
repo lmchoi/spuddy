@@ -70,7 +70,7 @@ export default function SelectDay() {
   const selectedDay = program.days[selectedIndex];
 
   function handleStart() {
-    router.push(`/log-session?programName=${encodeURIComponent(program.name)}&dayIndex=${selectedIndex}`);
+    router.push(`/log-session?programId=${program.id}&dayIndex=${selectedIndex}`);
   }
 
   return (

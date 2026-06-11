@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import ProgramDayDetailScreen from '../app/(tabs)/settings/[programName]/[dayIndex]';
+import ProgramDayDetailScreen from '../app/(tabs)/settings/[programId]/[dayIndex]';
 import React from 'react';
 
 // We use an external variable to set the *initial* state for our mock hook,
@@ -31,7 +31,7 @@ jest.mock('@/src/exerciseStorage', () => ({
   getExercisesLibraryData: (...args: unknown[]) => mockGetExercisesLibraryData(...args),
 }));
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: jest.fn().mockReturnValue({ programName: 'PPL', dayIndex: '0' }),
+  useLocalSearchParams: jest.fn().mockReturnValue({ programId: '1', dayIndex: '0' }),
   useRouter: () => ({ back: jest.fn() }),
 }));
 jest.mock('react-native-safe-area-context', () => ({

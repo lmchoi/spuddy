@@ -79,7 +79,7 @@ describe('importProgramFromJson', () => {
   it('rolls back completely if a program fails to insert', async () => {
     const badPrograms = [
       { name: 'valid', activeDayIndex: 0, days: [] },
-      { name: null as unknown as string, activeDayIndex: 0, days: [] } // invalid
+      { name: 'invalid', activeDayIndex: 0, days: null as unknown as any[] } // will throw in loop
     ];
     
     await expect(importPrograms(db, badPrograms)).rejects.toThrow();
