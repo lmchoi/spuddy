@@ -1,34 +1,48 @@
 export const migrations = {
   journal: {
+    version: '7',
+    dialect: 'sqlite',
     entries: [
       {
         idx: 0,
+        version: '6',
         when: 1780135301055,
         tag: '0000_new_namor',
         breakpoints: true,
       },
       {
         idx: 1,
+        version: '6',
         when: 1780221701055,
         tag: '0001_exercise_notes',
         breakpoints: true,
       },
       {
         idx: 2,
+        version: '6',
         when: 1780308101055,
         tag: '0002_exercise_library',
         breakpoints: true,
       },
       {
         idx: 3,
+        version: '6',
         when: 1781018447278,
         tag: '0003_typical_skaar',
         breakpoints: true,
       },
       {
         idx: 4,
+        version: '6',
         when: 1781134023152,
         tag: '0004_spotty_machine_man',
+        breakpoints: true,
+      },
+      {
+        idx: 5,
+        version: '6',
+        when: 1781136062929,
+        tag: '0005_bouncy_shadowcat',
         breakpoints: true,
       },
     ],
@@ -42,5 +56,7 @@ export const migrations = {
     m0003:
       "ALTER TABLE `sessions` ADD `source` text DEFAULT 'manual' NOT NULL;--> statement-breakpoint\nALTER TABLE `sessions` ADD `source_id` text;--> statement-breakpoint\nCREATE UNIQUE INDEX `idx_sessions_source_id` ON `sessions` (`source`,`source_id`);",
     m0004: 'ALTER TABLE `programs` ADD `created_at` integer DEFAULT (unixepoch() * 1000) NOT NULL;',
+    m0005:
+      'PRAGMA foreign_keys=OFF;--> statement-breakpoint\nCREATE TABLE `__new_programs` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`name` text NOT NULL,\n\t`active_day_index` integer DEFAULT 0 NOT NULL,\n\t`created_at` integer DEFAULT (cast((julianday(\'now\') - 2440587.5)*86400000 as integer)) NOT NULL\n);\n--> statement-breakpoint\nINSERT INTO `__new_programs`("id", "name", "active_day_index", "created_at") SELECT "id", "name", "active_day_index", "created_at" FROM `programs`;--> statement-breakpoint\nDROP TABLE `programs`;--> statement-breakpoint\nALTER TABLE `__new_programs` RENAME TO `programs`;--> statement-breakpoint\nPRAGMA foreign_keys=ON;',
   },
 };

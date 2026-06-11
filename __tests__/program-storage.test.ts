@@ -80,6 +80,18 @@ describe('program schema', () => {
     expect(programs[0].days).toHaveLength(2);
   });
 
+  it('sets createdAt to a timestamp in milliseconds', async () => {
+    await savePrograms(db, [PROGRAM_A]);
+    const programRows = db.select().from(schema.programs).all();
+    expect(programRows).toHaveLength(1);
+    const createdAt = programRows[0].createdAt;
+    expect(createdAt).toBeInstanceOf(Date);
+    const msSinceEpoch = createdAt.getTime();
+    // It should be recently, within the last hour
+    expect(msSinceEpoch).toBeGreaterThan(Date.now() - 3600000);
+    expect(msSinceEpoch).toBeLessThanOrEqual(Date.now() + 1000);
+  });
+
   it('retrieves program days with exercises', async () => {
     await savePrograms(db, [PROGRAM_A]);
     const programs = await getPrograms(db);
