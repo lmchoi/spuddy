@@ -3,6 +3,8 @@ import { programDays, programExercises, programs } from './db/schema';
 import { resolveOrCreateExercise, type DrizzleDB } from './storage';
 import type { Program, ProgramDay, ProgramExercise, Target } from './types';
 
+// Append new programs without touching existing ones. Used by import flows (Liftosaur, Strong, notes).
+// This enables idempotent re-import: importing the same file twice won't duplicate programs or lose data.
 export function insertPrograms(db: DrizzleDB, programs_: Program[]): void {
   for (const program of programs_) {
     const programRow = db
@@ -35,6 +37,10 @@ export function insertPrograms(db: DrizzleDB, programs_: Program[]): void {
   }
 }
 
+// Replace all programs (full sync). Used only by internal operations that rebuild the entire program list (e.g., app UI).
+// Safe for session history: deletes only the program structure (programs/programDays/programExercises tables).
+// Sessions reference exercises directly by ID, not through program templates, so logged workouts are never affected.
+// For imports, use insertPrograms instead to preserve existing programs and enable idempotent re-import.
 export async function savePrograms(db: DrizzleDB, programs_: Program[]): Promise<void> {
   return db.transaction((tx) => {
     const tdb = tx as DrizzleDB;
