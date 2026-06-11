@@ -1,5 +1,5 @@
 import { type DrizzleDB, getAllSessions } from '../src/storage';
-import { getPrograms } from '../src/programStorage';
+import { getPrograms, savePrograms } from '../src/programStorage';
 import { importFromStrong } from '../src/strongImport';
 import { makeInMemoryDB } from './helpers/makeInMemoryDB';
 
@@ -102,6 +102,37 @@ describe('importFromStrong', () => {
     it('returns error for completely invalid input', async () => {
       const result = await importFromStrong(db, 'not a csv', [], 'kg');
       expect(result.success).toBe(false);
+    });
+  });
+
+  describe('preserving existing programs', () => {
+    it('does not wipe existing programs from other imports', async () => {
+      // First, import a Liftosaur program via savePrograms
+      const existingProgram = {
+        name: 'Liftosaur PPL',
+        activeDayIndex: 0,
+        days: [
+          {
+            name: 'Push',
+            exercises: [{ name: 'Bench', targets: [{ reps: 5, weight: 100, restSeconds: 180 }] }],
+          },
+        ],
+      };
+      await savePrograms(db, [existingProgram]);
+
+      const before = await getPrograms(db);
+      expect(before).toHaveLength(1);
+      expect(before[0].name).toBe('Liftosaur PPL');
+
+      // Now import Strong programs
+      await importFromStrong(db, BASIC_CSV, ['Push'], 'kg');
+
+      // Verify both exist
+      const after = await getPrograms(db);
+      const names = after.map(p => p.name);
+      expect(names).toContain('Liftosaur PPL');
+      expect(names).toContain('Push');
+      expect(after).toHaveLength(2);
     });
   });
 });
