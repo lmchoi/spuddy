@@ -1,6 +1,6 @@
 # Data model
 
-> **State:** current as of v0.4 — includes exercise library enrichment columns.
+> **State:** current as of v0.5 — includes import deduplication (source_id) and program timestamps.
 
 ## Tables
 
@@ -21,12 +21,15 @@ erDiagram
         int     exercise_id     FK
         text    sets_json
         text    targets_json
+        text    source          "default: 'manual'"
+        text    source_id       "nullable, dedup key"
     }
 
     programs {
         int     id              PK
-        text    name
+        text    name            "can be duplicate"
         int     active_day_index
+        int     created_at      "milliseconds, for distinguishing re-imports"
     }
 
     program_days {
@@ -62,3 +65,13 @@ erDiagram
 **`sets_json` / `targets_json`** store arrays of `WorkingSet` / `Target` objects (see `src/types.ts`). Kept as JSON blobs to avoid a join-heavy schema while the shape is still evolving.
 
 **Day-centric by design.** `program_days` has no week or block concept — just named days in order. This keeps the schema simple and accommodates programs from other sources that may not have a week structure.
+
+**Import deduplication.** `sessions.source` and `sessions.source_id` enable idempotent imports:
+- Imported sessions (source='liftosaur', 'strong', etc.) are deduplicated by `source_id` (the original system's ID).
+- Manual sessions (source='manual', source_id=NULL) are never deduplicated (each log creates a new row).
+- Unique constraint on (source, source_id) prevents duplicate imports. SQLite treats NULL as distinct, so manual sessions don't collide with each other.
+
+**Program timestamps.** `programs.created_at` allows multiple programs with the same name to coexist without collision:
+- When a program is imported, a new program row is created with the current timestamp.
+- Re-importing the same file creates a fresh copy (not an update), preserving any in-app edits to the original.
+- The UI can use `created_at` to show which version is newer, or to sort/deduplicate on display.
