@@ -1,5 +1,5 @@
 import { type DrizzleDB } from '../src/storage';
-import { importProgramFromJson } from '../src/programImport';
+import { importProgramFromJson, importPrograms } from '../src/programImport';
 import { getPrograms, savePrograms } from '../src/programStorage';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -74,5 +74,17 @@ describe('importProgramFromJson', () => {
   it('returns error for null input without throwing', async () => {
     const result = await importProgramFromJson(db, null);
     expect(result.success).toBe(false);
+  });
+
+  it('rolls back completely if a program fails to insert', async () => {
+    const badPrograms = [
+      { name: 'valid', activeDayIndex: 0, days: [] },
+      { name: null as unknown as string, activeDayIndex: 0, days: [] } // invalid
+    ];
+    
+    await expect(importPrograms(db, badPrograms)).rejects.toThrow();
+
+    const stored = await getPrograms(db);
+    expect(stored).toHaveLength(0); // The 'valid' program should have been rolled back
   });
 });

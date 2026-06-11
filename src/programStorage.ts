@@ -36,7 +36,7 @@ export function insertPrograms(db: DrizzleDB, programs_: Program[]): void {
 }
 
 export async function savePrograms(db: DrizzleDB, programs_: Program[]): Promise<void> {
-  db.transaction((tx) => {
+  return db.transaction((tx) => {
     const tdb = tx as DrizzleDB;
     tdb.delete(programExercises).run();
     tdb.delete(programDays).run();

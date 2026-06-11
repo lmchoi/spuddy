@@ -181,6 +181,16 @@ describe('program schema', () => {
     expect(exercises[0].name).toBe('Squat');
     expect(exercises[1].name).toBe('Deadlift');
   });
+
+  it('rejects if an error occurs during savePrograms transaction', async () => {
+    const badProgram: Program = {
+      name: null as unknown as string, // Invalid
+      activeDayIndex: 0,
+      days: []
+    };
+    
+    await expect(savePrograms(db, [badProgram])).rejects.toThrow();
+  });
 });
 
 describe('updateProgramDay', () => {
