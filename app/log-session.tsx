@@ -396,8 +396,10 @@ function BottomAction({
   input,
   onIncReps,
   onDecReps,
+  onChangeReps,
   onIncWeight,
   onDecWeight,
+  onChangeWeight,
   onLogSet,
   onSkipRest,
   onNextExercise,
@@ -408,8 +410,10 @@ function BottomAction({
   input: InputState;
   onIncReps: () => void;
   onDecReps: () => void;
+  onChangeReps: (v: number) => void;
   onIncWeight: () => void;
   onDecWeight: () => void;
+  onChangeWeight: (v: number) => void;
   onLogSet: () => void;
   onSkipRest: () => void;
   onNextExercise: () => void;
@@ -457,6 +461,7 @@ function BottomAction({
           label="reps"
           onDec={onDecReps}
           onInc={onIncReps}
+          onChangeValue={onChangeReps}
           format={v => String(v)}
         />
         <View style={styles.stepperDivider} />
@@ -465,6 +470,7 @@ function BottomAction({
           label="kg"
           onDec={onDecWeight}
           onInc={onIncWeight}
+          onChangeValue={onChangeWeight}
           format={v => v === 0 ? 'BW' : String(v)}
         />
       </View>
@@ -726,8 +732,10 @@ export default function LogSession() {
           input={input}
           onIncReps={() => setState({ ...state, input: { ...input, reps: input.reps + 1 } })}
           onDecReps={() => setState({ ...state, input: { ...input, reps: Math.max(1, input.reps - 1) } })}
+          onChangeReps={v => setState({ ...state, input: { ...input, reps: Math.max(1, Math.round(v)) } })}
           onIncWeight={() => setState({ ...state, input: { ...input, weight: nextWeight(input.weight, 1) } })}
           onDecWeight={() => setState({ ...state, input: { ...input, weight: nextWeight(input.weight, -1) } })}
+          onChangeWeight={v => setState({ ...state, input: { ...input, weight: Math.max(0, v) } })}
           onLogSet={handleLogSet}
           onSkipRest={handleSkipRest}
           onNextExercise={handleNextExercise}
