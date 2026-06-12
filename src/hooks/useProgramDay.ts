@@ -40,7 +40,7 @@ export const SAMPLE_DAY: ProgramDay = {
   ],
 };
 
-export function useProgramDay(name: string, idx: number) {
+export function useProgramDay(programId: number, idx: number) {
   const [day, setDay] = useState<ProgramDay>(SAMPLE_DAY);
   const [libraryData, setLibraryData] = useState<Map<string, ExerciseLibraryRow>>(new Map());
 
@@ -48,7 +48,7 @@ export function useProgramDay(name: string, idx: number) {
     useCallback(() => {
       getDB()
         .then(async db => {
-          const d = await getProgramDay(db, name, idx);
+          const d = await getProgramDay(db, programId, idx);
           if (d) {
             setDay(d);
             const rows = getExercisesLibraryData(db, d.exercises.map(e => e.name));
@@ -56,7 +56,7 @@ export function useProgramDay(name: string, idx: number) {
           }
         })
         .catch(console.error);
-    }, [name, idx])
+    }, [programId, idx])
   );
 
   return { day, setDay, libraryData, setLibraryData };

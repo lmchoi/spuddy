@@ -81,7 +81,7 @@ export default function SettingsScreen() {
                   <View key={index}>
                     <Pressable
                       style={({ pressed }) => [styles.dayRow, pressed && styles.dayRowPressed]}
-                      onPress={() => router.push(`/settings/${encodeURIComponent(program.name)}/${index}`)}
+                      onPress={() => router.push(`/settings/${program.id}/${index}`)}
                     >
                       <View style={styles.dayRowContent}>
                         <Text style={styles.dayName}>{day.name}</Text>
