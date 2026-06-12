@@ -199,7 +199,7 @@ describe('program schema', () => {
       days: []
     };
     
-    await expect(savePrograms(db, [badProgram])).rejects.toThrow();
+    expect(() => savePrograms(db, [badProgram])).toThrow();
   });
 });
 

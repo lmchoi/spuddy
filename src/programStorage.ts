@@ -48,8 +48,8 @@ export function importPrograms(db: DrizzleDB, newPrograms: Program[]): void {
 // Safe for session history: deletes only the program structure (programs/programDays/programExercises tables).
 // Sessions reference exercises directly by ID, not through program templates, so logged workouts are never affected.
 // For imports, use importPrograms instead to preserve existing programs and enable idempotent re-import.
-export async function savePrograms(db: DrizzleDB, programs_: Program[]): Promise<void> {
-  return db.transaction((tx) => {
+export function savePrograms(db: DrizzleDB, programs_: Program[]): void {
+  db.transaction((tx) => {
     const tdb = tx as DrizzleDB;
     tdb.delete(programExercises).run();
     tdb.delete(programDays).run();
