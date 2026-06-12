@@ -24,3 +24,7 @@ export async function loadDraft(key: string): Promise<SessionState | null> {
 export async function clearDraft(key: string): Promise<void> {
   await AsyncStorage.removeItem(key);
 }
+
+export async function findActiveDraft(): Promise<{ programId: number; dayIndex: number } | null> {
+  return null;
+}
