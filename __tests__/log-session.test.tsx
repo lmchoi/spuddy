@@ -823,7 +823,7 @@ describe('stepper carry-forward after logging a set', () => {
     await act(async () => { fireEvent.press(incButtons[0]); }); // 6 → 7
 
     // Confirm the reps stepper now shows 7
-    expect(screen.getByText('7')).toBeTruthy();
+    expect(screen.getByDisplayValue('7')).toBeTruthy();
 
     // Log set 1
     await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
@@ -832,7 +832,7 @@ describe('stepper carry-forward after logging a set', () => {
     // After logging, the stepper for set 2 should still show 7 (carried forward),
     // NOT 5 (the original plan target). The "5" that was the target should not appear
     // as the reps stepper value.
-    expect(screen.getByText('7')).toBeTruthy();
+    expect(screen.getByDisplayValue('7')).toBeTruthy();
   });
 
   it('carries forward user-entered weight after logging set 1', async () => {
@@ -850,7 +850,28 @@ describe('stepper carry-forward after logging a set', () => {
 
     // After logging, the weight stepper for set 2 should carry forward the adjusted
     // value, not reset to the target weight of 100.
-    expect(screen.queryByText('100')).toBeNull();
+    expect(screen.queryByDisplayValue('100')).toBeNull();
+  });
+});
+
+// ─── Stepper direct input ────────────────────────────────────────────────────
+
+describe('stepper direct input', () => {
+  it('reps stepper renders as a TextInput with the initial target value', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    // mockDay Squat target: 5 reps → reps stepper starts at 5
+    expect(screen.getByDisplayValue('5')).toBeTruthy();
+  });
+
+  it('typing into reps stepper updates the displayed value immediately', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    const repsInput = screen.getByDisplayValue('5');
+    await act(async () => { fireEvent.changeText(repsInput, '12'); });
+
+    expect(screen.getByDisplayValue('12')).toBeTruthy();
   });
 });
 

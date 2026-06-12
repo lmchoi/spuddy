@@ -136,7 +136,7 @@ export const styles = StyleSheet.create({
   stepBtnPressed: { backgroundColor: C.cardSoft },
   stepBtnText: { fontSize: 22, color: C.text, fontWeight: '300' },
   stepValue: { flex: 1, alignItems: 'center', gap: 2 },
-  stepNum: { fontSize: 22, fontWeight: '700', color: C.text, letterSpacing: -0.5, fontVariant: ['tabular-nums'] },
+  stepNum: { fontSize: 22, fontWeight: '700', color: C.text, letterSpacing: -0.5, fontVariant: ['tabular-nums'], textAlign: 'center' },
   stepLabel: { fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 },
 
   restBlock: { alignItems: 'center', gap: 8, paddingVertical: 4 },
