@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import Index from '../app/index';
 import { getDB } from '@/src/db';
 import { hasAnySessions } from '@/src/storage';
+import { findActiveDraft } from '@/src/sessionDraft';
 
 jest.mock('@/src/db', () => ({ getDB: jest.fn().mockResolvedValue({}) }));
 jest.mock('@/src/storage', () => ({
@@ -12,10 +13,15 @@ jest.mock('@/src/storage', () => ({
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn() },
 }));
+jest.mock('@/src/sessionDraft', () => ({
+  findActiveDraft: jest.fn().mockResolvedValue(null),
+}));
 
 beforeEach(() => {
   (router.replace as jest.Mock).mockClear();
+  (getDB as jest.Mock).mockClear();
   (getDB as jest.Mock).mockResolvedValue({});
+  (findActiveDraft as jest.Mock).mockResolvedValue(null);
 });
 
 describe('Index redirect', () => {
@@ -35,5 +41,20 @@ describe('Index redirect', () => {
     (getDB as jest.Mock).mockRejectedValue(new Error('db failed'));
     render(<Index />);
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(tabs)/settings'));
+  });
+
+  it('routes to log-session when an active draft is found', async () => {
+    (findActiveDraft as jest.Mock).mockResolvedValue({ programId: 3, dayIndex: 1 });
+    render(<Index />);
+    await waitFor(() =>
+      expect(router.replace).toHaveBeenCalledWith('/log-session?programId=3&dayIndex=1')
+    );
+  });
+
+  it('does not call getDB when an active draft is found', async () => {
+    (findActiveDraft as jest.Mock).mockResolvedValue({ programId: 3, dayIndex: 1 });
+    render(<Index />);
+    await waitFor(() => expect(router.replace).toHaveBeenCalled());
+    expect(getDB).not.toHaveBeenCalled();
   });
 });
