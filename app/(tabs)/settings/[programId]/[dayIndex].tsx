@@ -280,6 +280,13 @@ export default function ProgramDayDetailScreen() {
     setEditingCell(null);
   }
 
+  function commitDayName() {
+    setEditingDayName(false);
+    const next = { ...day, name: draftDayName };
+    setDay(next);
+    persistToDb(next);
+  }
+
   function addExercise() {
     setDay(prev => {
       const next: ProgramDay = {
@@ -306,20 +313,10 @@ export default function ProgramDayDetailScreen() {
             style={styles.titleInput}
             value={draftDayName}
             onChangeText={setDraftDayName}
-            onBlur={() => {
-              setEditingDayName(false);
-              const next = { ...day, name: draftDayName };
-              setDay(next);
-              persistToDb(next);
-            }}
+            onBlur={commitDayName}
             autoFocus
             returnKeyType="done"
-            onSubmitEditing={() => {
-              setEditingDayName(false);
-              const next = { ...day, name: draftDayName };
-              setDay(next);
-              persistToDb(next);
-            }}
+            onSubmitEditing={commitDayName}
           />
         ) : (
           <Pressable onPress={() => { setDraftDayName(day.name); setEditingDayName(true); }} style={styles.titlePressable}>
