@@ -18,6 +18,12 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      globals: { require: 'readonly', __dirname: 'readonly', console: 'readonly', module: 'readonly' },
+    },
+  },
+  {
     ignores: ['.claude/**', 'docs/**', 'design_handoffs/**'],
   },
 ]);
