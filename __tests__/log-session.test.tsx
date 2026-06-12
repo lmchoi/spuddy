@@ -873,6 +873,49 @@ describe('stepper direct input', () => {
 
     expect(screen.getByDisplayValue('12')).toBeTruthy();
   });
+
+  it('typed reps value is used when logging the set', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    const repsInput = screen.getByDisplayValue('5');
+    await act(async () => { fireEvent.changeText(repsInput, '12'); });
+    await act(async () => { fireEvent(repsInput, 'blur'); });
+
+    // Log both sets and finish
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    const payload = (saveSession as jest.Mock).mock.calls[0][1];
+    const squat = payload.exercises.find((e: { name: string }) => e.name === 'Squat');
+    expect(squat.sets[0].reps).toBe(12);
+  });
+
+  it('typed weight value is used when logging the set', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    const weightInput = screen.getByDisplayValue('100');
+    await act(async () => { fireEvent.changeText(weightInput, '110'); });
+    await act(async () => { fireEvent(weightInput, 'blur'); });
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    const payload = (saveSession as jest.Mock).mock.calls[0][1];
+    const squat = payload.exercises.find((e: { name: string }) => e.name === 'Squat');
+    expect(squat.sets[0].weight).toBe(110);
+  });
 });
 
 // ─── Rest timer duration ──────────────────────────────────────────────────────
