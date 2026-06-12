@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { draftKey, saveDraft, loadDraft, clearDraft, parseDraftKey } from '../src/sessionDraft';
+import { draftKey, saveDraft, loadDraft, clearDraft, parseDraftKey, findActiveDraft } from '../src/sessionDraft';
 import type { SessionState } from '../src/domain/sessionLogger';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -95,5 +95,28 @@ describe('parseDraftKey', () => {
 
   it('returns null for a malformed draft key (non-numeric segment)', () => {
     expect(parseDraftKey('draft_session__abc__def')).toBeNull();
+  });
+});
+
+describe('findActiveDraft', () => {
+  it('returns null when no draft keys exist', async () => {
+    expect(await findActiveDraft()).toBeNull();
+  });
+
+  it('returns the programId and dayIndex when exactly one draft key exists', async () => {
+    await AsyncStorage.setItem(draftKey(7, 2), '{}');
+    expect(await findActiveDraft()).toEqual({ programId: 7, dayIndex: 2 });
+  });
+
+  it('returns null when multiple draft keys exist', async () => {
+    await AsyncStorage.setItem(draftKey(1, 0), '{}');
+    await AsyncStorage.setItem(draftKey(2, 0), '{}');
+    expect(await findActiveDraft()).toBeNull();
+  });
+
+  it('ignores unrelated keys', async () => {
+    await AsyncStorage.setItem('some_other_key', 'value');
+    await AsyncStorage.setItem(draftKey(5, 1), '{}');
+    expect(await findActiveDraft()).toEqual({ programId: 5, dayIndex: 1 });
   });
 });

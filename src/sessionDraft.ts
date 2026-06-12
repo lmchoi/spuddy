@@ -32,5 +32,8 @@ export function parseDraftKey(key: string): { programId: number; dayIndex: numbe
 }
 
 export async function findActiveDraft(): Promise<{ programId: number; dayIndex: number } | null> {
-  return null;
+  const allKeys = await AsyncStorage.getAllKeys();
+  const draftKeys = allKeys.filter(k => parseDraftKey(k) !== null);
+  if (draftKeys.length !== 1) return null;
+  return parseDraftKey(draftKeys[0]);
 }
