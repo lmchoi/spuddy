@@ -1,6 +1,6 @@
 import { type DrizzleDB } from '../src/storage';
 import { importProgramFromJson } from '../src/programImport';
-import { getPrograms } from '../src/programStorage';
+import { getPrograms, importPrograms, savePrograms } from '../src/programStorage';
 import * as fs from 'fs';
 import * as path from 'path';
 import { makeInMemoryDB } from './helpers/makeInMemoryDB';
@@ -29,13 +29,34 @@ describe('importProgramFromJson', () => {
     expect(stored[0].days).toHaveLength(3);
   });
 
-  it('importing again replaces all existing programs', async () => {
+  it('leaves existing programs untouched when importing', async () => {
+    await savePrograms(db, [{ name: 'Spuddy PPL', activeDayIndex: 0, days: [] }]);
+
+    await importProgramFromJson(db, fixture);
+
+    const stored = await getPrograms(db);
+    expect(stored.find(p => p.name === 'Spuddy PPL')).toBeDefined();
+    expect(stored.find(p => p.name === 'v1')).toBeDefined();
+  });
+
+  it('appends on re-import, creating duplicates', async () => {
     await importProgramFromJson(db, fixture);
     await importProgramFromJson(db, fixture);
 
     const stored = await getPrograms(db);
-    const rows = db.all<{ count: number }>('SELECT COUNT(*) AS count FROM programs');
-    expect(rows[0].count).toBe(stored.length);
+    expect(stored.filter(p => p.name === 'v1')).toHaveLength(2);
+  });
+
+  it('rolls back completely if a program fails to insert', () => {
+    const badPrograms = [
+      { name: 'valid', activeDayIndex: 0, days: [] },
+      { name: 'invalid', activeDayIndex: 0, days: null as unknown as never[] },
+    ];
+
+    expect(() => importPrograms(db, badPrograms)).toThrow();
+
+    const stored = db.all<{ n: number }>('SELECT COUNT(*) AS n FROM programs');
+    expect(stored[0].n).toBe(0);
   });
 
   it('returns error and leaves storage unchanged for malformed input', async () => {

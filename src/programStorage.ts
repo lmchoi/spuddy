@@ -3,32 +3,51 @@ import { programDays, programExercises, programs } from './db/schema';
 import { resolveOrCreateExercise, type DrizzleDB } from './storage';
 import type { Program, ProgramDay, ProgramExercise, Target } from './types';
 
+export function insertPrograms(db: DrizzleDB, programs_: Program[]): void {
+  for (const program of programs_) {
+    const programRow = db
+      .insert(programs)
+      .values({ name: program.name, activeDayIndex: program.activeDayIndex })
+      .returning({ insertedId: programs.id })
+      .get()!;
+
+    for (let di = 0; di < program.days.length; di++) {
+      const day = program.days[di];
+      const dayRow = db
+        .insert(programDays)
+        .values({ programId: programRow.insertedId, dayIndex: di, name: day.name })
+        .returning({ insertedId: programDays.id })
+        .get()!;
+
+      for (let ei = 0; ei < day.exercises.length; ei++) {
+        const exercise = day.exercises[ei];
+        const exerciseId = resolveOrCreateExercise(db, exercise.name);
+        db.insert(programExercises)
+          .values({
+            programDayId: dayRow.insertedId,
+            exerciseIndex: ei,
+            exerciseId,
+            targetsJson: JSON.stringify(exercise.targets),
+          })
+          .run();
+      }
+    }
+  }
+}
+
+export function importPrograms(db: DrizzleDB, newPrograms: Program[]): void {
+  db.transaction((tx) => {
+    insertPrograms(tx as DrizzleDB, newPrograms);
+  });
+}
+
 export async function savePrograms(db: DrizzleDB, programs_: Program[]): Promise<void> {
   db.transaction(tx => {
     const tdb = tx as DrizzleDB;
     tdb.delete(programExercises).run();
     tdb.delete(programDays).run();
     tdb.delete(programs).run();
-
-    for (const program of programs_) {
-      const programRow = tdb.insert(programs).values({ name: program.name, activeDayIndex: program.activeDayIndex }).returning({ insertedId: programs.id }).get()!;
-
-      for (let di = 0; di < program.days.length; di++) {
-        const day = program.days[di];
-        const dayRow = tdb.insert(programDays).values({ programId: programRow.insertedId, dayIndex: di, name: day.name }).returning({ insertedId: programDays.id }).get()!;
-
-        for (let ei = 0; ei < day.exercises.length; ei++) {
-          const exercise = day.exercises[ei];
-          const exerciseId = resolveOrCreateExercise(tdb, exercise.name);
-          tdb.insert(programExercises).values({
-            programDayId: dayRow.insertedId,
-            exerciseIndex: ei,
-            exerciseId,
-            targetsJson: JSON.stringify(exercise.targets),
-          }).run();
-        }
-      }
-    }
+    insertPrograms(tdb, programs_);
   });
 }
 
