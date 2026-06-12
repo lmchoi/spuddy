@@ -25,6 +25,12 @@ export const migrations = {
         tag: '0003_typical_skaar',
         breakpoints: true,
       },
+      {
+        idx: 4,
+        when: 1781305730614,
+        tag: '0004_wet_stryfe',
+        breakpoints: true,
+      },
     ],
   },
   migrations: {
@@ -86,5 +92,6 @@ export const migrations = {
       "ALTER TABLE `sessions` ADD `source_id` text;--> statement-breakpoint",
       "CREATE UNIQUE INDEX `idx_sessions_source_id` ON `sessions` (`source`,`source_id`);"
     ].join("\n"),
+    m0004: "ALTER TABLE `programs` ADD `created_at` integer DEFAULT (cast((julianday('now') - 2440587.5)*86400000 as integer)) NOT NULL;",
   },
 };
