@@ -55,21 +55,53 @@ function Stepper({
   label,
   onInc,
   onDec,
+  onChangeValue,
   format,
 }: {
   value: number;
   label: string;
   onInc: () => void;
   onDec: () => void;
+  onChangeValue?: (v: number) => void;
   format: (v: number) => string;
 }) {
+  const [draft, setDraft] = useState('');
+  const [editing, setEditing] = useState(false);
+
+  const handleFocus = () => {
+    setDraft(format(value));
+    setEditing(true);
+  };
+
+  const handleChangeText = (text: string) => {
+    setDraft(text);
+    setEditing(true);
+  };
+
+  const handleBlur = () => {
+    const parsed = parseFloat(draft);
+    if (!isNaN(parsed) && parsed >= 0) {
+      onChangeValue?.(parsed);
+    }
+    setEditing(false);
+  };
+
   return (
     <View style={styles.stepper}>
       <Pressable onPress={onDec} style={({ pressed }) => [styles.stepBtn, pressed && styles.stepBtnPressed]}>
         <Text style={styles.stepBtnText}>−</Text>
       </Pressable>
       <View style={styles.stepValue}>
-        <Text style={styles.stepNum}>{format(value)}</Text>
+        <TextInput
+          style={styles.stepNum}
+          value={editing ? draft : format(value)}
+          onChangeText={handleChangeText}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          keyboardType="numeric"
+          selectTextOnFocus
+          returnKeyType="done"
+        />
         <Text style={styles.stepLabel}>{label}</Text>
       </View>
       <Pressable onPress={onInc} style={({ pressed }) => [styles.stepBtn, pressed && styles.stepBtnPressed]}>
