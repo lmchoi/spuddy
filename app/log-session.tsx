@@ -685,7 +685,10 @@ export default function LogSession() {
   const currentNote = ex.exerciseId !== undefined ? (notes[ex.exerciseId] ?? null) : null;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <KeyboardAvoidingView
+      style={[styles.container, { paddingTop: insets.top }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle="light-content" />
 
@@ -751,6 +754,6 @@ export default function LogSession() {
           onCancel={() => setNoteSheetOpen(false)}
         />
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
