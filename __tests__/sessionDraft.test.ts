@@ -21,20 +21,20 @@ beforeEach(() => {
 });
 
 describe('draftKey', () => {
-  it('produces a stable key from name and index', () => {
-    expect(draftKey('PPL Push', 0)).toBe('draft_session__PPL Push__0');
-    expect(draftKey('PPL Push', 0)).toBe(draftKey('PPL Push', 0));
+  it('produces a stable key from id and index', () => {
+    expect(draftKey(1, 0)).toBe('draft_session__1__0');
+    expect(draftKey(1, 0)).toBe(draftKey(1, 0));
   });
 
-  it('distinguishes different names or indices', () => {
-    expect(draftKey('PPL Push', 0)).not.toBe(draftKey('PPL Pull', 0));
-    expect(draftKey('PPL Push', 0)).not.toBe(draftKey('PPL Push', 1));
+  it('distinguishes different ids or indices', () => {
+    expect(draftKey(1, 0)).not.toBe(draftKey(2, 0));
+    expect(draftKey(1, 0)).not.toBe(draftKey(1, 1));
   });
 });
 
 describe('saveDraft / loadDraft round-trip', () => {
   it('restores the saved state', async () => {
-    const key = draftKey('Prog', 2);
+    const key = draftKey(42, 2);
     await saveDraft(key, baseState);
     const restored = await loadDraft(key);
     expect(restored).not.toBeNull();
@@ -45,7 +45,7 @@ describe('saveDraft / loadDraft round-trip', () => {
   });
 
   it('forces isResting to false regardless of saved value', async () => {
-    const key = draftKey('Prog', 0);
+    const key = draftKey(42, 0);
     await saveDraft(key, { ...baseState, isResting: true });
     const restored = await loadDraft(key);
     expect(restored!.isResting).toBe(false);
@@ -54,12 +54,12 @@ describe('saveDraft / loadDraft round-trip', () => {
 
 describe('loadDraft', () => {
   it('returns null when no draft exists for the key', async () => {
-    const result = await loadDraft(draftKey('NoSuch', 99));
+    const result = await loadDraft(draftKey(999, 99));
     expect(result).toBeNull();
   });
 
   it('returns null and clears the key when stored value is invalid JSON', async () => {
-    const key = draftKey('Corrupt', 0);
+    const key = draftKey(0, 0);
     await AsyncStorage.setItem(key, 'not-valid-json{{{');
     const result = await loadDraft(key);
     expect(result).toBeNull();
@@ -69,7 +69,7 @@ describe('loadDraft', () => {
 
 describe('clearDraft', () => {
   it('removes the draft so loadDraft returns null afterwards', async () => {
-    const key = draftKey('Prog', 1);
+    const key = draftKey(42, 1);
     await saveDraft(key, baseState);
     await clearDraft(key);
     expect(await loadDraft(key)).toBeNull();

@@ -26,6 +26,7 @@ jest.mock('@/src/programStorage', () => ({
 }));
 
 const mockProgram = {
+  id: 1,
   name: 'Strength A',
   activeDayIndex: 1,
   days: [
@@ -95,9 +96,7 @@ describe('SelectDay screen', () => {
 
     fireEvent.press(screen.getByText(/Start Day B/));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/log-session?programName=Strength%20A&dayIndex=1'
-    );
+    expect(mockPush).toHaveBeenCalledWith('/log-session?programId=1&dayIndex=1');
   });
 
   it('Start button reflects the selected day after switching', async () => {
@@ -110,9 +109,7 @@ describe('SelectDay screen', () => {
 
     fireEvent.press(screen.getByText(/Start Day A/));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/log-session?programName=Strength%20A&dayIndex=0'
-    );
+    expect(mockPush).toHaveBeenCalledWith('/log-session?programId=1&dayIndex=0');
   });
 
   it('shows empty state when no program exists', async () => {

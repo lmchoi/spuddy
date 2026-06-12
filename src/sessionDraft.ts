@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { SessionState } from './domain/sessionLogger';
 
-export function draftKey(programName: string, dayIndex: number): string {
-  return `draft_session__${programName}__${dayIndex}`;
+export function draftKey(programId: number, dayIndex: number): string {
+  return `draft_session__${programId}__${dayIndex}`;
 }
 
 export async function saveDraft(key: string, state: SessionState): Promise<void> {

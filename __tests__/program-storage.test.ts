@@ -80,6 +80,13 @@ describe('program schema', () => {
     expect(programs[0].days).toHaveLength(2);
   });
 
+  it('getPrograms returns id on each program', async () => {
+    await savePrograms(db, [PROGRAM_A]);
+    const programs = await getPrograms(db);
+    expect(programs[0].id).toBeDefined();
+    expect(typeof programs[0].id).toBe('number');
+  });
+
   it('retrieves program days with exercises', async () => {
     await savePrograms(db, [PROGRAM_A]);
     const programs = await getPrograms(db);
@@ -114,7 +121,8 @@ describe('program schema', () => {
 
   it('getProgramDay returns specific day', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    const day = await getProgramDay(db, 'v1', 1);
+    const programs = await getPrograms(db);
+    const day = await getProgramDay(db, programs[0].id!, 1);
     expect(day).not.toBeNull();
     expect(day?.name).toBe('Day 2');
     expect(day?.exercises[0].name).toBe('Bench Press');
@@ -122,43 +130,45 @@ describe('program schema', () => {
 
   it('getProgramDay returns null for missing program', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    const day = await getProgramDay(db, 'nonexistent', 0);
+    const day = await getProgramDay(db, 999, 0);
     expect(day).toBeNull();
   });
 
   it('getProgramDay returns null for out-of-range day', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    const day = await getProgramDay(db, 'v1', 99);
+    const programs = await getPrograms(db);
+    const day = await getProgramDay(db, programs[0].id!, 99);
     expect(day).toBeNull();
   });
 
   it('getProgramDay looks up by day_index column, not array position', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    // Shift Day 2's stored day_index from 1 to 5, creating a gap at positions 1–4.
-    // dayRows (sorted ASC) = [{day_index:0,'Day 1'},{day_index:5,'Day 2'}]
-    // Array-position code: dayRows[5] = undefined → null (wrong)
-    // WHERE-clause code:   WHERE day_index=5 → 'Day 2' (correct)
-    const programRows = db.all<{ id: number }>('SELECT id FROM programs WHERE name = \'v1\'');
-    db.run(`UPDATE program_days SET day_index = 5 WHERE day_index = 1 AND program_id = ${programRows[0].id}`);
+    const programs = await getPrograms(db);
+    const programId = programs[0].id!;
+    db.run(`UPDATE program_days SET day_index = 5 WHERE day_index = 1 AND program_id = ${programId}`);
 
-    const day = await getProgramDay(db, 'v1', 5);
+    const day = await getProgramDay(db, programId, 5);
     expect(day?.name).toBe('Day 2');
-    const missing = await getProgramDay(db, 'v1', 1);
+    const missing = await getProgramDay(db, programId, 1);
     expect(missing).toBeNull();
   });
 
   it('updateActiveDayIndex updates the index', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    await updateActiveDayIndex(db, 'v1', 0);
-    const programs = await getPrograms(db);
-    expect(programs[0].activeDayIndex).toBe(0);
+    const programsBefore = await getPrograms(db);
+    await updateActiveDayIndex(db, programsBefore[0].id!, 0);
+    const programsAfter = await getPrograms(db);
+    expect(programsAfter[0].activeDayIndex).toBe(0);
   });
 
   it('updateActiveDayIndex does not affect other programs', async () => {
     await savePrograms(db, [PROGRAM_A, PROGRAM_B]);
-    await updateActiveDayIndex(db, 'v1', 0);
-    const programs = await getPrograms(db);
-    const b = programs.find(p => p.name === 'v2')!;
+    const programsBefore = await getPrograms(db);
+    const p1 = programsBefore.find(p => p.name === 'v1')!;
+    const p2 = programsBefore.find(p => p.name === 'v2')!;
+    await updateActiveDayIndex(db, p1.id!, 0);
+    const programsAfter = await getPrograms(db);
+    const b = programsAfter.find(p => p.id === p2.id)!;
     expect(b.activeDayIndex).toBe(0);
   });
 
@@ -180,24 +190,28 @@ describe('updateProgramDay', () => {
 
   it('replaces the specified day', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    const newDay = { name: 'New Day 1', exercises: [{ name: 'Press', targets: [] }] };
-    await updateProgramDay(db, 'v1', 0, newDay);
     const programs = await getPrograms(db);
-    expect(programs[0].days[0].name).toBe('New Day 1');
-    expect(programs[0].days[0].exercises[0].name).toBe('Press');
+    const newDay = { name: 'New Day 1', exercises: [{ name: 'Press', targets: [] }] };
+    await updateProgramDay(db, programs[0].id!, 0, newDay);
+    const updated = await getPrograms(db);
+    expect(updated[0].days[0].name).toBe('New Day 1');
+    expect(updated[0].days[0].exercises[0].name).toBe('Press');
   });
 
   it('does not affect other days', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    const newDay = { name: 'New Day 1', exercises: [] };
-    await updateProgramDay(db, 'v1', 0, newDay);
     const programs = await getPrograms(db);
-    expect(programs[0].days[1].name).toBe('Day 2');
+    const newDay = { name: 'New Day 1', exercises: [] };
+    await updateProgramDay(db, programs[0].id!, 0, newDay);
+    const updated = await getPrograms(db);
+    expect(updated[0].days[1].name).toBe('Day 2');
   });
 
-  it('throws if program not found', async () => {
-    await expect(updateProgramDay(db, 'missing', 0, { name: 'x', exercises: [] }))
-      .rejects.toThrow('Program not found: missing');
+  it('throws if day not found', async () => {
+    await savePrograms(db, [PROGRAM_A]);
+    const programs = await getPrograms(db);
+    await expect(updateProgramDay(db, programs[0].id!, 99, { name: 'x', exercises: [] }))
+      .rejects.toThrow();
   });
 });
 
@@ -210,30 +224,33 @@ describe('addProgramDay', () => {
 
   it('appends a new day to the correct program', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    const newDay = { name: 'Day 3', exercises: [{ name: 'Pull-up', targets: [{ reps: 8, weight: 0 }] }] };
-    await addProgramDay(db, 'v1', newDay);
     const programs = await getPrograms(db);
-    expect(programs[0].days).toHaveLength(3);
-    expect(programs[0].days[2].name).toBe('Day 3');
-    expect(programs[0].days[2].exercises[0].name).toBe('Pull-up');
+    const newDay = { name: 'Day 3', exercises: [{ name: 'Pull-up', targets: [{ reps: 8, weight: 0 }] }] };
+    await addProgramDay(db, programs[0].id!, newDay);
+    const updated = await getPrograms(db);
+    expect(updated[0].days).toHaveLength(3);
+    expect(updated[0].days[2].name).toBe('Day 3');
+    expect(updated[0].days[2].exercises[0].name).toBe('Pull-up');
   });
 
   it('does not affect other programs', async () => {
     await savePrograms(db, [PROGRAM_A, PROGRAM_B]);
-    const newDay = { name: 'Extra', exercises: [] };
-    await addProgramDay(db, 'v1', newDay);
     const programs = await getPrograms(db);
+    const a = programs.find(p => p.name === 'v1')!;
     const b = programs.find(p => p.name === 'v2')!;
-    expect(b.days).toHaveLength(1);
+    await addProgramDay(db, a.id!, { name: 'Extra', exercises: [] });
+    const updated = await getPrograms(db);
+    const bAfter = updated.find(p => p.id === b.id)!;
+    expect(bAfter.days).toHaveLength(1);
   });
 
   it('does not affect existing days in the target program', async () => {
     await savePrograms(db, [PROGRAM_A]);
-    const newDay = { name: 'Extra', exercises: [] };
-    await addProgramDay(db, 'v1', newDay);
-    const day0 = await getProgramDay(db, 'v1', 0);
+    const programs = await getPrograms(db);
+    await addProgramDay(db, programs[0].id!, { name: 'Extra', exercises: [] });
+    const day0 = await getProgramDay(db, programs[0].id!, 0);
     expect(day0!.name).toBe('Day 1');
-    const day1 = await getProgramDay(db, 'v1', 1);
+    const day1 = await getProgramDay(db, programs[0].id!, 1);
     expect(day1!.name).toBe('Day 2');
   });
 });
