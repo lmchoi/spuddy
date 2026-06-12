@@ -37,10 +37,17 @@ export function insertPrograms(db: DrizzleDB, programs_: Program[]): void {
   }
 }
 
+// Wrap insertPrograms in a transaction. Used by all import flows (Liftosaur, Strong, notes).
+export function importPrograms(db: DrizzleDB, newPrograms: Program[]): void {
+  db.transaction((tx) => {
+    insertPrograms(tx as DrizzleDB, newPrograms);
+  });
+}
+
 // Replace all programs (full sync). Used only by internal operations that rebuild the entire program list (e.g., app UI).
 // Safe for session history: deletes only the program structure (programs/programDays/programExercises tables).
 // Sessions reference exercises directly by ID, not through program templates, so logged workouts are never affected.
-// For imports, use insertPrograms instead to preserve existing programs and enable idempotent re-import.
+// For imports, use importPrograms instead to preserve existing programs and enable idempotent re-import.
 export async function savePrograms(db: DrizzleDB, programs_: Program[]): Promise<void> {
   return db.transaction((tx) => {
     const tdb = tx as DrizzleDB;

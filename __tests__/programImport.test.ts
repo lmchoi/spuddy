@@ -1,6 +1,6 @@
 import { type DrizzleDB } from '../src/storage';
-import { importProgramFromJson, importPrograms } from '../src/programImport';
-import { getPrograms, savePrograms } from '../src/programStorage';
+import { importProgramFromJson } from '../src/programImport';
+import { getPrograms, importPrograms, savePrograms } from '../src/programStorage';
 import * as fs from 'fs';
 import * as path from 'path';
 import { makeInMemoryDB } from './helpers/makeInMemoryDB';
@@ -82,7 +82,7 @@ describe('importProgramFromJson', () => {
       { name: 'invalid', activeDayIndex: 0, days: null as unknown as any[] } // will throw in loop
     ];
     
-    await expect(importPrograms(db, badPrograms)).rejects.toThrow();
+    expect(() => importPrograms(db, badPrograms)).toThrow();
 
     const stored = await getPrograms(db);
     expect(stored).toHaveLength(0); // The 'valid' program should have been rolled back
