@@ -1,7 +1,7 @@
 import type { DrizzleDB } from './storage';
 import { saveSession } from './storage';
 import type { Program, ProgramExercise, Target, Session } from './types';
-import { savePrograms } from './programStorage';
+import { importPrograms } from './programStorage';
 import { parseStrongCsv } from './strongParser';
 
 const LBS_TO_KG = 0.45359237;
@@ -95,7 +95,7 @@ export async function importFromStrong(
       }
 
       if (programs.length > 0) {
-        await savePrograms(db, programs);
+        importPrograms(db, programs);
       }
     }
 
