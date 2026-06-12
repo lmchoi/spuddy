@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { draftKey, saveDraft, loadDraft, clearDraft } from '../src/sessionDraft';
+import { draftKey, saveDraft, loadDraft, clearDraft, parseDraftKey } from '../src/sessionDraft';
 import type { SessionState } from '../src/domain/sessionLogger';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -73,5 +73,27 @@ describe('clearDraft', () => {
     await saveDraft(key, baseState);
     await clearDraft(key);
     expect(await loadDraft(key)).toBeNull();
+  });
+});
+
+describe('parseDraftKey', () => {
+  it('parses a valid draft key into programId and dayIndex', () => {
+    expect(parseDraftKey('draft_session__3__1')).toEqual({ programId: 3, dayIndex: 1 });
+  });
+
+  it('parses zero values correctly', () => {
+    expect(parseDraftKey('draft_session__0__0')).toEqual({ programId: 0, dayIndex: 0 });
+  });
+
+  it('returns null for an unrelated key', () => {
+    expect(parseDraftKey('some_other_key')).toBeNull();
+  });
+
+  it('returns null for a malformed draft key (missing segment)', () => {
+    expect(parseDraftKey('draft_session__5')).toBeNull();
+  });
+
+  it('returns null for a malformed draft key (non-numeric segment)', () => {
+    expect(parseDraftKey('draft_session__abc__def')).toBeNull();
   });
 });
