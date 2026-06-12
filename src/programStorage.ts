@@ -65,7 +65,13 @@ export async function getPrograms(db: DrizzleDB): Promise<Program[]> {
       exercises: loadExercises(db, dayRow.id),
     }));
 
-    return { id: programRow.id, name: programRow.name, days, activeDayIndex: programRow.activeDayIndex };
+    return {
+      id: programRow.id,
+      name: programRow.name,
+      days,
+      activeDayIndex: programRow.activeDayIndex,
+      createdAt: programRow.createdAt.getTime(),
+    };
   });
 }
 

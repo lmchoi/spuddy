@@ -49,6 +49,7 @@ export type Program = {
   name: string;
   days: ProgramDay[];
   activeDayIndex: number;
+  createdAt?: number;
 };
 
 export type ImportedWorkoutGroup = {

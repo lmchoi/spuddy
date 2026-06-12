@@ -87,6 +87,17 @@ describe('program schema', () => {
     expect(typeof programs[0].id).toBe('number');
   });
 
+  it('getPrograms returns createdAt as a recent millisecond timestamp', async () => {
+    const before = Date.now();
+    await savePrograms(db, [PROGRAM_A]);
+    const after = Date.now();
+    const programs = await getPrograms(db);
+    expect(typeof programs[0].createdAt).toBe('number');
+    // SQLite julianday conversion loses ~1ms of precision, so allow 1ms below before
+    expect(programs[0].createdAt).toBeGreaterThanOrEqual(before - 1);
+    expect(programs[0].createdAt).toBeLessThanOrEqual(after + 1);
+  });
+
   it('retrieves program days with exercises', async () => {
     await savePrograms(db, [PROGRAM_A]);
     const programs = await getPrograms(db);
