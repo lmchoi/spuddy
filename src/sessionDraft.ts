@@ -25,6 +25,12 @@ export async function clearDraft(key: string): Promise<void> {
   await AsyncStorage.removeItem(key);
 }
 
+export function parseDraftKey(key: string): { programId: number; dayIndex: number } | null {
+  const match = /^draft_session__(\d+)__(\d+)$/.exec(key);
+  if (!match) return null;
+  return { programId: Number(match[1]), dayIndex: Number(match[2]) };
+}
+
 export async function findActiveDraft(): Promise<{ programId: number; dayIndex: number } | null> {
   return null;
 }
