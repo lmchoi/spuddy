@@ -179,6 +179,13 @@ describe('program schema', () => {
     expect(exercises[0].name).toBe('Squat');
     expect(exercises[1].name).toBe('Deadlift');
   });
+
+  it('rolls back and leaves storage empty if a program fails to insert', () => {
+    const badProgram = { name: null as unknown as string, activeDayIndex: 0, days: [] };
+    expect(() => savePrograms(db, [badProgram])).toThrow();
+    const stored = db.all<{ n: number }>('SELECT COUNT(*) AS n FROM programs');
+    expect(stored[0].n).toBe(0);
+  });
 });
 
 describe('updateProgramDay', () => {
@@ -208,10 +215,8 @@ describe('updateProgramDay', () => {
   });
 
   it('throws if day not found', async () => {
-    await savePrograms(db, [PROGRAM_A]);
-    const programs = await getPrograms(db);
-    await expect(updateProgramDay(db, programs[0].id!, 99, { name: 'x', exercises: [] }))
-      .rejects.toThrow();
+    await expect(updateProgramDay(db, 999, 0, { name: 'x', exercises: [] }))
+      .rejects.toThrow('Day 0 not found for program 999');
   });
 });
 
