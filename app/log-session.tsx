@@ -447,13 +447,6 @@ function BottomAction({
   day,
   sessionState,
   input,
-  onIncReps,
-  onDecReps,
-  onChangeReps,
-  onIncWeight,
-  onDecWeight,
-  onChangeWeight,
-  onLogSet,
   onLog,
   onSkipRest,
   onNextExercise,
@@ -462,13 +455,6 @@ function BottomAction({
   day: ProgramDay;
   sessionState: SessionState;
   input: InputState;
-  onIncReps: () => void;
-  onDecReps: () => void;
-  onChangeReps: (v: number) => void;
-  onIncWeight: () => void;
-  onDecWeight: () => void;
-  onChangeWeight: (v: number) => void;
-  onLogSet: () => void;
   onLog: (reps: number, weight: number) => void;
   onSkipRest: () => void;
   onNextExercise: () => void;
@@ -769,13 +755,6 @@ export default function LogSession() {
           day={day}
           sessionState={session}
           input={input}
-          onIncReps={() => setState({ ...state, input: { ...input, reps: input.reps + 1 } })}
-          onDecReps={() => setState({ ...state, input: { ...input, reps: Math.max(1, input.reps - 1) } })}
-          onChangeReps={v => setState({ ...state, input: { ...input, reps: Math.max(1, Math.round(v)) } })}
-          onIncWeight={() => setState({ ...state, input: { ...input, weight: nextWeight(input.weight, 1) } })}
-          onDecWeight={() => setState({ ...state, input: { ...input, weight: nextWeight(input.weight, -1) } })}
-          onChangeWeight={v => setState({ ...state, input: { ...input, weight: Math.max(0, v) } })}
-          onLogSet={() => {}}
           onLog={handleLogSet}
           onSkipRest={handleSkipRest}
           onNextExercise={handleNextExercise}
