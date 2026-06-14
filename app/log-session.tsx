@@ -92,7 +92,7 @@ function Stepper({
 
   return (
     <View style={styles.stepper}>
-      <Pressable onPress={onDec} style={({ pressed }) => [styles.stepBtn, pressed && styles.stepBtnPressed]}>
+      <Pressable onPress={() => { setEditing(false); onDec(); }} style={({ pressed }) => [styles.stepBtn, pressed && styles.stepBtnPressed]}>
         <Text style={styles.stepBtnText}>−</Text>
       </Pressable>
       <View style={styles.stepValue}>
@@ -108,7 +108,7 @@ function Stepper({
         />
         <Text style={styles.stepLabel}>{label}</Text>
       </View>
-      <Pressable onPress={onInc} style={({ pressed }) => [styles.stepBtn, pressed && styles.stepBtnPressed]}>
+      <Pressable onPress={() => { setEditing(false); onInc(); }} style={({ pressed }) => [styles.stepBtn, pressed && styles.stepBtnPressed]}>
         <Text style={styles.stepBtnText}>+</Text>
       </Pressable>
     </View>

@@ -874,6 +874,34 @@ describe('stepper direct input', () => {
     expect(screen.getByDisplayValue('12')).toBeTruthy();
   });
 
+  it('pressing + after typing a value shows the incremented value (not the stale draft)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    const repsInput = screen.getByDisplayValue('5');
+    await act(async () => { fireEvent.changeText(repsInput, '12'); });
+
+    const incButtons = screen.getAllByText('+');
+    await act(async () => { fireEvent.press(incButtons[0]); }); // reps +
+
+    // Should display 13 (12 typed + 1), not the stale "12" draft
+    expect(screen.getByDisplayValue('13')).toBeTruthy();
+  });
+
+  it('pressing − after typing a value shows the decremented value (not the stale draft)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    const repsInput = screen.getByDisplayValue('5');
+    await act(async () => { fireEvent.changeText(repsInput, '12'); });
+
+    const decButtons = screen.getAllByText('−');
+    await act(async () => { fireEvent.press(decButtons[0]); }); // reps −
+
+    // Should display 11 (12 typed − 1), not the stale "12" draft
+    expect(screen.getByDisplayValue('11')).toBeTruthy();
+  });
+
   it('typed reps value is used when logging the set', async () => {
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
