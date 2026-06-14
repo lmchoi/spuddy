@@ -937,6 +937,30 @@ describe('stepper direct input', () => {
   });
 });
 
+// ─── SetEntry — typed value without blur ─────────────────────────────────────
+
+describe('SetEntry — typed value without blur is logged correctly', () => {
+  it('typed reps logged without blur uses the typed value (stale-closure fix)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    const repsInput = screen.getByDisplayValue('5');
+    await act(async () => { fireEvent.changeText(repsInput, '12'); });
+    // No blur — press Done directly
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Skip rest/i)); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await act(async () => { fireEvent.press(screen.getByText('Bench')); });
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+    await waitFor(() => expect(screen.getByText(/Finish session/i)).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
+
+    const payload = (saveSession as jest.Mock).mock.calls[0][1];
+    const squat = payload.exercises.find((e: { name: string }) => e.name === 'Squat');
+    expect(squat.sets[0].reps).toBe(12);
+  });
+});
+
 // ─── Rest timer duration ──────────────────────────────────────────────────────
 
 describe('rest timer duration', () => {
