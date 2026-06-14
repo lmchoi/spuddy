@@ -854,6 +854,64 @@ describe('stepper carry-forward after logging a set', () => {
   });
 });
 
+// ─── Stepper floors ───────────────────────────────────────────────────────────
+
+describe('stepper floors', () => {
+  it('reps cannot go below 1 via − button', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Squat starts at 5 reps — press − 6 times, should floor at 1
+    const decReps = screen.getAllByText('−')[0];
+    for (let i = 0; i < 6; i++) {
+      await act(async () => { fireEvent.press(decReps); });
+    }
+
+    expect(screen.getByDisplayValue('1')).toBeTruthy();
+  });
+
+  it('reps cannot go below 1 via direct text input', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    const repsInput = screen.getByDisplayValue('5');
+    await act(async () => { fireEvent.changeText(repsInput, '0'); });
+    await act(async () => { fireEvent(repsInput, 'blur'); });
+
+    expect(screen.getByDisplayValue('1')).toBeTruthy();
+  });
+
+  it('negative weight typed via keyboard is rejected on blur (value stays unchanged)', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Stepper only calls onChangeValue for parsed >= 0, so "-5" is silently rejected
+    const weightInput = screen.getByDisplayValue('100');
+    await act(async () => { fireEvent.changeText(weightInput, '-5'); });
+    await act(async () => { fireEvent(weightInput, 'blur'); });
+
+    expect(screen.getByDisplayValue('100')).toBeTruthy();
+  });
+
+  it('weight cannot go below 0 (BW) via − button', async () => {
+    const dayWithZeroWeight = {
+      name: 'Day A',
+      exercises: [{ name: 'Squat', exerciseId: 1, targets: [{ reps: 5, weight: 0 }] }],
+    };
+    (getProgramDay as jest.Mock).mockResolvedValueOnce(dayWithZeroWeight);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Weight starts at BW (0) — pressing − should stay at 0
+    const decWeight = screen.getAllByText('−')[1]; // weight stepper
+    await act(async () => { fireEvent.press(decWeight); });
+    await act(async () => { fireEvent.press(decWeight); });
+
+    expect(screen.getByDisplayValue('BW')).toBeTruthy();
+  });
+});
+
 // ─── Stepper direct input ────────────────────────────────────────────────────
 
 describe('stepper direct input', () => {
