@@ -57,4 +57,10 @@ describe('Index redirect', () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalled());
     expect(getDB).not.toHaveBeenCalled();
   });
+
+  it('falls back to settings when findActiveDraft rejects', async () => {
+    (findActiveDraft as jest.Mock).mockRejectedValue(new Error('storage error'));
+    render(<Index />);
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/(tabs)/settings'));
+  });
 });
