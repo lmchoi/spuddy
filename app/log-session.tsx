@@ -44,6 +44,8 @@ import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 
+const HOME_ROUTE = '/(tabs)/progress' as const; // no dedicated home screen yet
+
 // ─── Local action state for reps/weight steppers ──────────────────────────────
 
 type InputState = { reps: number; weight: number };
@@ -671,7 +673,7 @@ export default function LogSession() {
         <Stack.Screen options={{ headerShown: false }} />
         <Text style={styles.emptyTitle}>No program found</Text>
         <Text style={styles.emptyText}>Import a program from Settings first.</Text>
-        <Pressable onPress={() => router.back()} style={[styles.confirmBtn, { width: '100%', marginTop: 20 }]}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace(HOME_ROUTE)} style={[styles.confirmBtn, { width: '100%', marginTop: 20 }]}>
           <Text style={styles.confirmBtnText}>Go Back</Text>
         </Pressable>
       </View>
@@ -693,7 +695,7 @@ export default function LogSession() {
       <StatusBar barStyle="light-content" />
 
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace(HOME_ROUTE)} style={styles.backBtn} hitSlop={12}>
           <Text style={styles.backArrow}>←</Text>
         </Pressable>
         <View style={styles.headerMid}>

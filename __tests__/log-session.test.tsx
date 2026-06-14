@@ -30,6 +30,7 @@ jest.mock('@/src/sessionDraft', () => ({
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
+const mockCanGoBack = jest.fn().mockReturnValue(true);
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
@@ -37,7 +38,7 @@ jest.mock('react-native-safe-area-context', () => ({
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ programId: '1', dayIndex: '0' }),
-  useRouter: () => ({ replace: mockReplace, back: mockBack }),
+  useRouter: () => ({ replace: mockReplace, back: mockBack, canGoBack: mockCanGoBack }),
   Stack: { Screen: () => null },
 }));
 
@@ -123,6 +124,24 @@ describe('renders with a mocked ProgramDay', () => {
     (getProgramDay as jest.Mock).mockResolvedValue(null);
     render(<LogSession />);
     await waitFor(() => expect(screen.getByText(/No program/i)).toBeTruthy());
+  });
+
+  it('back button calls router.back() when history exists', async () => {
+    mockCanGoBack.mockReturnValue(true);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByText('←')).toBeTruthy());
+    fireEvent.press(screen.getByText('←'));
+    expect(mockBack).toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('back button replaces to progress when no history exists', async () => {
+    mockCanGoBack.mockReturnValue(false);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getByText('←')).toBeTruthy());
+    fireEvent.press(screen.getByText('←'));
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/progress');
+    expect(mockBack).not.toHaveBeenCalled();
   });
 });
 
