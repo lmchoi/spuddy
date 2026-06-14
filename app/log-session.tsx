@@ -83,10 +83,6 @@ function Stepper({
   };
 
   const handleBlur = () => {
-    const parsed = parseFloat(draft);
-    if (!isNaN(parsed) && parsed >= 0) {
-      onChangeValue?.(parsed);
-    }
     setEditing(false);
   };
 
