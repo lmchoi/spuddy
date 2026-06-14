@@ -47,6 +47,8 @@ Items that can't be picked up until a dependency lands.
 
 New items land here. Triage before picking up.
 
+- **Extract stepper clamp logic to domain** — `SetEntry` contains inline arithmetic for stepper floors (`Math.max(1, r - 1)` for reps, `Math.max(0, v)` for weight typed input). Per the "views are dumb" rule these should be pure domain functions (`clampReps`, `clampWeight`) in `src/domain/`. Pre-existing violation surfaced during the `set-entry-grouping` refactor; tests already cover the floor behaviour so extraction would be safe.
+
 - **Idempotent re-import** — make re-importing a Liftosaur JSON safe: sessions deduplicate by `(source, source_id)`, programs rename-on-clash rather than wiping, Spuddy-created data never touched. Plan: `docs/plans/idempotent-reimport.md`. 4 PRs.
 - **Liftosaur history import** — extend the import to bring in workout history (`history[]`) from the backup, not just programs. Depends on idempotent re-import landing first. Plan: `docs/plans/liftosaur-history-import.md`. 3 commits.
 - **Import warnings pattern** — replace silent data loss across all importers (`importProgramFromJson`, `importFromStrong`, `importFromNotes`) with a `warnings: string[]` field on the success result, surfaced in the import alert. Also extracts the duplicated `LBS_TO_KG` constant to `src/units.ts`. Follow-up to PR 102. Plan: `docs/plans/import-warnings-pattern.md`.
