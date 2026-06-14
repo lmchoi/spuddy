@@ -76,6 +76,10 @@ function Stepper({
   const handleChangeText = (text: string) => {
     setDraft(text);
     setEditing(true);
+    const parsed = parseFloat(text);
+    if (!isNaN(parsed) && parsed >= 0) {
+      onChangeValue?.(parsed);
+    }
   };
 
   const handleBlur = () => {
@@ -108,6 +112,53 @@ function Stepper({
         <Text style={styles.stepBtnText}>+</Text>
       </Pressable>
     </View>
+  );
+}
+
+// ─── SetEntry ─────────────────────────────────────────────────────────────────
+
+function SetEntry({
+  initialReps,
+  initialWeight,
+  onLog,
+  label,
+}: {
+  initialReps: number;
+  initialWeight: number;
+  onLog: (reps: number, weight: number) => void;
+  label: string;
+}) {
+  const [reps, setReps] = useState(initialReps);
+  const [weight, setWeight] = useState(initialWeight);
+
+  return (
+    <>
+      <View style={styles.stepperRow}>
+        <Stepper
+          value={reps}
+          label="reps"
+          onDec={() => setReps(r => Math.max(1, r - 1))}
+          onInc={() => setReps(r => r + 1)}
+          onChangeValue={v => setReps(Math.max(1, Math.round(v)))}
+          format={v => String(v)}
+        />
+        <View style={styles.stepperDivider} />
+        <Stepper
+          value={weight}
+          label="kg"
+          onDec={() => setWeight(w => nextWeight(w, -1))}
+          onInc={() => setWeight(w => nextWeight(w, 1))}
+          onChangeValue={v => setWeight(Math.max(0, v))}
+          format={v => v === 0 ? 'BW' : String(v)}
+        />
+      </View>
+      <Pressable
+        onPress={() => onLog(reps, weight)}
+        style={({ pressed }) => [styles.confirmBtn, pressed && styles.confirmBtnPressed]}
+      >
+        <Text style={styles.confirmBtnText}>{label}</Text>
+      </Pressable>
+    </>
   );
 }
 
@@ -401,6 +452,7 @@ function BottomAction({
   onDecWeight,
   onChangeWeight,
   onLogSet,
+  onLog,
   onSkipRest,
   onNextExercise,
   onFinish,
@@ -415,6 +467,7 @@ function BottomAction({
   onDecWeight: () => void;
   onChangeWeight: (v: number) => void;
   onLogSet: () => void;
+  onLog: (reps: number, weight: number) => void;
   onSkipRest: () => void;
   onNextExercise: () => void;
   onFinish: () => void;
@@ -452,32 +505,16 @@ function BottomAction({
   const label = logged + 1 < total
     ? `Done · Set ${logged + 1} of ${total}`
     : 'Done · Last set';
+  const entryKey = `${exIdx}-${logged}`;
 
   return (
-    <>
-      <View style={styles.stepperRow}>
-        <Stepper
-          value={input.reps}
-          label="reps"
-          onDec={onDecReps}
-          onInc={onIncReps}
-          onChangeValue={onChangeReps}
-          format={v => String(v)}
-        />
-        <View style={styles.stepperDivider} />
-        <Stepper
-          value={input.weight}
-          label="kg"
-          onDec={onDecWeight}
-          onInc={onIncWeight}
-          onChangeValue={onChangeWeight}
-          format={v => v === 0 ? 'BW' : String(v)}
-        />
-      </View>
-      <Pressable onPress={onLogSet} style={({ pressed }) => [styles.confirmBtn, pressed && styles.confirmBtnPressed]}>
-        <Text style={styles.confirmBtnText}>{label}</Text>
-      </Pressable>
-    </>
+    <SetEntry
+      key={entryKey}
+      initialReps={input.reps}
+      initialWeight={input.weight}
+      onLog={onLog}
+      label={label}
+    />
   );
 }
 
@@ -542,16 +579,13 @@ export default function LogSession() {
     load();
   }, [programId, dayIndex]);
 
-  const handleLogSet = useCallback(() => {
+  const handleLogSet = useCallback((reps: number, weight: number) => {
     if (state.status !== 'ready') return;
-    const { session, input, key } = state;
+    const { session, key } = state;
     const exIdx = session.currentExerciseIdx;
-    const next = logSet(session, exIdx, input.reps, input.weight);
-    // Carry forward what the user just entered rather than re-deriving from the
-    // plan target. inputFromTarget is only appropriate on first load and on
-    // exercise transitions (handleNextExercise / handleJump), not here.
+    const next = logSet(session, exIdx, reps, weight);
     saveDraft(key, next);
-    setState({ ...state, session: next, input });
+    setState({ ...state, session: next, input: { reps, weight } });
   }, [state]);
 
   const handleSkipRest = useCallback(() => {
@@ -739,7 +773,8 @@ export default function LogSession() {
           onIncWeight={() => setState({ ...state, input: { ...input, weight: nextWeight(input.weight, 1) } })}
           onDecWeight={() => setState({ ...state, input: { ...input, weight: nextWeight(input.weight, -1) } })}
           onChangeWeight={v => setState({ ...state, input: { ...input, weight: Math.max(0, v) } })}
-          onLogSet={handleLogSet}
+          onLogSet={() => {}}
+          onLog={handleLogSet}
           onSkipRest={handleSkipRest}
           onNextExercise={handleNextExercise}
           onFinish={handleFinish}
