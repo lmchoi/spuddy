@@ -28,3 +28,5 @@ No schema changes. No hard-to-reverse decisions.
 1. ✅ `feat: wire index.tsx to resume draft session when found` — call `findActiveDraft` (stubbed to return `null`); app behaviour unchanged
 2. ✅ `feat: add parseDraftKey to sessionDraft` — pure function parsing `draft_session__X__Y` → `{ programId, dayIndex }` or `null`; test: valid key, malformed key, unrelated key
 3. ✅ `feat: implement findActiveDraft with AsyncStorage scan` — scans `getAllKeys`, filters draft keys, uses `parseDraftKey`; returns single match or `null`; test: zero keys, one key, multiple keys
+4. ✅ `fix: handle missing back stack in log-session` — `router.back()` crashes when log-session is the first screen (auto-resume lands here with no history); fall back to `router.replace(HOME_ROUTE)` when `canGoBack()` is false
+5. ✅ `fix: handle findActiveDraft rejection in index.tsx` — unhandled rejection left app on a blank screen if AsyncStorage was unavailable; unified catch covers both `findActiveDraft` and `getDB` errors
