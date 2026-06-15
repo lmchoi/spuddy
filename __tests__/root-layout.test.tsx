@@ -6,6 +6,7 @@ import RootLayout, { unstable_settings } from '../app/_layout';
 jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
   wrap: jest.fn((component: unknown) => component),
+  reactNavigationIntegration: jest.fn(() => ({ name: 'ReactNavigation', registerNavigationContainer: jest.fn() })),
 }));
 
 jest.mock('expo-font', () => ({
@@ -31,8 +32,13 @@ jest.mock('expo-router', () => {
     ThemeProvider: ({ children }: any) => <>{children}</>,
     DarkTheme: { colors: { background: '#000' } },
     useRouter: () => ({ push: jest.fn() }),
+    useNavigationContainerRef: () => ({ current: null }),
   };
 });
+
+jest.mock('expo', () => ({
+  isRunningInExpoGo: jest.fn(() => false),
+}));
 
 jest.mock('../src/global.css', () => ({}));
 jest.mock('react-native-reanimated', () => ({}));
@@ -56,6 +62,17 @@ describe('Sentry initialisation', () => {
   it('wraps RootLayout with Sentry.wrap', () => {
     expect(Sentry.wrap).toHaveBeenCalledWith(expect.any(Function));
     expect(RootLayout).toBe((Sentry.wrap as jest.Mock).mock.results[0].value);
+  });
+
+  it('passes the navigation integration to Sentry.init', () => {
+    const call = (Sentry.init as jest.Mock).mock.calls[0][0];
+    const navIntegration = (Sentry.reactNavigationIntegration as jest.Mock).mock.results[0].value;
+    expect(call.integrations).toContainEqual(navIntegration);
+  });
+
+  it('sets tracesSampleRate to 1.0', () => {
+    const call = (Sentry.init as jest.Mock).mock.calls[0][0];
+    expect(call.tracesSampleRate).toBe(1.0);
   });
 });
 
