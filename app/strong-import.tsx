@@ -7,6 +7,7 @@ import { getDB } from '@/src/db';
 import { parseStrongCsv } from '@/src/strongParser';
 import { importFromStrong } from '@/src/strongImport';
 import type { ImportedWorkoutGroup } from '@/src/types';
+import * as Sentry from '@sentry/react-native';
 
 const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 
@@ -74,6 +75,7 @@ export default function StrongImportScreen() {
       const db = await getDB();
       const result = await importFromStrong(db, csvText, Array.from(selected), unit);
       if (result.success) {
+        Sentry.addBreadcrumb({ category: 'import', message: 'Strong import confirmed', level: 'info', data: { sessions: result.sessionsImported } });
         Alert.alert('Imported!', `${result.sessionsImported} sessions saved.`);
       } else {
         Alert.alert('Import failed', result.error);

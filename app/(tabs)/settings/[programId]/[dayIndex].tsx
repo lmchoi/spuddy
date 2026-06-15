@@ -13,6 +13,7 @@ import { getDB } from '@/src/db';
 import { updateProgramDay } from '@/src/programStorage';
 import { type ExerciseLibraryRow } from '@/src/exerciseStorage';
 import { renameLibraryEntry, parseMuscleGroups } from '@/src/domain/exerciseLibrary';
+import * as Sentry from '@sentry/react-native';
 
 // ─── Cell sub-components ─────────────────────────────────────────────────────
 
@@ -287,6 +288,7 @@ export default function ProgramDayDetailScreen() {
   }
 
   function addExercise() {
+    Sentry.addBreadcrumb({ category: 'exercise', message: 'Exercise added', level: 'info' });
     setDay(prev => {
       const next: ProgramDay = {
         ...prev,
