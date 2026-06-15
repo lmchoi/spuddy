@@ -1,16 +1,24 @@
 import '../src/global.css';
 import { useFonts } from 'expo-font';
-import { DarkTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider, useNavigationContainerRef, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { C } from '@/components/spuddy/palette';
 import * as Sentry from '@sentry/react-native';
+import { isRunningInExpoGo } from 'expo';
 import { setupNotificationResponseListener } from '@/src/notifications';
+
+const navigationIntegration = Sentry.reactNavigationIntegration({
+  enableTimeToInitialDisplay: !isRunningInExpoGo(),
+});
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   enableLogs: true,
+  integrations: [navigationIntegration],
+  tracesSampleRate: 1.0,
+  enableNativeFramesTracking: !isRunningInExpoGo(),
 });
 
 const WarmDarkTheme = { ...DarkTheme, colors: { ...DarkTheme.colors, background: C.bg } };
@@ -53,6 +61,11 @@ export default Sentry.wrap(function RootLayout() {
 
 function RootLayoutNav() {
   const router = useRouter();
+  const ref = useNavigationContainerRef();
+  useEffect(() => {
+    navigationIntegration.registerNavigationContainer(ref);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => setupNotificationResponseListener(() => router.push('/log-session')), [router.push]);
 
   return (
