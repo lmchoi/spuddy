@@ -123,6 +123,24 @@ export function resolvePostSessionAction(state: SessionState): 'prompt' | 'navig
   return detectSessionChanges(state) ? 'prompt' : 'navigate';
 }
 
+export function addExercise(
+  state: SessionState,
+  day: ProgramDay,
+  name: string,
+): { session: SessionState; day: ProgramDay } {
+  const newDay: ProgramDay = {
+    ...day,
+    exercises: [...day.exercises, { name, targets: [{ reps: 10, weight: 0 }] }],
+  };
+  const session: SessionState = {
+    ...state,
+    loggedSets: [...state.loggedSets, []],
+    targetCounts: [...state.targetCounts, 1],
+    extraSetCounts: [...state.extraSetCounts, 0],
+  };
+  return { session, day: newDay };
+}
+
 export function buildSavePayload(
   state: SessionState,
   day: ProgramDay,
