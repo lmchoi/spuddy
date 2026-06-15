@@ -14,6 +14,7 @@ import {
   buildNewDay,
   resolvePostSessionAction,
   reconcileDraft,
+  addExercise,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -537,5 +538,56 @@ describe('reconcileDraft', () => {
     const draft = { ...initSession(oneSetDay), currentExerciseIdx: 1 };
     const reconciled = reconcileDraft(draft, oneExerciseDay);
     expect(reconciled.currentExerciseIdx).toBe(0);
+  });
+});
+
+// ─── addExercise ──────────────────────────────────────────────────────────────
+
+describe('addExercise', () => {
+  it('appends the exercise to day.exercises with a single default target', () => {
+    const state = initSession(day);
+    const { day: newDay } = addExercise(state, day, 'Cable Fly');
+    expect(newDay.exercises).toHaveLength(3);
+    expect(newDay.exercises[2].name).toBe('Cable Fly');
+    expect(newDay.exercises[2].targets).toEqual([{ reps: 10, weight: 0 }]);
+  });
+
+  it('extends all three parallel arrays in session state', () => {
+    const state = initSession(day);
+    const { session } = addExercise(state, day, 'Cable Fly');
+    expect(session.loggedSets).toHaveLength(3);
+    expect(session.loggedSets[2]).toEqual([]);
+    expect(session.targetCounts).toHaveLength(3);
+    expect(session.targetCounts[2]).toBe(1);
+    expect(session.extraSetCounts).toHaveLength(3);
+    expect(session.extraSetCounts[2]).toBe(0);
+  });
+
+  it('does not mutate the original state or day', () => {
+    const state = initSession(day);
+    addExercise(state, day, 'Cable Fly');
+    expect(day.exercises).toHaveLength(2);
+    expect(state.loggedSets).toHaveLength(2);
+  });
+
+  it('isExerciseDone returns false for the new exercise', () => {
+    const state = initSession(day);
+    const { session, day: newDay } = addExercise(state, day, 'Cable Fly');
+    expect(isExerciseDone(session, newDay, 2)).toBe(false);
+  });
+
+  it('buildNewDay includes new exercise when at least 1 set is logged', () => {
+    const state = initSession(day);
+    const { session: s1, day: d1 } = addExercise(state, day, 'Cable Fly');
+    const s2 = logSet(s1, 2, 10, 0);
+    const newDay = buildNewDay(s2, d1, 'Next Day');
+    expect(newDay.exercises.map(e => e.name)).toContain('Cable Fly');
+  });
+
+  it('buildNewDay excludes new exercise when 0 sets logged', () => {
+    const state = initSession(day);
+    const { session, day: d1 } = addExercise(state, day, 'Cable Fly');
+    const newDay = buildNewDay(session, d1, 'Next Day');
+    expect(newDay.exercises.map(e => e.name)).not.toContain('Cable Fly');
   });
 });
