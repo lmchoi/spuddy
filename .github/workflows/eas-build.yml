@@ -16,6 +16,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      apk-url: ${{ steps.eas-build.outputs.apk-url }}
 
     steps:
       - name: 🏗 Checkout repository
@@ -45,4 +47,8 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: 🔨 Run EAS build
-        run: eas build --platform android --profile preview --non-interactive
+        id: eas-build
+        run: |
+          BUILD_JSON=$(eas build --platform android --profile preview --non-interactive --json)
+          APK_URL=$(echo "$BUILD_JSON" | jq -r '.[0].artifacts.buildUrl')
+          echo "apk-url=$APK_URL" >> $GITHUB_OUTPUT
