@@ -93,9 +93,9 @@ describe('program schema', () => {
     const after = Date.now();
     const programs = await getPrograms(db);
     expect(typeof programs[0].createdAt).toBe('number');
-    // SQLite julianday conversion loses ~1ms of precision, so allow 1ms below before
-    expect(programs[0].createdAt).toBeGreaterThanOrEqual(before - 1);
-    expect(programs[0].createdAt).toBeLessThanOrEqual(after + 1);
+    // unixepoch() has second-level precision, so truncation can be up to 999ms
+    expect(programs[0].createdAt).toBeGreaterThanOrEqual(before - 1000);
+    expect(programs[0].createdAt).toBeLessThanOrEqual(after + 1000);
   });
 
   it('retrieves program days with exercises', async () => {

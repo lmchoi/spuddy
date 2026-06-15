@@ -61,6 +61,6 @@ ALTER TABLE \`exercises\` ADD \`library_confidence\` integer;`,
     m0003: `ALTER TABLE \`sessions\` ADD \`source\` text DEFAULT 'manual' NOT NULL;--> statement-breakpoint
 ALTER TABLE \`sessions\` ADD \`source_id\` text;--> statement-breakpoint
 CREATE UNIQUE INDEX \`idx_sessions_source_id\` ON \`sessions\` (\`source\`,\`source_id\`);`,
-    m0004: `ALTER TABLE \`programs\` ADD \`created_at\` integer DEFAULT (cast((julianday('now') - 2440587.5)*86400000 as integer)) NOT NULL;`,
+    m0004: `ALTER TABLE \`programs\` ADD \`created_at\` integer DEFAULT (unixepoch()) NOT NULL;`,
   },
 };
