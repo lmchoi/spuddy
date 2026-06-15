@@ -14,6 +14,7 @@ import { getDB } from '@/src/db';
 import { importFromNotes } from '@/src/notesImport';
 import type { ParsedNotes } from '@/src/notesParser';
 import { formatExerciseMeta } from '@/src/domain/notesReview';
+import * as Sentry from '@sentry/react-native';
 
 export default function NotesImportReviewScreen() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function NotesImportReviewScreen() {
       const db = await getDB();
       const result = await importFromNotes(db, parsed);
       if (result.success) {
+        Sentry.addBreadcrumb({ category: 'import', message: 'Notes import confirmed', level: 'info', data: { programs: result.programsCreated } });
         router.replace('/(tabs)/settings');
       } else {
         Alert.alert('Import failed', result.error);

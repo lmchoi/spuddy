@@ -44,6 +44,7 @@ import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+import * as Sentry from '@sentry/react-native';
 
 const HOME_ROUTE = '/(tabs)/progress' as const; // no dedicated home screen yet
 
@@ -174,6 +175,7 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
 
   useEffect(() => {
     scheduleRestExpiredNotification(effectiveDuration);
+    Sentry.addBreadcrumb({ category: 'rest-timer', message: 'Rest timer started', level: 'info', data: { duration_s: effectiveDuration } });
     return () => { cancelRestExpiredNotification(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -694,6 +696,15 @@ export default function LogSession() {
       Alert.alert('Save failed', 'Could not save your session. Please try again.');
       return;
     }
+    Sentry.addBreadcrumb({
+      category: 'session',
+      message: 'Session logged',
+      level: 'info',
+      data: {
+        exercises: payload.exercises.length,
+        sets: payload.exercises.reduce((sum, ex) => sum + ex.sets.length, 0),
+      },
+    });
     await clearDraft(key).catch(() => {});
     if (totalDays > 0) {
       const nextIdx = nextActiveDayIndex(resolvedDayIndex, totalDays);
