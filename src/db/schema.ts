@@ -35,7 +35,7 @@ export const programs = sqliteTable('programs', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   activeDayIndex: integer('active_day_index').notNull().default(0),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(sql`(cast((julianday('now') - 2440587.5)*86400000 as integer))`),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 });
 
 export const programDays = sqliteTable('program_days', {
