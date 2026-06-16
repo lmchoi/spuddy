@@ -83,7 +83,7 @@
     },
     "testPathIgnorePatterns": [
       "<rootDir>/.claude/",
-      "<rootDir>/__tests__/helpers/"
+      "/__tests__/helpers/"
     ],
     "collectCoverageFrom": [
       "**/*.{ts,tsx}",
