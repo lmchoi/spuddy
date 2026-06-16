@@ -1,5 +1,5 @@
 import { resolveOrCreateExercise, type DrizzleDB } from '../src/storage';
-import { getExerciseNote, setExerciseNote } from '../src/exerciseStorage';
+import { getAllExerciseNames, getExerciseNote, setExerciseNote } from '../src/exerciseStorage';
 import { makeInMemoryDB } from './helpers/makeInMemoryDB';
 
 describe('exerciseStorage', () => {
@@ -7,6 +7,19 @@ describe('exerciseStorage', () => {
 
   beforeEach(() => {
     db = makeInMemoryDB();
+  });
+
+  describe('getAllExerciseNames', () => {
+    it('returns empty array when no exercises exist', () => {
+      expect(getAllExerciseNames(db)).toEqual([]);
+    });
+
+    it('returns exercise names in alphabetical order', () => {
+      resolveOrCreateExercise(db, 'Squat');
+      resolveOrCreateExercise(db, 'Bench Press');
+      resolveOrCreateExercise(db, 'Deadlift');
+      expect(getAllExerciseNames(db)).toEqual(['Bench Press', 'Deadlift', 'Squat']);
+    });
   });
 
   describe('getExerciseNote', () => {
