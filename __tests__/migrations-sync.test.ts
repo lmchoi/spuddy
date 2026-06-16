@@ -9,7 +9,7 @@ describe('migrations.ts sync with drizzle/ folder', () => {
   const drizzleDir = path.join(__dirname, '..', 'drizzle');
   const journal = JSON.parse(
     fs.readFileSync(path.join(drizzleDir, 'meta', '_journal.json'), 'utf8')
-  ) as { entries: Array<{ idx: number; tag: string }> };
+  ) as { entries: { idx: number; tag: string }[] };
 
   it('has an entry in migrations.ts for every migration in drizzle/', () => {
     const bundledKeys = Object.keys(migrations.migrations);

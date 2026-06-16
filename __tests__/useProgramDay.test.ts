@@ -8,6 +8,7 @@ jest.mock('../src/db');
 jest.mock('../src/programStorage');
 jest.mock('../src/exerciseStorage');
 jest.mock('expo-router', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
   return {
     useFocusEffect: jest.fn((cb) => {

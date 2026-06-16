@@ -143,6 +143,7 @@ describe('seedMigrationsIfNeeded', () => {
     sqlite.prepare('INSERT INTO exercises (name) VALUES (?)').run('Barbell Squat');
     sqlite.prepare('INSERT INTO exercises (name) VALUES (?)').run('Barbell Bench Press - Medium Grip');
     // Intercept exactMatch to throw after the first successful match
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const libraryModule = require('../src/domain/exerciseLibrary');
     let callCount = 0;
     jest.spyOn(libraryModule, 'exactMatch').mockImplementation((name: unknown) => {

@@ -1,3 +1,11 @@
+import { AppState } from 'react-native';
+import {
+  scheduleRestExpiredNotification,
+  cancelRestExpiredNotification,
+  setupNotificationChannel,
+  setupNotificationResponseListener,
+} from '@/src/notifications';
+
 const mockScheduleNotificationAsync = jest.fn().mockResolvedValue(undefined);
 const mockCancelScheduledNotificationAsync = jest.fn().mockResolvedValue(undefined);
 const mockSetNotificationChannelAsync = jest.fn().mockResolvedValue(undefined);
@@ -22,14 +30,6 @@ jest.mock('expo-notifications', () => ({
   AndroidImportance: { HIGH: 4 },
   SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
 }));
-
-import { AppState } from 'react-native';
-import {
-  scheduleRestExpiredNotification,
-  cancelRestExpiredNotification,
-  setupNotificationChannel,
-  setupNotificationResponseListener,
-} from '@/src/notifications';
 
 beforeEach(() => {
   jest.clearAllMocks();

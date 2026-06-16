@@ -1,3 +1,5 @@
+import { exportDatabase } from '@/src/domain/export';
+
 const mockRun = jest.fn();
 const mockDeleteAsync = jest.fn().mockResolvedValue(undefined);
 
@@ -12,8 +14,6 @@ const CACHE_PATH = '/data/data/host.exp.exponent/cache/ExponentExperienceData/@a
 const mockDB = {
   run: mockRun,
 } as unknown as import('../src/storage').DrizzleDB;
-
-import { exportDatabase } from '@/src/domain/export';
 
 beforeEach(() => {
   jest.clearAllMocks();

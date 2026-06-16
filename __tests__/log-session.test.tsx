@@ -1136,7 +1136,7 @@ describe('rest timer — wall clock accuracy on foreground resume', () => {
     ],
   };
 
-  let appStateListeners: Array<(state: string) => void>;
+  let appStateListeners: ((state: string) => void)[];
   let dateNowSpy: jest.SpyInstance;
 
   beforeEach(() => {
