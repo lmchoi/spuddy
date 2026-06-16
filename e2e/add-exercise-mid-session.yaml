@@ -1,0 +1,42 @@
+appId: com.mchoi.spuddy
+---
+# Set up: import notes, start a session
+- launchApp:
+    clearState: true
+- tapOn: "Settings"
+- tapOn: "Paste workout notes"
+- tapOn: "⚙ Fill sample"
+- hideKeyboard
+- tapOn: "Review 3 days"
+- tapOn: "Import 1 program"
+- tapOn: "Add workout"
+- tapOn: "Legs"
+- tapOn: "Start Legs"
+- assertVisible: "Squat"
+
+# Tap the pill to open the name sheet
+- tapOn: "+ Add exercise"
+- assertVisible: "Add exercise"
+- assertVisible: "Exercise name"
+
+# Empty name — Add button should not submit
+- tapOn: "Add"
+- assertVisible: "Exercise name"
+
+# Enter a name and confirm
+- tapOn: "Exercise name"
+- inputText: "Cable Fly"
+- hideKeyboard
+- tapOn:
+    text: "Add"
+    below:
+      text: "Add exercise"
+- assertNotVisible: "Exercise name"
+
+# New chip appears in the exercise strip
+- assertVisible: "Cable Fly"
+
+# Log a set for the new exercise
+- tapOn: "Done · Last set"
+- assertVisible: "Set 1"
+- assertVisible: "10 × 0 kg"
