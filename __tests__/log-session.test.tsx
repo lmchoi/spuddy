@@ -1252,3 +1252,56 @@ describe('rest timer — notification scheduling', () => {
     expect(mockCancelRestExpiredNotification).toHaveBeenCalledTimes(1);
   });
 });
+
+// ─── Add exercise mid-session ─────────────────────────────────────────────────
+
+describe('add exercise mid-session', () => {
+  it('shows the "Add exercise" pill below the strip', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    expect(screen.getByText('+ Add exercise')).toBeTruthy();
+  });
+
+  it('tapping the pill opens the name sheet', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    expect(screen.getByPlaceholderText('Exercise name')).toBeTruthy();
+  });
+
+  it('pressing Add with empty name does not close the sheet', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => { fireEvent.press(screen.getByText('Add')); });
+    expect(screen.getByPlaceholderText('Exercise name')).toBeTruthy();
+  });
+
+  it('confirming a name adds a new chip to the strip and closes the sheet', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly'); });
+    await act(async () => { fireEvent.press(screen.getByText('Add')); });
+    expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
+    expect(screen.getAllByText('Cable Fly').length).toBeGreaterThan(0);
+  });
+
+  it('cancelling the sheet closes it without adding an exercise', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => { fireEvent.press(screen.getByText('Cancel')); });
+    expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
+    expect(screen.queryByText('Cable Fly')).toBeNull();
+  });
+
+  it('saves draft after adding an exercise', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly'); });
+    await act(async () => { fireEvent.press(screen.getByText('Add')); });
+    expect(saveDraft).toHaveBeenCalledTimes(1);
+  });
+});

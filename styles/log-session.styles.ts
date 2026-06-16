@@ -194,4 +194,31 @@ export const styles = StyleSheet.create({
     minHeight: 80, textAlignVertical: 'top',
   },
   noteSheetHint: { fontSize: 12, color: C.muted },
+
+  addExerciseRow: {
+    paddingHorizontal: T.spacing.screenEdge,
+    paddingBottom: 10,
+  },
+  addExercisePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: C.borderHi,
+    borderStyle: 'dashed',
+    gap: 6,
+  },
+  addExercisePillPressed: { opacity: 0.6 },
+  addExercisePillText: { fontSize: 12, fontWeight: '600', color: C.muted },
+
+  addExerciseNameInput: {
+    backgroundColor: C.card, borderWidth: 1, borderColor: C.border,
+    borderRadius: 12, padding: 12,
+    fontSize: 15, color: C.text,
+  },
+  addExerciseAddBtn: { fontSize: 14, fontWeight: '600', color: C.hit },
+  addExerciseAddBtnDisabled: { opacity: 0.35 },
 });
