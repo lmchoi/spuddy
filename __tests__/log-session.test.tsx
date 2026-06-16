@@ -1270,11 +1270,11 @@ describe('add exercise mid-session', () => {
     expect(screen.getByPlaceholderText('Exercise name')).toBeTruthy();
   });
 
-  it('pressing Add with empty name does not close the sheet', async () => {
+  it('no Create row shown when query is empty', async () => {
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
-    await act(async () => { fireEvent.press(screen.getByText('Add')); });
+    expect(screen.queryByText(/^Create '/)).toBeNull();
     expect(screen.getByPlaceholderText('Exercise name')).toBeTruthy();
   });
 
@@ -1283,7 +1283,7 @@ describe('add exercise mid-session', () => {
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
     await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly'); });
-    await act(async () => { fireEvent.press(screen.getByText('Add')); });
+    await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
     expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
     expect(screen.getAllByText('Cable Fly').length).toBeGreaterThan(0);
   });
@@ -1302,7 +1302,7 @@ describe('add exercise mid-session', () => {
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
     await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly'); });
-    await act(async () => { fireEvent.press(screen.getByText('Add')); });
+    await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
     expect(saveDraft).toHaveBeenCalledTimes(1);
   });
 
@@ -1326,5 +1326,67 @@ describe('add exercise mid-session', () => {
     await act(async () => { fireEvent.press(screen.getByText('Deadlift')); });
     expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
     expect(screen.getAllByText('Deadlift').length).toBeGreaterThan(0);
+  });
+
+  it('list filters to substring matches as user types', async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift', 'Pull-up', 'Dumbbell Row']);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await waitFor(() => expect(screen.getByText('Deadlift')).toBeTruthy());
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'ead');
+    });
+    expect(screen.getByText('Deadlift')).toBeTruthy();
+    expect(screen.queryByText('Pull-up')).toBeNull();
+    expect(screen.queryByText('Dumbbell Row')).toBeNull();
+  });
+
+  it("Create row appears when typed name has no exact match", async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift', 'Pull-up']);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Dead');
+    });
+    expect(screen.getByText("Create 'Dead'")).toBeTruthy();
+    expect(screen.getByText('Deadlift')).toBeTruthy();
+  });
+
+  it("Create row appears when no history items match", async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift', 'Pull-up']);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly');
+    });
+    expect(screen.getByText("Create 'Cable Fly'")).toBeTruthy();
+    expect(screen.queryByText('Deadlift')).toBeNull();
+  });
+
+  it("Create row not shown when typed name exactly matches a history item", async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift', 'Pull-up']);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Deadlift');
+    });
+    expect(screen.queryByText(/^Create '/)).toBeNull();
+    expect(screen.getByText('Deadlift')).toBeTruthy();
+  });
+
+  it("tapping Create row adds the typed name and closes the sheet", async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly');
+    });
+    await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
+    expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
+    expect(screen.getAllByText('Cable Fly').length).toBeGreaterThan(0);
   });
 });

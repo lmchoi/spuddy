@@ -40,9 +40,9 @@ Improve the "Add exercise" sheet in log-session so the user can pick from exerci
 
 ---
 
-### Stage 2 — Type-to-filter
+### Stage 2 — Type-to-filter ✓ shipped
 
-**What:** As the user types, the history list narrows to substring matches. When nothing matches, a "Create '[name]'" row appears at the bottom of the list so the user never needs the header button.
+**What:** As the user types, the history list narrows to substring matches. When the typed name has no exact match in the filtered list, a "Create '[name]'" row appears at the bottom so the user never needs the header button.
 
 **Out of scope:** fuzzy matching, library exercises.
 
