@@ -231,4 +231,6 @@ export const styles = StyleSheet.create({
     borderBottomColor: C.border,
   },
   addExerciseHistoryRowText: { fontSize: 15, color: C.text },
+  addExerciseCreateRowText: { color: C.hit, fontWeight: '600' as const },
+  addExerciseHeaderSpacer: { width: 40 },
 });

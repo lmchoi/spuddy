@@ -45,6 +45,7 @@ import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import { getAllExerciseNames, getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+import { filterExerciseNames } from '@/src/domain/filterExerciseNames';
 import * as Sentry from '@sentry/react-native';
 
 const HOME_ROUTE = '/(tabs)/progress' as const; // no dedicated home screen yet
@@ -460,6 +461,16 @@ function AddExerciseSheet({
     }).catch(() => {});
   }, []);
 
+  const filtered = filterExerciseNames(history, trimmed);
+  const hasExactMatch = filtered.some(n => n.toLowerCase() === trimmed.toLowerCase());
+  const showCreate = trimmed.length > 0 && !hasExactMatch;
+
+  type ListItem = { kind: 'history'; name: string } | { kind: 'create'; name: string };
+  const listData: ListItem[] = [
+    ...filtered.map(n => ({ kind: 'history' as const, name: n })),
+    ...(showCreate ? [{ kind: 'create' as const, name: trimmed }] : []),
+  ];
+
   return (
     <KeyboardAvoidingView
       style={styles.noteOverlay}
@@ -476,9 +487,7 @@ function AddExerciseSheet({
             <Text style={styles.noteSheetCancel}>Cancel</Text>
           </Pressable>
           <Text style={styles.noteSheetTitle}>Add exercise</Text>
-          <Pressable onPress={() => trimmed && onAdd(trimmed)} disabled={!trimmed}>
-            <Text style={[styles.addExerciseAddBtn, !trimmed && styles.addExerciseAddBtnDisabled]}>Add</Text>
-          </Pressable>
+          <View style={styles.addExerciseHeaderSpacer} />
         </View>
         <TextInput
           style={styles.addExerciseNameInput}
@@ -490,15 +499,17 @@ function AddExerciseSheet({
           returnKeyType="done"
           onSubmitEditing={() => trimmed && onAdd(trimmed)}
         />
-        {history.length > 0 && (
+        {listData.length > 0 && (
           <FlatList
-            data={history}
-            keyExtractor={item => item}
+            data={listData}
+            keyExtractor={item => item.kind + ':' + item.name}
             style={styles.addExerciseHistoryList}
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
-              <Pressable style={styles.addExerciseHistoryRow} onPress={() => onAdd(item)}>
-                <Text style={styles.addExerciseHistoryRowText}>{item}</Text>
+              <Pressable style={styles.addExerciseHistoryRow} onPress={() => onAdd(item.name)}>
+                <Text style={[styles.addExerciseHistoryRowText, item.kind === 'create' && styles.addExerciseCreateRowText]}>
+                  {item.kind === 'create' ? `Create '${item.name}'` : item.name}
+                </Text>
               </Pressable>
             )}
           />
