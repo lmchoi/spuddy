@@ -221,4 +221,14 @@ export const styles = StyleSheet.create({
   },
   addExerciseAddBtn: { fontSize: 14, fontWeight: '600', color: C.hit },
   addExerciseAddBtnDisabled: { opacity: 0.35 },
+
+  addExerciseSheet: { maxHeight: '70%' },
+  addExerciseHistoryList: { marginTop: 4 },
+  addExerciseHistoryRow: {
+    paddingVertical: 13,
+    paddingHorizontal: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: C.border,
+  },
+  addExerciseHistoryRowText: { fontSize: 15, color: C.text },
 });
