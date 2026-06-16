@@ -1,3 +1,6 @@
+import { renderHook, act } from '@testing-library/react-native';
+import { useExportDatabase } from '@/src/hooks/useExportDatabase';
+
 const mockExportDatabase = jest.fn();
 const mockShareAsync = jest.fn();
 
@@ -12,9 +15,6 @@ jest.mock('expo-sharing', () => ({
 jest.mock('@/src/db', () => ({
   getDB: jest.fn().mockResolvedValue({}),
 }));
-
-import { renderHook, act } from '@testing-library/react-native';
-import { useExportDatabase } from '@/src/hooks/useExportDatabase';
 
 beforeEach(() => {
   jest.clearAllMocks();

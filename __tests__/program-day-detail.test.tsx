@@ -9,6 +9,7 @@ let mockInitialLibraryData: any;
 
 jest.mock('@/src/hooks/useProgramDay', () => ({
   useProgramDay: () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const React = require('react');
     const [day, setDay] = React.useState(mockInitialDay);
     const [libraryData, setLibraryData] = React.useState(mockInitialLibraryData);
