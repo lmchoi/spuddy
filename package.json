@@ -64,7 +64,7 @@
     "test:coverage": "jest --coverage --watchAll=false",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "node ./node_modules/typescript/bin/tsc --noEmit",
+    "typecheck": "npx tsc --noEmit",
     "check": "npm run typecheck && npm test -- --watchAll=false",
     "check:full": "npm run typecheck && npm run lint && npm test -- --watchAll=false",
     "clear:android": "~/Library/Android/sdk/platform-tools/adb shell pm clear host.exp.exponent",
