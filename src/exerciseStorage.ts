@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { asc, eq, inArray } from 'drizzle-orm';
 import { exercises } from './db/schema';
 import type { DrizzleDB } from './storage';
 
@@ -9,6 +9,10 @@ export type ExerciseLibraryRow = {
   equipment: string | null;
   libraryConfidence: number | null;
 };
+
+export function getAllExerciseNames(db: DrizzleDB): string[] {
+  return db.select({ name: exercises.name }).from(exercises).orderBy(asc(exercises.name)).all().map(r => r.name);
+}
 
 export function getExercisesLibraryData(db: DrizzleDB, names: string[]): ExerciseLibraryRow[] {
   if (names.length === 0) return [];
