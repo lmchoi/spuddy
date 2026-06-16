@@ -66,7 +66,7 @@ function RootLayoutNav() {
     navigationIntegration.registerNavigationContainer(ref);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => setupNotificationResponseListener(() => router.push('/log-session')), [router.push]);
+  useEffect(() => setupNotificationResponseListener(() => router.push('/log-session')), [router]);
 
   return (
     <ThemeProvider value={WarmDarkTheme}>
