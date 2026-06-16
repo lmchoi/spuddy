@@ -30,6 +30,7 @@ import {
   getActiveTarget,
   buildSavePayload,
   addExtraSet,
+  addExercise,
   totalSetCount,
   sessionProgress,
   resolvePostSessionAction,
@@ -437,6 +438,52 @@ function NoteSheet({
   );
 }
 
+// ─── AddExerciseSheet ─────────────────────────────────────────────────────────
+
+function AddExerciseSheet({
+  onAdd,
+  onCancel,
+}: {
+  onAdd: (name: string) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState('');
+  const trimmed = name.trim();
+  return (
+    <KeyboardAvoidingView
+      style={styles.noteOverlay}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <Pressable
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        onPress={onCancel}
+      />
+      <Pressable style={styles.noteSheet} onPress={() => {}}>
+        <View style={styles.noteSheetHandle} />
+        <View style={styles.noteSheetHeader}>
+          <Pressable onPress={onCancel}>
+            <Text style={styles.noteSheetCancel}>Cancel</Text>
+          </Pressable>
+          <Text style={styles.noteSheetTitle}>Add exercise</Text>
+          <Pressable onPress={() => trimmed && onAdd(trimmed)} disabled={!trimmed}>
+            <Text style={[styles.addExerciseAddBtn, !trimmed && styles.addExerciseAddBtnDisabled]}>Add</Text>
+          </Pressable>
+        </View>
+        <TextInput
+          style={styles.addExerciseNameInput}
+          value={name}
+          onChangeText={setName}
+          placeholder="Exercise name"
+          placeholderTextColor={C.muted}
+          autoFocus
+          returnKeyType="done"
+          onSubmitEditing={() => trimmed && onAdd(trimmed)}
+        />
+      </Pressable>
+    </KeyboardAvoidingView>
+  );
+}
+
 // ─── BottomAction ─────────────────────────────────────────────────────────────
 
 function BottomAction({
@@ -525,6 +572,7 @@ export default function LogSession() {
     { status: 'loading' }
   );
   const [noteSheetOpen, setNoteSheetOpen] = useState(false);
+  const [addExerciseSheetOpen, setAddExerciseSheetOpen] = useState(false);
   useEffect(() => {
     async function load() {
       try {
@@ -620,6 +668,17 @@ export default function LogSession() {
     }
     setState({ ...state, notes });
     setNoteSheetOpen(false);
+  }, [state]);
+
+  const handleAddExercise = useCallback((name: string) => {
+    if (state.status !== 'ready') return;
+    const { session, day, key } = state;
+    const { session: newSession, day: newDay } = addExercise(session, day, name);
+    const newIdx = newDay.exercises.length - 1;
+    const jumped = jumpToExercise(newSession, newIdx);
+    saveDraft(key, jumped);
+    setState({ ...state, session: jumped, day: newDay, input: { reps: 10, weight: 0 } });
+    setAddExerciseSheetOpen(false);
   }, [state]);
 
   const handleFinish = useCallback(async () => {
@@ -723,8 +782,16 @@ export default function LogSession() {
         </Pressable>
       </View>
 
-      <View pointerEvents={noteSheetOpen ? 'none' : 'auto'}>
+      <View pointerEvents={noteSheetOpen || addExerciseSheetOpen ? 'none' : 'auto'}>
         <ExerciseStrip day={day} sessionState={session} onSelect={handleJump} />
+        <View style={styles.addExerciseRow}>
+          <Pressable
+            style={({ pressed }) => [styles.addExercisePill, pressed && styles.addExercisePillPressed]}
+            onPress={() => setAddExerciseSheetOpen(true)}
+          >
+            <Text style={styles.addExercisePillText}>+ Add exercise</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -764,6 +831,13 @@ export default function LogSession() {
           initialText={currentNote ?? ''}
           onDone={handleSaveNote}
           onCancel={() => setNoteSheetOpen(false)}
+        />
+      )}
+
+      {addExerciseSheetOpen && (
+        <AddExerciseSheet
+          onAdd={handleAddExercise}
+          onCancel={() => setAddExerciseSheetOpen(false)}
         />
       )}
     </KeyboardAvoidingView>
