@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   AppState,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -43,7 +44,7 @@ import { scheduleRestExpiredNotification, cancelRestExpiredNotification, setupNo
 import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
-import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+import { getAllExerciseNames, getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 import * as Sentry from '@sentry/react-native';
 
 const HOME_ROUTE = '/(tabs)/progress' as const; // no dedicated home screen yet
@@ -450,7 +451,15 @@ function AddExerciseSheet({
   onCancel: () => void;
 }) {
   const [name, setName] = useState('');
+  const [history, setHistory] = useState<string[]>([]);
   const trimmed = name.trim();
+
+  useEffect(() => {
+    getDB().then(db => {
+      setHistory(getAllExerciseNames(db));
+    }).catch(() => {});
+  }, []);
+
   return (
     <KeyboardAvoidingView
       style={styles.noteOverlay}
@@ -460,7 +469,7 @@ function AddExerciseSheet({
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         onPress={onCancel}
       />
-      <Pressable style={styles.noteSheet} onPress={() => {}}>
+      <Pressable style={[styles.noteSheet, styles.addExerciseSheet]} onPress={() => {}}>
         <View style={styles.noteSheetHandle} />
         <View style={styles.noteSheetHeader}>
           <Pressable onPress={onCancel}>
@@ -481,6 +490,19 @@ function AddExerciseSheet({
           returnKeyType="done"
           onSubmitEditing={() => trimmed && onAdd(trimmed)}
         />
+        {history.length > 0 && (
+          <FlatList
+            data={history}
+            keyExtractor={item => item}
+            style={styles.addExerciseHistoryList}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => (
+              <Pressable style={styles.addExerciseHistoryRow} onPress={() => onAdd(item)}>
+                <Text style={styles.addExerciseHistoryRowText}>{item}</Text>
+              </Pressable>
+            )}
+          />
+        )}
       </Pressable>
     </KeyboardAvoidingView>
   );

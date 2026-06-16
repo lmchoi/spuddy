@@ -6,7 +6,7 @@ import { saveSession } from '@/src/storage';
 import { C } from '@/components/spuddy/palette';
 import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import type { SessionState } from '@/src/domain/sessionLogger';
-import { getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
+import { getAllExerciseNames, getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 
 configure({ asyncUtilTimeout: 5000 });
 afterAll(() => resetToDefaults());
@@ -57,6 +57,7 @@ jest.mock('@/src/storage', () => ({
 }));
 
 jest.mock('@/src/exerciseStorage', () => ({
+  getAllExerciseNames: jest.fn().mockReturnValue([]),
   getExerciseNote: jest.fn().mockReturnValue(null),
   setExerciseNote: jest.fn(),
 }));
@@ -1303,5 +1304,27 @@ describe('add exercise mid-session', () => {
     await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly'); });
     await act(async () => { fireEvent.press(screen.getByText('Add')); });
     expect(saveDraft).toHaveBeenCalledTimes(1);
+  });
+
+  it('history rows appear in the sheet when history is non-empty', async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift', 'Pull-up']);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await waitFor(() => {
+      expect(screen.getByText('Deadlift')).toBeTruthy();
+      expect(screen.getByText('Pull-up')).toBeTruthy();
+    });
+  });
+
+  it('tapping a history row calls onAdd and closes the sheet', async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift']);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await waitFor(() => expect(screen.getByText('Deadlift')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('Deadlift')); });
+    expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
+    expect(screen.getAllByText('Deadlift').length).toBeGreaterThan(0);
   });
 });
