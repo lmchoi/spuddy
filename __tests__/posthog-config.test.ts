@@ -1,3 +1,5 @@
+import PostHog from 'posthog-react-native';
+
 jest.mock('posthog-react-native', () => {
   const instance = { debug: jest.fn() };
   return jest.fn(() => instance);
@@ -15,10 +17,9 @@ jest.mock('expo-constants', () => ({
   },
 }));
 
-import PostHog from 'posthog-react-native';
-
 describe('posthog config', () => {
   beforeAll(() => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../src/config/posthog');
   });
 
@@ -43,7 +44,9 @@ describe('posthog config', () => {
       default: { expoConfig: { extra: {} } },
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Ph = require('posthog-react-native');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('../src/config/posthog');
 
     expect(Ph).toHaveBeenCalledWith(

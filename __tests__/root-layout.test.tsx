@@ -1,6 +1,8 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import * as Sentry from '@sentry/react-native';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthog } from '../src/config/posthog';
 import RootLayout, { unstable_settings } from '../app/_layout';
 
 jest.mock('@sentry/react-native', () => ({
@@ -88,11 +90,9 @@ describe('unstable_settings', () => {
 
 describe('PostHog provider', () => {
   it('renders PostHogProvider with the posthog client', () => {
-    const { PostHogProvider } = require('posthog-react-native') as { PostHogProvider: jest.Mock };
-    const mockPosthog = require('../src/config/posthog').posthog;
     render(<RootLayout />);
-    expect(PostHogProvider).toHaveBeenCalledWith(
-      expect.objectContaining({ client: mockPosthog, autocapture: true }),
+    expect(PostHogProvider as jest.Mock).toHaveBeenCalledWith(
+      expect.objectContaining({ client: posthog, autocapture: true }),
       undefined,
     );
   });
