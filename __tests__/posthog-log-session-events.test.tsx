@@ -3,12 +3,8 @@ import LogSession from '../app/log-session';
 import { getProgramDay, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
 import { saveSession } from '@/src/storage';
 import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
-
-jest.mock('@/src/config/posthog', () => ({
-  posthog: { capture: jest.fn(), screen: jest.fn(), debug: jest.fn() },
-}));
-
 import { posthog } from '@/src/config/posthog';
+import { getAllExerciseNames } from '@/src/exerciseStorage';
 
 const mockCapture = posthog.capture as jest.Mock;
 
@@ -187,7 +183,6 @@ describe('exercise_added event', () => {
   });
 
   it('fires with source=history when an existing exercise is picked', async () => {
-    const { getAllExerciseNames } = require('@/src/exerciseStorage');
     (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift']);
 
     render(<LogSession />);

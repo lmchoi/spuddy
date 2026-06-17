@@ -1,5 +1,7 @@
 import PostHog from 'posthog-react-native';
 
+jest.unmock('../src/config/posthog');
+
 jest.mock('posthog-react-native', () => {
   const instance = { debug: jest.fn() };
   return jest.fn(() => instance);
