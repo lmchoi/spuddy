@@ -1,3 +1,7 @@
+jest.mock('@/src/config/posthog', () => ({
+  posthog: { capture: jest.fn(), screen: jest.fn(), debug: jest.fn() },
+}));
+
 import { act, render, screen, fireEvent } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import StrongImportScreen from '../app/strong-import';
