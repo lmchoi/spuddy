@@ -60,20 +60,26 @@ Improve the "Add exercise" sheet in log-session so the user can pick from exerci
 
 ---
 
-### Stage 3 — Full library search
+### Stage 3 — Full library search ✓ shipped
 
 **What:** Extend the search to also match against the bundled `exercises.json` (873 exercises). User's history results surface first; library-only results appear below under a "From library" section header. Lets users add an exercise they've never done before without knowing the exact name.
 
 **Out of scope:** filtering by category/muscle group, exercise metadata on rows.
 
+**Deviations from plan:**
+- Library results capped at 20 per query (UX: avoids overwhelming the user; also necessary for FlatList test rendering which only renders `initialNumToRender` items by default).
+- `FlatList` uses `initialNumToRender={30}` to ensure Create row renders in tests when library results are present.
+- `libraryId` is not passed through `onAdd` in this stage — deferred to `eager-exercise-persist` plan which widens the interface properly.
+
 **Commits:**
 
-1. `feat(domain): searchExercisePicker — merge history + library results`
+1. `feat(domain): searchExercisePicker — merge history + library results` ✓
    - Pure function `searchExercisePicker(historyNames: string[], query: string): { history: string[]; library: string[] }`
    - Deduplicates: library entries already in history are excluded from the library section
+   - Library results capped at 20, sorted alphabetically
    - Test: history-only match; library-only match; deduplication when name appears in both; empty query returns full history + empty library
 
-2. `feat(ui): add-exercise sheet searches full library`
+2. `feat(ui): add-exercise sheet searches full library` ✓
    - Two sections in the list: history results (no header when query is empty), "From library" section header + library results (only visible when query is non-empty)
    - "Create '[name]'" row still appears at bottom when query is non-empty
 
