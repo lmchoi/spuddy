@@ -3,7 +3,7 @@
 ## Flow structure
 
 ```yaml
-appId: com.mchoi.spuddy
+appId: ${APP_ID}
 ---
 - launchApp
 - tapOn: "Button"
@@ -11,6 +11,8 @@ appId: com.mchoi.spuddy
 ```
 
 `appId` + `---` separator, then a flat list of commands. Subflows omit `appId`.
+
+Pass the package name at runtime: `maestro test --env APP_ID=com.mchoi.spuddy e2e/smoke.yaml`. See `app.config.js` for the full variant map (production, prerelease, preview, development).
 
 ## Commands used in this project
 
