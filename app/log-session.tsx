@@ -47,6 +47,7 @@ import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import { getAllExerciseNames, getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
 import { searchExercisePicker } from '@/src/domain/searchExercisePicker';
 import * as Sentry from '@sentry/react-native';
+import { posthog } from '@/src/config/posthog';
 
 const HOME_ROUTE = '/(tabs)/progress' as const; // no dedicated home screen yet
 
@@ -655,6 +656,7 @@ export default function LogSession() {
           }
         }
         setState({ status: 'ready', day, session, input, resolvedProgramId: resolvedId, resolvedDayIndex, totalDays, key, notes });
+        posthog.capture('session_started', { exercise_count: day.exercises.length, source: 'program' });
         setupNotificationChannel();
       } catch {
         setState({ status: 'empty' });
@@ -746,14 +748,17 @@ export default function LogSession() {
       Alert.alert('Save failed', 'Could not save your session. Please try again.');
       return;
     }
+    const totalSets = payload.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+    posthog.capture('session_completed', {
+      exercise_count: day.exercises.length,
+      total_sets: totalSets,
+      duration_ms: Date.now() - session.startedAt,
+    });
     Sentry.addBreadcrumb({
       category: 'session',
       message: 'Session logged',
       level: 'info',
-      data: {
-        exercises: payload.exercises.length,
-        sets: payload.exercises.reduce((sum, ex) => sum + ex.sets.length, 0),
-      },
+      data: { exercises: payload.exercises.length, sets: totalSets },
     });
     await clearDraft(key).catch(() => {});
     if (totalDays > 0) {

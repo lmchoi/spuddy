@@ -1,3 +1,7 @@
+jest.mock('@/src/config/posthog', () => ({
+  posthog: { capture: jest.fn(), screen: jest.fn(), debug: jest.fn() },
+}));
+
 import { Alert, AppState, Platform } from 'react-native';
 import { act, render, screen, fireEvent, waitFor, configure, resetToDefaults } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
