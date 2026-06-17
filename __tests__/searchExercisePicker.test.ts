@@ -35,4 +35,10 @@ describe('searchExercisePicker', () => {
     const sorted = [...result.library].sort((a, b) => a.localeCompare(b));
     expect(result.library).toEqual(sorted);
   });
+
+  it('library results are capped at 20', () => {
+    // 'e' matches far more than 20 library exercises
+    const result = searchExercisePicker([], 'e');
+    expect(result.library.length).toBeLessThanOrEqual(20);
+  });
 });
