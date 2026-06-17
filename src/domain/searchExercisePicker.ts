@@ -2,15 +2,19 @@ import rawLibrary from '../data/exercises.json';
 
 interface LibraryEntry {
   name: string;
+  id: string;
 }
 
-const libraryNames: string[] = (rawLibrary as LibraryEntry[]).map(e => e.name);
+const libraryEntries = (rawLibrary as LibraryEntry[]).map(e => ({
+  name: e.name,
+  libraryId: e.id,
+}));
 
 const MAX_LIBRARY_RESULTS = 20;
 
 export interface ExercisePickerResults {
   history: string[];
-  library: string[];
+  library: { name: string; libraryId: string }[];
 }
 
 export function searchExercisePicker(
@@ -26,9 +30,9 @@ export function searchExercisePicker(
 
   const history = historyNames.filter(n => n.toLowerCase().includes(lower));
 
-  const library = libraryNames
-    .filter(n => !historySet.has(n.toLowerCase()) && n.toLowerCase().includes(lower))
-    .sort((a, b) => a.localeCompare(b))
+  const library = libraryEntries
+    .filter(e => !historySet.has(e.name.toLowerCase()) && e.name.toLowerCase().includes(lower))
+    .sort((a, b) => a.name.localeCompare(b.name))
     .slice(0, MAX_LIBRARY_RESULTS);
 
   return { history, library };

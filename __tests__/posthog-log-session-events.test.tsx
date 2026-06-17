@@ -45,6 +45,7 @@ jest.mock('@/src/programStorage', () => ({
 
 jest.mock('@/src/storage', () => ({
   saveSession: jest.fn().mockResolvedValue(undefined),
+  resolveOrCreateExercise: jest.fn().mockReturnValue(1),
 }));
 
 jest.mock('@/src/exerciseStorage', () => ({
@@ -76,6 +77,7 @@ beforeEach(() => {
   (loadDraft as jest.Mock).mockResolvedValue(null);
   (saveDraft as jest.Mock).mockResolvedValue(undefined);
   (clearDraft as jest.Mock).mockResolvedValue(undefined);
+  (getAllExerciseNames as jest.Mock).mockReturnValue([]);
 });
 
 // ─── session_started ──────────────────────────────────────────────────────────
@@ -182,7 +184,7 @@ describe('exercise_added event', () => {
     expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'custom', exercise: 'Cable Fly' });
   });
 
-  it('fires with source=history when an existing exercise is picked', async () => {
+  it('fires with source=custom when an existing exercise is picked from history', async () => {
     (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift']);
 
     render(<LogSession />);
@@ -193,6 +195,19 @@ describe('exercise_added event', () => {
     await waitFor(() => expect(screen.getByText('Deadlift')).toBeTruthy());
     await act(async () => { fireEvent.press(screen.getByText('Deadlift')); });
 
-    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'history', exercise: 'Deadlift' });
+    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'custom', exercise: 'Deadlift' });
+  });
+
+  it('fires with source=library when a library row is tapped', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    mockCapture.mockClear();
+
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit'); });
+    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('3/4 Sit-Up')); });
+
+    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'library', exercise: '3/4 Sit-Up' });
   });
 });

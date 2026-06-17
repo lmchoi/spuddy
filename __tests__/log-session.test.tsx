@@ -2,7 +2,7 @@ import { Alert, AppState, Platform } from 'react-native';
 import { act, render, screen, fireEvent, waitFor, configure, resetToDefaults } from '@testing-library/react-native';
 import LogSession from '../app/log-session';
 import { getProgramDay, addProgramDay, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
-import { saveSession } from '@/src/storage';
+import { saveSession, resolveOrCreateExercise } from '@/src/storage';
 import { C } from '@/components/spuddy/palette';
 import { loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import type { SessionState } from '@/src/domain/sessionLogger';
@@ -54,6 +54,7 @@ jest.mock('@/src/programStorage', () => ({
 
 jest.mock('@/src/storage', () => ({
   saveSession: jest.fn().mockResolvedValue(undefined),
+  resolveOrCreateExercise: jest.fn().mockReturnValue(1),
 }));
 
 jest.mock('@/src/exerciseStorage', () => ({
@@ -97,6 +98,7 @@ beforeEach(() => {
   (loadDraft as jest.Mock).mockResolvedValue(null);
   (saveDraft as jest.Mock).mockResolvedValue(undefined);
   (clearDraft as jest.Mock).mockResolvedValue(undefined);
+  (getAllExerciseNames as jest.Mock).mockReturnValue([]);
   jest.spyOn(Alert, 'prompt').mockImplementation(() => {});
 });
 
@@ -1420,29 +1422,64 @@ describe('add exercise mid-session', () => {
     expect(screen.getByText('3/4 Sit-Up')).toBeTruthy();
   });
 
-  it('tapping a library row adds the exercise and closes the sheet', async () => {
-    render(<LogSession />);
-    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
-    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
-    await act(async () => {
-      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+    it('tapping a library row adds the exercise and closes the sheet', async () => {
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+      await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+      await act(async () => {
+        fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+      });
+      await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+      await act(async () => { fireEvent.press(screen.getByText('3/4 Sit-Up')); });
+      expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
+      expect(screen.getAllByText('3/4 Sit-Up').length).toBeGreaterThan(0);
     });
-    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
-    await act(async () => { fireEvent.press(screen.getByText('3/4 Sit-Up')); });
-    expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
-    expect(screen.getAllByText('3/4 Sit-Up').length).toBeGreaterThan(0);
-  });
 
-  it('library results excluded from history deduplication appear only in library section', async () => {
-    (getAllExerciseNames as jest.Mock).mockReturnValue(['3/4 Sit-Up']);
-    render(<LogSession />);
-    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
-    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
-    await act(async () => {
-      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+    it('library results excluded from history deduplication appear only in library section', async () => {
+      (getAllExerciseNames as jest.Mock).mockReturnValue(['3/4 Sit-Up']);
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+      await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+      await act(async () => {
+        fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+      });
+      await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+      // Appears exactly once (in history), not duplicated in library section
+      expect(screen.queryByText('From library')).toBeNull();
     });
-    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
-    // Appears exactly once (in history), not duplicated in library section
-    expect(screen.queryByText('From library')).toBeNull();
+
+    it('tapping a library row calls resolveOrCreateExercise with the correct libraryId', async () => {
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+      await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+      await act(async () => {
+        fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+      });
+      await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+      await act(async () => { fireEvent.press(screen.getByText('3/4 Sit-Up')); });
+      
+      expect(resolveOrCreateExercise).toHaveBeenCalledWith(expect.anything(), '3/4 Sit-Up', '3_4_Sit-Up');
+    });
+
+    it('tapping a history row calls resolveOrCreateExercise without a libraryId', async () => {
+      (getAllExerciseNames as jest.Mock).mockReturnValue(['Bench Press']);
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+      await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+      await act(async () => { fireEvent.press(screen.getByText('Bench Press')); });
+      
+      expect(resolveOrCreateExercise).toHaveBeenCalledWith(expect.anything(), 'Bench Press', undefined);
+    });
+
+    it('tapping Create row calls resolveOrCreateExercise without a libraryId', async () => {
+      render(<LogSession />);
+      await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+      await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+      await act(async () => {
+        fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly');
+      });
+      await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
+      
+      expect(resolveOrCreateExercise).toHaveBeenCalledWith(expect.anything(), 'Cable Fly', undefined);
+    });
   });
-});
