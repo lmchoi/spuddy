@@ -57,6 +57,12 @@ Cover:
 
 If any hard-to-reverse decisions are made, propose an ADR in `docs/decisions/`. Check existing ADRs for the next number.
 
+**Observability check** — ask for each meaningful user action in the feature:
+- Does it warrant a PostHog event? (Is it something we'd want to query — e.g. "how often do users do X?")
+- Does it introduce a new error path worth a Sentry breadcrumb?
+
+If yes to either, add the event/breadcrumb as a step in the relevant commit in Phase 6. Name events in `snake_case`.
+
 Do not edit any files during this phase.
 
 ### Phase 6: Commit breakdown
