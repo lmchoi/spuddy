@@ -61,6 +61,8 @@ ALTER TABLE \`exercises\` ADD \`library_confidence\` integer;`,
     m0003: `ALTER TABLE \`sessions\` ADD \`source\` text DEFAULT 'manual' NOT NULL;--> statement-breakpoint
 ALTER TABLE \`sessions\` ADD \`source_id\` text;--> statement-breakpoint
 CREATE UNIQUE INDEX \`idx_sessions_source_id\` ON \`sessions\` (\`source\`,\`source_id\`);`,
-    m0004: `ALTER TABLE \`programs\` ADD \`created_at\` integer DEFAULT (unixepoch()) NOT NULL;`,
+    m0004: `ALTER TABLE \`programs\` ADD \`created_at\` integer DEFAULT 0 NOT NULL;
+--> statement-breakpoint
+UPDATE \`programs\` SET \`created_at\` = unixepoch() WHERE \`created_at\` = 0;`,
   },
 };
