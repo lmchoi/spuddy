@@ -41,9 +41,12 @@ brew install maestro
 
 **Run the smoke flow** (requires a running dev build on a connected device or emulator):
 ```
-npm start          # terminal 1 — start Expo dev server
-maestro test e2e/smoke.yaml   # terminal 2
+npm start                                                                        # terminal 1 — start Expo dev server
+maestro test --env APP_ID=com.mchoi.spuddy e2e/smoke.yaml                       # terminal 2 — production variant (Expo Go)
+maestro test --env APP_ID=com.mchoi.spuddy.dev e2e/smoke.yaml                   # terminal 2 — development client
 ```
+
+`APP_ID` must match the package name of the installed build — see `app.config.js` for the full variant list.
 
 ## Docs
 
