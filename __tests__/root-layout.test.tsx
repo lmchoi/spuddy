@@ -42,6 +42,10 @@ jest.mock('expo', () => ({
 
 jest.mock('../src/global.css', () => ({}));
 jest.mock('react-native-reanimated', () => ({}));
+jest.mock('posthog-react-native', () => ({
+  PostHogProvider: jest.fn(({ children }: any) => children),
+}));
+jest.mock('../src/config/posthog', () => ({ posthog: {} }));
 
 beforeEach(() => {
   capturedScreens.length = 0;
@@ -79,6 +83,18 @@ describe('Sentry initialisation', () => {
 describe('unstable_settings', () => {
   it('sets initialRouteName to index so the first-run redirect in app/index.tsx runs on boot', () => {
     expect(unstable_settings.initialRouteName).toBe('index');
+  });
+});
+
+describe('PostHog provider', () => {
+  it('renders PostHogProvider with the posthog client', () => {
+    const { PostHogProvider } = require('posthog-react-native') as { PostHogProvider: jest.Mock };
+    const mockPosthog = require('../src/config/posthog').posthog;
+    render(<RootLayout />);
+    expect(PostHogProvider).toHaveBeenCalledWith(
+      expect.objectContaining({ client: mockPosthog, autocapture: true }),
+      undefined,
+    );
   });
 });
 

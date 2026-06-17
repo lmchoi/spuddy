@@ -8,6 +8,8 @@ import { C } from '@/components/spuddy/palette';
 import * as Sentry from '@sentry/react-native';
 import { isRunningInExpoGo } from 'expo';
 import { setupNotificationResponseListener } from '@/src/notifications';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthog } from '@/src/config/posthog';
 
 const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: !isRunningInExpoGo(),
@@ -69,6 +71,7 @@ function RootLayoutNav() {
   useEffect(() => setupNotificationResponseListener(() => router.push('/log-session')), [router]);
 
   return (
+    <PostHogProvider client={posthog} autocapture>
     <ThemeProvider value={WarmDarkTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -80,5 +83,6 @@ function RootLayoutNav() {
         <Stack.Screen name="select-day" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
+    </PostHogProvider>
   );
 }
