@@ -89,4 +89,4 @@ jobs:
           arch: x86_64
           script: |
             adb install apk/app-release.apk
-            maestro test e2e/smoke.yaml e2e/notes-paste.yaml e2e/select-day.yaml
+            maestro test --env APP_ID=com.mchoi.spuddy.prerelease e2e/smoke.yaml e2e/notes-paste.yaml e2e/select-day.yaml
