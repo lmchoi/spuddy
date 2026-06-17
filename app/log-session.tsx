@@ -450,7 +450,7 @@ function AddExerciseSheet({
   onAdd,
   onCancel,
 }: {
-  onAdd: (name: string) => void;
+  onAdd: (name: string, source: 'history' | 'custom') => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState('');
@@ -508,7 +508,7 @@ function AddExerciseSheet({
           placeholderTextColor={C.muted}
           autoFocus
           returnKeyType="done"
-          onSubmitEditing={() => trimmed && onAdd(trimmed)}
+          onSubmitEditing={() => trimmed && onAdd(trimmed, 'custom')}
         />
         {listData.length > 0 && (
           <FlatList
@@ -524,7 +524,7 @@ function AddExerciseSheet({
                 );
               }
               return (
-                <Pressable style={styles.addExerciseHistoryRow} onPress={() => onAdd(item.name)}>
+                <Pressable style={styles.addExerciseHistoryRow} onPress={() => onAdd(item.name, item.kind === 'create' ? 'custom' : 'history')}>
                   <Text style={[styles.addExerciseHistoryRowText, item.kind === 'create' && styles.addExerciseCreateRowText]}>
                     {item.kind === 'create' ? `Create '${item.name}'` : item.name}
                   </Text>
@@ -734,8 +734,9 @@ export default function LogSession() {
     setNoteSheetOpen(false);
   }, [state]);
 
-  const handleAddExercise = useCallback((name: string) => {
+  const handleAddExercise = useCallback((name: string, source: 'history' | 'custom') => {
     if (state.status !== 'ready') return;
+    posthog.capture('exercise_added', { source, exercise: name });
     const { session, day, key } = state;
     const { session: newSession, day: newDay } = addExercise(session, day, name);
     const newIdx = newDay.exercises.length - 1;
