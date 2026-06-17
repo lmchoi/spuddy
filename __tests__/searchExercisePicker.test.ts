@@ -20,19 +20,19 @@ describe('searchExercisePicker', () => {
     // '3/4 Sit-Up' is in the library but not in history
     const result = searchExercisePicker([], '3/4 sit');
     expect(result.history).toEqual([]);
-    expect(result.library).toContain('3/4 Sit-Up');
+    expect(result.library).toContainEqual(expect.objectContaining({ name: '3/4 Sit-Up' }));
   });
 
   it('deduplicates: name in both history and library only appears in history', () => {
     // 'Bench Press' is in the library — confirm it is excluded from library section
     const result = searchExercisePicker(['Bench Press'], 'bench');
     expect(result.history).toContain('Bench Press');
-    expect(result.library).not.toContain('Bench Press');
+    expect(result.library).not.toContainEqual(expect.objectContaining({ name: 'Bench Press' }));
   });
 
   it('library results are alphabetically ordered', () => {
     const result = searchExercisePicker([], 'squat');
-    const sorted = [...result.library].sort((a, b) => a.localeCompare(b));
+    const sorted = [...result.library].sort((a, b) => a.name.localeCompare(b.name));
     expect(result.library).toEqual(sorted);
   });
 
@@ -40,5 +40,14 @@ describe('searchExercisePicker', () => {
     // 'e' matches far more than 20 library exercises
     const result = searchExercisePicker([], 'e');
     expect(result.library.length).toBeLessThanOrEqual(20);
+  });
+
+  it('library results include correct libraryId from exercises.json', () => {
+    // '3/4 Sit-Up' has id '3_4_Sit-Up' in exercises.json
+    const result = searchExercisePicker([], '3/4 sit');
+    expect(result.library).toContainEqual({
+      name: '3/4 Sit-Up',
+      libraryId: '3_4_Sit-Up',
+    });
   });
 });

@@ -20,7 +20,7 @@ import { C } from '@/components/spuddy/palette';
 import { getDB } from '@/src/db';
 import { addProgramDay, getProgramDay, getProgramTotalDays, getPrograms, updateActiveDayIndex } from '@/src/programStorage';
 import { nextActiveDayIndex } from '@/src/domain/programDay';
-import { saveSession } from '@/src/storage';
+import { saveSession, resolveOrCreateExercise } from '@/src/storage';
 import {
   initSession,
   logSet,
@@ -450,7 +450,7 @@ function AddExerciseSheet({
   onAdd,
   onCancel,
 }: {
-  onAdd: (name: string, source: 'history' | 'custom') => void;
+  onAdd: (name: string, libraryId?: string) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState('');
@@ -466,19 +466,19 @@ function AddExerciseSheet({
   const { history: filteredHistory, library } = searchExercisePicker(history, trimmed);
   const hasExactMatch =
     filteredHistory.some(n => n.toLowerCase() === trimmed.toLowerCase()) ||
-    library.some(n => n.toLowerCase() === trimmed.toLowerCase());
+    library.some(n => n.name.toLowerCase() === trimmed.toLowerCase());
   const showCreate = trimmed.length > 0 && !hasExactMatch;
 
   type ListItem =
     | { kind: 'history'; name: string }
     | { kind: 'section-header'; label: string }
-    | { kind: 'library'; name: string }
+    | { kind: 'library'; name: string; libraryId?: string }
     | { kind: 'create'; name: string };
 
   const listData: ListItem[] = [
     ...filteredHistory.map(n => ({ kind: 'history' as const, name: n })),
     ...(library.length > 0 ? [{ kind: 'section-header' as const, label: 'From library' }] : []),
-    ...library.map(n => ({ kind: 'library' as const, name: n })),
+    ...library.map(n => ({ kind: "library" as const, name: n.name, libraryId: n.libraryId })),
     ...(showCreate ? [{ kind: 'create' as const, name: trimmed }] : []),
   ];
 
@@ -508,12 +508,16 @@ function AddExerciseSheet({
           placeholderTextColor={C.muted}
           autoFocus
           returnKeyType="done"
-          onSubmitEditing={() => trimmed && onAdd(trimmed, 'custom')}
+          onSubmitEditing={() => trimmed && onAdd(trimmed)}
         />
         {listData.length > 0 && (
           <FlatList
             data={listData}
-            keyExtractor={item => item.kind + ':' + (item.kind === 'section-header' ? item.label : item.name)}
+            keyExtractor={item => {
+              if (item.kind === 'section-header') return 'section-header:' + item.label;
+              if (item.kind === 'library') return 'library:' + (item.libraryId ?? item.name);
+              return item.kind + ':' + item.name;
+            }}
             style={styles.addExerciseHistoryList}
             initialNumToRender={30}
             keyboardShouldPersistTaps="handled"
@@ -524,7 +528,16 @@ function AddExerciseSheet({
                 );
               }
               return (
-                <Pressable style={styles.addExerciseHistoryRow} onPress={() => onAdd(item.name, item.kind === 'create' ? 'custom' : 'history')}>
+                <Pressable
+                  style={styles.addExerciseHistoryRow}
+                  onPress={() => {
+                    if (item.kind === 'library') {
+                      onAdd(item.name, item.libraryId);
+                    } else {
+                      onAdd(item.name);
+                    }
+                  }}
+                >
                   <Text style={[styles.addExerciseHistoryRowText, item.kind === 'create' && styles.addExerciseCreateRowText]}>
                     {item.kind === 'create' ? `Create '${item.name}'` : item.name}
                   </Text>
@@ -734,11 +747,19 @@ export default function LogSession() {
     setNoteSheetOpen(false);
   }, [state]);
 
-  const handleAddExercise = useCallback((name: string, source: 'history' | 'custom') => {
+  const handleAddExercise = useCallback((name: string, libraryId?: string) => {
     if (state.status !== 'ready') return;
-    posthog.capture('exercise_added', { source, exercise: name });
+    posthog.capture('exercise_added', { source: libraryId ? 'library' : 'custom', exercise: name });
     const { session, day, key } = state;
     const { session: newSession, day: newDay } = addExercise(session, day, name);
+    
+    // Eagerly persist the exercise (fire-and-forget)
+    getDB().then(db => {
+      resolveOrCreateExercise(db, name, libraryId);
+    }).catch(err => {
+      console.log('Failed to eagerly persist exercise:', err);
+    });
+
     const newIdx = newDay.exercises.length - 1;
     const jumped = jumpToExercise(newSession, newIdx);
     saveDraft(key, jumped);
