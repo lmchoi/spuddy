@@ -1,4 +1,4 @@
-appId: com.mchoi.spuddy
+appId: ${APP_ID}
 ---
 - launchApp
 - waitForAnimationToEnd:
