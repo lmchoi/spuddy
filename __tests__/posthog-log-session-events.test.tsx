@@ -170,3 +170,34 @@ describe('rest_timer_started event', () => {
     }));
   });
 });
+
+// ─── exercise_added ───────────────────────────────────────────────────────────
+
+describe('exercise_added event', () => {
+  it('fires with source=custom when a new name is created', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    mockCapture.mockClear();
+
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly'); });
+    await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
+
+    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'custom', exercise: 'Cable Fly' });
+  });
+
+  it('fires with source=history when an existing exercise is picked', async () => {
+    const { getAllExerciseNames } = require('@/src/exerciseStorage');
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift']);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    mockCapture.mockClear();
+
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await waitFor(() => expect(screen.getByText('Deadlift')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('Deadlift')); });
+
+    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'history', exercise: 'Deadlift' });
+  });
+});
