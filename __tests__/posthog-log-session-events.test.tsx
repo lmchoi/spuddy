@@ -154,3 +154,19 @@ describe('set_completed event', () => {
     }));
   });
 });
+
+// ─── rest_timer_started ───────────────────────────────────────────────────────
+
+describe('rest_timer_started event', () => {
+  it('fires when a rest timer starts after logging a set', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    mockCapture.mockClear();
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    expect(mockCapture).toHaveBeenCalledWith('rest_timer_started', expect.objectContaining({
+      duration_ms: expect.any(Number),
+    }));
+  });
+});

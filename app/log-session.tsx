@@ -178,6 +178,7 @@ function RestTimer({ duration, onSkip }: { duration: number; onSkip: () => void 
 
   useEffect(() => {
     scheduleRestExpiredNotification(effectiveDuration);
+    posthog.capture('rest_timer_started', { duration_ms: effectiveDuration * 1000 });
     Sentry.addBreadcrumb({ category: 'rest-timer', message: 'Rest timer started', level: 'info', data: { duration_s: effectiveDuration } });
     return () => { cancelRestExpiredNotification(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps

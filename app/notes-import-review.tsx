@@ -15,6 +15,7 @@ import { importFromNotes } from '@/src/notesImport';
 import type { ParsedNotes } from '@/src/notesParser';
 import { formatExerciseMeta } from '@/src/domain/notesReview';
 import * as Sentry from '@sentry/react-native';
+import { posthog } from '@/src/config/posthog';
 
 export default function NotesImportReviewScreen() {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function NotesImportReviewScreen() {
       const db = await getDB();
       const result = await importFromNotes(db, parsed);
       if (result.success) {
+        posthog.capture('import_completed', { source: 'notes', imported_count: dayCount });
         Sentry.addBreadcrumb({ category: 'import', message: 'Notes import confirmed', level: 'info', data: { programs: result.programsCreated } });
         router.replace('/(tabs)/settings');
       } else {

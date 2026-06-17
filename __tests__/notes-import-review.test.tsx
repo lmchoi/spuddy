@@ -1,3 +1,7 @@
+jest.mock('@/src/config/posthog', () => ({
+  posthog: { capture: jest.fn(), screen: jest.fn(), debug: jest.fn() },
+}));
+
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 import NotesImportReviewScreen from '../app/notes-import-review';
