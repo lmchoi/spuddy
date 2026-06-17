@@ -34,7 +34,7 @@ jest.mock('expo-router', () => {
     ThemeProvider: ({ children }: any) => <>{children}</>,
     DarkTheme: { colors: { background: '#000' } },
     useRouter: () => ({ push: jest.fn() }),
-    useNavigationContainerRef: () => ({ current: null }),
+    useNavigationContainerRef: () => ({ current: null, addListener: jest.fn(() => () => {}), getCurrentRoute: jest.fn() }),
   };
 });
 

@@ -10,6 +10,7 @@ import { isRunningInExpoGo } from 'expo';
 import { setupNotificationResponseListener } from '@/src/notifications';
 import { PostHogProvider } from 'posthog-react-native';
 import { posthog } from '@/src/config/posthog';
+import { trackScreen } from '@/src/analytics/screenTracking';
 
 const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: !isRunningInExpoGo(),
@@ -66,6 +67,12 @@ function RootLayoutNav() {
   const ref = useNavigationContainerRef();
   useEffect(() => {
     navigationIntegration.registerNavigationContainer(ref);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    return ref.addListener('state', () => {
+      trackScreen((ref.getCurrentRoute() as { name?: string } | undefined)?.name);
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => setupNotificationResponseListener(() => router.push('/log-session')), [router]);
