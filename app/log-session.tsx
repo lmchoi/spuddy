@@ -667,8 +667,17 @@ export default function LogSession() {
 
   const handleLogSet = useCallback((reps: number, weight: number) => {
     if (state.status !== 'ready') return;
-    const { session, key } = state;
+    const { session, key, day } = state;
     const exIdx = session.currentExerciseIdx;
+    const target = getActiveTarget(session, day, exIdx);
+    posthog.capture('set_completed', {
+      exercise: day.exercises[exIdx].name,
+      set_index: session.loggedSets[exIdx].length,
+      default_reps: target.reps,
+      entered_reps: reps,
+      default_weight: target.weight ?? 0,
+      entered_weight: weight,
+    });
     const next = logSet(session, exIdx, reps, weight);
     saveDraft(key, next);
     setState({ ...state, session: next, input: { reps, weight } });

@@ -118,3 +118,39 @@ describe('session_completed event', () => {
     }));
   });
 });
+
+// ─── set_completed ────────────────────────────────────────────────────────────
+
+describe('set_completed event', () => {
+  it('fires when a set is logged with default and entered values', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    mockCapture.mockClear();
+
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    expect(mockCapture).toHaveBeenCalledWith('set_completed', {
+      exercise: 'Squat',
+      set_index: 0,
+      default_reps: 5,
+      entered_reps: 5,
+      default_weight: 100,
+      entered_weight: 100,
+    });
+  });
+
+  it('reflects user-entered reps in set_completed properties', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    mockCapture.mockClear();
+
+    const incReps = screen.getAllByText('+')[0];
+    await act(async () => { fireEvent.press(incReps); }); // 5 → 6
+    await act(async () => { fireEvent.press(screen.getByText(/Done/i)); });
+
+    expect(mockCapture).toHaveBeenCalledWith('set_completed', expect.objectContaining({
+      default_reps: 5,
+      entered_reps: 6,
+    }));
+  });
+});
