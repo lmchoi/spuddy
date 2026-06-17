@@ -7,7 +7,7 @@ import * as schema from './db/schema';
 import { exercises, sessions } from './db/schema';
 import { migrations } from './db/migrations';
 import type { Session, Target, WorkingSet } from './types';
-import { exactMatch } from './domain/exerciseLibrary';
+import { exactMatch, matchById } from './domain/exerciseLibrary';
 
 export type DrizzleDB = BaseSQLiteDatabase<'sync', any, typeof schema>;
 
@@ -60,10 +60,23 @@ export async function initDB(): Promise<DrizzleDB> {
   return db;
 }
 
-export function resolveOrCreateExercise(db: DrizzleDB, name: string): number {
+export function resolveOrCreateExercise(db: DrizzleDB, name: string, libraryId?: string): number {
   const existing = db.all<{ id: number }>(sql`SELECT id FROM exercises WHERE name = ${name}`);
   if (existing[0]) return existing[0].id;
-  const row = db.insert(exercises).values({ name }).returning({ id: exercises.id }).get()!;
+
+  const match = libraryId ? matchById(libraryId) : exactMatch(name);
+
+  const values: typeof exercises.$inferInsert = match
+    ? {
+        name,
+        libraryId: match.id,
+        muscleGroups: JSON.stringify(match.primaryMuscles),
+        equipment: match.equipment,
+        libraryConfidence: 100,
+      }
+    : { name };
+
+  const row = db.insert(exercises).values(values).returning({ id: exercises.id }).get()!;
   return row.id;
 }
 

@@ -18,8 +18,16 @@ const byName = new Map<string, LibraryExercise>(
   library.map(e => [e.name.toLowerCase(), e])
 );
 
+const byId = new Map<string, LibraryExercise>(
+  library.map(e => [e.id, e])
+);
+
 export function exactMatch(name: string): LibraryExercise | null {
   return byName.get(name.toLowerCase()) ?? null;
+}
+
+export function matchById(id: string): LibraryExercise | null {
+  return byId.get(id) ?? null;
 }
 
 export function renameLibraryEntry(

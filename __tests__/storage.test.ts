@@ -184,6 +184,38 @@ describe('SQLite storage', () => {
       const b = resolveOrCreateExercise(db, 'Deadlift');
       expect(a).not.toBe(b);
     });
+
+    it('new exercise with exact library name -> libraryId populated', () => {
+      const id = resolveOrCreateExercise(db, 'Barbell Squat');
+      const row = db.get<{ library_id: string, muscle_groups: string }>(sql`SELECT library_id, muscle_groups FROM exercises WHERE id = ${id}`);
+      expect(row?.library_id).toBe('Barbell_Squat');
+      expect(row?.muscle_groups).toBeDefined();
+      expect(JSON.parse(row!.muscle_groups)).toContain('quadriceps');
+    });
+
+    it('new exercise with provided libraryId -> stored directly', () => {
+      const id = resolveOrCreateExercise(db, 'My Special Squat', 'Barbell_Squat');
+      const row = db.get<{ library_id: string, muscle_groups: string }>(sql`SELECT library_id, muscle_groups FROM exercises WHERE id = ${id}`);
+      expect(row?.library_id).toBe('Barbell_Squat');
+      expect(JSON.parse(row!.muscle_groups)).toContain('quadriceps');
+    });
+
+    it('custom name with no library match -> libraryId null', () => {
+      const id = resolveOrCreateExercise(db, 'Weird Unknown Exercise');
+      const row = db.get<{ library_id: string | null }>(sql`SELECT library_id FROM exercises WHERE id = ${id}`);
+      expect(row?.library_id).toBeNull();
+    });
+
+    it('existing exercise -> id returned unchanged (no update)', () => {
+      const id1 = resolveOrCreateExercise(db, 'Barbell Squat');
+      db.run(sql`UPDATE exercises SET library_id = NULL WHERE id = ${id1}`);
+      
+      const id2 = resolveOrCreateExercise(db, 'Barbell Squat', 'Barbell_Squat');
+      expect(id2).toBe(id1);
+      
+      const row = db.get<{ library_id: string | null }>(sql`SELECT library_id FROM exercises WHERE id = ${id1}`);
+      expect(row?.library_id).toBeNull();
+    });
   });
 
   describe('hasAnySessions', () => {
