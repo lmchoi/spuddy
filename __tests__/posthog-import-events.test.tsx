@@ -1,13 +1,9 @@
-import { act, render, screen, waitFor } from '@testing-library/react-native';
-import { fireEvent } from '@testing-library/react-native';
+import { act, render, screen, waitFor, fireEvent } from '@testing-library/react-native';
 import { Alert } from 'react-native';
-import type { ParsedNotes } from '../src/notesParser';
-
-jest.mock('@/src/config/posthog', () => ({
-  posthog: { capture: jest.fn(), screen: jest.fn(), debug: jest.fn() },
-}));
-
 import { posthog } from '@/src/config/posthog';
+import NotesImportReviewScreen from '../app/notes-import-review';
+import StrongImportScreen from '../app/strong-import';
+import type { ParsedNotes } from '../src/notesParser';
 
 const mockCapture = posthog.capture as jest.Mock;
 
@@ -73,7 +69,6 @@ describe('import_completed — notes', () => {
   it('fires with source=notes and imported_count equal to importable day count', async () => {
     mockImportFromNotes.mockResolvedValue({ success: true, programsCreated: 1 });
 
-    const NotesImportReviewScreen = require('../app/notes-import-review').default;
     render(<NotesImportReviewScreen />);
 
     fireEvent.press(screen.getByText('Import 1 program'));
@@ -105,7 +100,6 @@ describe('import_completed — strong', () => {
     mockParseStrongCsv.mockReturnValue({ workoutGroups: MOCK_GROUPS });
     mockImportFromStrong.mockResolvedValue({ success: true, sessionsImported: 42, programs: [] });
 
-    const StrongImportScreen = require('../app/strong-import').default;
     render(<StrongImportScreen />);
     await screen.findByText('Import 1 workout');
 

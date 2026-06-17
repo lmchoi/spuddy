@@ -1,3 +1,5 @@
+jest.mock('@/src/config/posthog');
+
 let consoleErrorSpy: jest.SpyInstance;
 
 beforeEach(() => {
