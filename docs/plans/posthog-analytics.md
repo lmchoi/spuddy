@@ -30,22 +30,28 @@ timer duration?" without waiting for a crash.
 
 ### Setup
 
-Install `posthog-react-native` (Expo-compatible, uses `expo-file-system`).
+Install `posthog-react-native` via `npx expo install posthog-react-native`.
+`expo-application`, `expo-device`, and `expo-localization` are optional peer
+deps that add device metadata to events — install if richer event context is
+wanted later.
+
+Token is passed via `app.config.js → extra → Constants.expoConfig.extra`,
+consistent with the existing multi-variant build setup. This allows different
+tokens per build variant (dev/preview/prod) if needed.
+
+A singleton client lives in `src/config/posthog.ts`. It is disabled when no
+token is configured so local dev is silent by default.
 
 Wrap the app in `PostHogProvider` in `app/_layout.tsx`:
 
 ```tsx
-import PostHog, { PostHogProvider } from 'posthog-react-native';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthog } from '@/src/config/posthog';
 
-const posthog = new PostHog(process.env.EXPO_PUBLIC_POSTHOG_API_KEY, {
-  host: 'https://eu.i.posthog.com',   // or us.i.posthog.com depending on region
-  autocapture: true,                  // tap events on PostHogProvider children
-  captureScreens: false,              // disable — React Navigation v7 bug; done manually
-  captureDeepLinks: false,
-});
+<PostHogProvider client={posthog} autocapture>
+  ...
+</PostHogProvider>
 ```
-
-`PostHogProvider` must wrap the entire navigator so autocapture works.
 
 **Automatic (no extra code once provider is set up):**
 - App lifecycle: `Application Installed`, `Application Updated`,
@@ -54,27 +60,28 @@ const posthog = new PostHog(process.env.EXPO_PUBLIC_POSTHOG_API_KEY, {
 
 ### Screen tracking (manual)
 
-React Navigation v7 / Expo Router has a known incompatibility with PostHog's
-automatic screen tracking. Call `posthog.screen()` manually instead, co-located
-with the Sentry navigation integration wiring in `app/_layout.tsx` or via a
-shared navigation listener.
+Expo Router uses React Navigation v7, which by design restricts navigation
+hooks to inside Screen contexts. PostHog's automatic screen tracking does not
+work with v7. Call `posthog.screen()` manually instead, co-located with the
+Sentry navigation integration wiring in `app/_layout.tsx` or via a shared
+navigation listener.
 
 ### Key events to capture manually
 
-These are the events that answer the specific questions above. Named using
-PostHog's recommended `"[object] [verb]"` convention.
+Named using `snake_case` consistently. PostHog supports both `snake_case` and
+space-separated names — `snake_case` is safer for query autocomplete.
 
 | Event | Where | Properties |
 |---|---|---|
-| `session started` | `log-session.tsx` on mount | `{ exercise_count, source: 'program'|'import' }` |
-| `session completed` | `handleFinish` | `{ exercise_count, total_sets, duration_ms }` |
-| `session abandoned` | back-press / exit without finish | `{ exercise_count, sets_logged }` |
-| `rest timer started` | rest timer hook | `{ duration_s }` |
-| `set completed` | set save handler | `{ exercise, set_index, default_reps, entered_reps, default_weight, entered_weight }` |
-| `import completed` | notes + strong import confirm | `{ source: 'notes'|'strong', session_count }` |
-| `screen viewed` | navigation listener | `{ screen_name }` |
+| `session_started` | `log-session.tsx` on mount | `{ exercise_count, source: 'program'|'import' }` |
+| `session_completed` | `handleFinish` | `{ exercise_count, total_sets, duration_ms }` |
+| `session_abandoned` | back-press / exit without finish | `{ exercise_count, sets_logged }` |
+| `rest_timer_started` | rest timer hook | `{ duration_s }` |
+| `set_completed` | set save handler | `{ exercise, set_index, default_reps, entered_reps, default_weight, entered_weight }` |
+| `import_completed` | notes + strong import confirm | `{ source: 'notes'|'strong', session_count }` |
+| `screen_viewed` | navigation listener | `{ screen_name }` |
 
-The `set completed` event is the most valuable for understanding defaults vs
+The `set_completed` event is the most valuable for understanding defaults vs
 actual values. Keep property names consistent — they become your query columns.
 
 ### User identity
@@ -84,25 +91,30 @@ no action needed. Do not call `posthog.identify()` with any PII.
 
 ## Commit breakdown
 
-1. **`feat(posthog): install and initialise PostHog provider`**
+1. **`feat(posthog): install posthog-react-native and add singleton config`** ✅
    - Install `posthog-react-native`
-   - Add `PostHogProvider` wrapper in `app/_layout.tsx`
-   - Add `EXPO_PUBLIC_POSTHOG_API_KEY` to env (`.env.example` + docs)
-   - Add manual `posthog.screen()` calls via navigation listener
-   - Test: assert provider is rendered in root layout test
+   - Add `src/config/posthog.ts` singleton
+   - Add `extra` block to `app.config.js`
 
-2. **`feat(posthog): capture session lifecycle events`**
-   - `session started` and `session completed` / `session abandoned`
+2. **`feat(posthog): wrap root layout in PostHogProvider`** ✅
+   - Add `PostHogProvider` wrapper in `app/_layout.tsx`
+
+3. **`feat(posthog): add manual screen tracking via navigation listener`**
+   - Call `posthog.screen()` via navigation listener co-located with Sentry
+   - Test: assert screen event fired on navigation
+
+4. **`feat(posthog): capture session lifecycle events`**
+   - `session_started` and `session_completed` / `session_abandoned`
    - Tests: mock `posthog-react-native` and assert event + property shape
 
-3. **`feat(posthog): capture set completed events`**
-   - Add `posthog.capture('set completed', {...})` in the set save handler
+5. **`feat(posthog): capture set_completed events`**
+   - Add `posthog.capture('set_completed', {...})` in the set save handler
    - Include default and entered values for reps and weight
    - Tests: assert event fired with correct property keys
 
-4. **`feat(posthog): capture rest timer and import events`**
-   - `rest timer started` in rest timer hook
-   - `import completed` in notes and strong import confirm handlers
+6. **`feat(posthog): capture rest_timer_started and import_completed events`**
+   - `rest_timer_started` in rest timer hook
+   - `import_completed` in notes and strong import confirm handlers
    - Tests: assert event + property shape for each
 
 ## Testing strategy
@@ -114,8 +126,5 @@ no action needed. Do not call `posthog.identify()` with any PII.
 
 ## Open questions
 
-- **EU vs US hosting** — choose region before setup; can't migrate data after.
-  EU (`eu.i.posthog.com`) is the safer default for GDPR if the app ever has
-  non-US users.
-- **`set completed` volume** — a typical session is ~20 sets. At 3 sessions/week
+- **`set_completed` volume** — a typical session is ~20 sets. At 3 sessions/week
   that's ~60 events/week per user. Well within PostHog's free tier (1M events/month).
