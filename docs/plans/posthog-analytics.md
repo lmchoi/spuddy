@@ -75,14 +75,17 @@ space-separated names — `snake_case` is safer for query autocomplete.
 |---|---|---|
 | `session_started` | `log-session.tsx` on mount | `{ exercise_count, source: 'program'|'import' }` |
 | `session_completed` | `handleFinish` | `{ exercise_count, total_sets, duration_ms }` |
-| `session_abandoned` | back-press / exit without finish | `{ exercise_count, sets_logged }` |
+| `session_abandoned` | abandon-session-prompt confirm | `{ exercise_count, sets_logged }` — **depends on `abandon-session-prompt` feature** |
 | `rest_timer_started` | rest timer hook | `{ duration_s }` |
 | `set_completed` | set save handler | `{ exercise, set_index, default_reps, entered_reps, default_weight, entered_weight }` |
 | `import_completed` | notes + strong import confirm | `{ source: 'notes'|'strong', session_count }` |
+| `exercise_added` | `AddExerciseSheet` in `log-session.tsx` | `{ source: 'history'|'custom' }` — `'library'` added when Stage 3 ships |
 | `screen_viewed` | navigation listener | `{ screen_name }` |
 
 The `set_completed` event is the most valuable for understanding defaults vs
-actual values. Keep property names consistent — they become your query columns.
+actual values. `exercise_added` with `source` answers whether the exercise
+picker is being used or users still type everything. Keep property names
+consistent — they become your query columns.
 
 ### User identity
 
@@ -91,20 +94,17 @@ no action needed. Do not call `posthog.identify()` with any PII.
 
 ## Commit breakdown
 
+All remaining commits ship in one PR.
+
 1. **`feat(posthog): install posthog-react-native and add singleton config`** ✅
-   - Install `posthog-react-native`
-   - Add `src/config/posthog.ts` singleton
-   - Add `extra` block to `app.config.js`
-
 2. **`feat(posthog): wrap root layout in PostHogProvider`** ✅
-   - Add `PostHogProvider` wrapper in `app/_layout.tsx`
-
 3. **`feat(posthog): add manual screen tracking via navigation listener`**
    - Call `posthog.screen()` via navigation listener co-located with Sentry
    - Test: assert screen event fired on navigation
 
 4. **`feat(posthog): capture session lifecycle events`**
-   - `session_started` and `session_completed` / `session_abandoned`
+   - `session_started` and `session_completed` only
+   - `session_abandoned` deferred — requires `abandon-session-prompt` feature first
    - Tests: mock `posthog-react-native` and assert event + property shape
 
 5. **`feat(posthog): capture set_completed events`**
@@ -117,14 +117,14 @@ no action needed. Do not call `posthog.identify()` with any PII.
    - `import_completed` in notes and strong import confirm handlers
    - Tests: assert event + property shape for each
 
+7. **`feat(posthog): capture exercise_added event`**
+   - Fire `exercise_added` in `AddExerciseSheet` with `source: 'history'|'custom'`
+   - `source: 'library'` added when exercise picker Stage 3 ships
+   - Tests: assert event fired with correct source for each path
+
 ## Testing strategy
 
 - Unit: mock `posthog-react-native`; assert `capture` called with correct event
   name and property keys for each instrumented action
 - Manual: trigger actions in dev build, verify events appear in PostHog Live
   Events view with expected properties
-
-## Open questions
-
-- **`set_completed` volume** — a typical session is ~20 sets. At 3 sessions/week
-  that's ~60 events/week per user. Well within PostHog's free tier (1M events/month).
