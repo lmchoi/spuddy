@@ -45,7 +45,7 @@ import type { ProgramDay } from '@/src/types';
 import { nextWeight } from '@/src/domain/nextWeight';
 import { draftKey, loadDraft, saveDraft, clearDraft } from '@/src/sessionDraft';
 import { getAllExerciseNames, getExerciseNote, setExerciseNote } from '@/src/exerciseStorage';
-import { filterExerciseNames } from '@/src/domain/filterExerciseNames';
+import { searchExercisePicker } from '@/src/domain/searchExercisePicker';
 import * as Sentry from '@sentry/react-native';
 
 const HOME_ROUTE = '/(tabs)/progress' as const; // no dedicated home screen yet
@@ -461,13 +461,22 @@ function AddExerciseSheet({
     }).catch(() => {});
   }, []);
 
-  const filtered = filterExerciseNames(history, trimmed);
-  const hasExactMatch = filtered.some(n => n.toLowerCase() === trimmed.toLowerCase());
+  const { history: filteredHistory, library } = searchExercisePicker(history, trimmed);
+  const hasExactMatch =
+    filteredHistory.some(n => n.toLowerCase() === trimmed.toLowerCase()) ||
+    library.some(n => n.toLowerCase() === trimmed.toLowerCase());
   const showCreate = trimmed.length > 0 && !hasExactMatch;
 
-  type ListItem = { kind: 'history'; name: string } | { kind: 'create'; name: string };
+  type ListItem =
+    | { kind: 'history'; name: string }
+    | { kind: 'section-header'; label: string }
+    | { kind: 'library'; name: string }
+    | { kind: 'create'; name: string };
+
   const listData: ListItem[] = [
-    ...filtered.map(n => ({ kind: 'history' as const, name: n })),
+    ...filteredHistory.map(n => ({ kind: 'history' as const, name: n })),
+    ...(library.length > 0 ? [{ kind: 'section-header' as const, label: 'From library' }] : []),
+    ...library.map(n => ({ kind: 'library' as const, name: n })),
     ...(showCreate ? [{ kind: 'create' as const, name: trimmed }] : []),
   ];
 
@@ -502,16 +511,24 @@ function AddExerciseSheet({
         {listData.length > 0 && (
           <FlatList
             data={listData}
-            keyExtractor={item => item.kind + ':' + item.name}
+            keyExtractor={item => item.kind + ':' + (item.kind === 'section-header' ? item.label : item.name)}
             style={styles.addExerciseHistoryList}
+            initialNumToRender={30}
             keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <Pressable style={styles.addExerciseHistoryRow} onPress={() => onAdd(item.name)}>
-                <Text style={[styles.addExerciseHistoryRowText, item.kind === 'create' && styles.addExerciseCreateRowText]}>
-                  {item.kind === 'create' ? `Create '${item.name}'` : item.name}
-                </Text>
-              </Pressable>
-            )}
+            renderItem={({ item }) => {
+              if (item.kind === 'section-header') {
+                return (
+                  <Text style={styles.addExerciseSectionHeader}>{item.label}</Text>
+                );
+              }
+              return (
+                <Pressable style={styles.addExerciseHistoryRow} onPress={() => onAdd(item.name)}>
+                  <Text style={[styles.addExerciseHistoryRowText, item.kind === 'create' && styles.addExerciseCreateRowText]}>
+                    {item.kind === 'create' ? `Create '${item.name}'` : item.name}
+                  </Text>
+                </Pressable>
+              );
+            }}
           />
         )}
       </Pressable>

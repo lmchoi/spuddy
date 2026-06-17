@@ -1366,6 +1366,18 @@ describe('add exercise mid-session', () => {
     expect(screen.queryByText('Deadlift')).toBeNull();
   });
 
+  it("Create row not shown when typed name exactly matches a library item not in history", async () => {
+    // '3/4 Sit-Up' is in the library but not in history
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 Sit-Up');
+    });
+    expect(screen.queryByText(/^Create '/)).toBeNull();
+    expect(screen.getByText('3/4 Sit-Up')).toBeTruthy();
+  });
+
   it("Create row not shown when typed name exactly matches a history item", async () => {
     (getAllExerciseNames as jest.Mock).mockReturnValue(['Deadlift', 'Pull-up']);
     render(<LogSession />);
@@ -1388,5 +1400,49 @@ describe('add exercise mid-session', () => {
     await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
     expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
     expect(screen.getAllByText('Cable Fly').length).toBeGreaterThan(0);
+  });
+
+  it('"From library" header not shown when query is empty', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    expect(screen.queryByText('From library')).toBeNull();
+  });
+
+  it('library exercises appear under "From library" header when query matches', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+    });
+    expect(screen.getByText('From library')).toBeTruthy();
+    expect(screen.getByText('3/4 Sit-Up')).toBeTruthy();
+  });
+
+  it('tapping a library row adds the exercise and closes the sheet', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+    });
+    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByText('3/4 Sit-Up')); });
+    expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
+    expect(screen.getAllByText('3/4 Sit-Up').length).toBeGreaterThan(0);
+  });
+
+  it('library results excluded from history deduplication appear only in library section', async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['3/4 Sit-Up']);
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
+    await act(async () => {
+      fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+    });
+    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+    // Appears exactly once (in history), not duplicated in library section
+    expect(screen.queryByText('From library')).toBeNull();
   });
 });

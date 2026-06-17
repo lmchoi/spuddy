@@ -232,5 +232,15 @@ export const styles = StyleSheet.create({
   },
   addExerciseHistoryRowText: { fontSize: 15, color: C.text },
   addExerciseCreateRowText: { color: C.hit, fontWeight: '600' as const },
+  addExerciseSectionHeader: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    color: C.muted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.6,
+    paddingTop: 14,
+    paddingBottom: 4,
+    paddingHorizontal: 4,
+  },
   addExerciseHeaderSpacer: { width: 40 },
 });

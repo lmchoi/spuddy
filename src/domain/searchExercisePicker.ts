@@ -6,6 +6,8 @@ interface LibraryEntry {
 
 const libraryNames: string[] = (rawLibrary as LibraryEntry[]).map(e => e.name);
 
+const MAX_LIBRARY_RESULTS = 20;
+
 export interface ExercisePickerResults {
   history: string[];
   library: string[];
@@ -26,7 +28,8 @@ export function searchExercisePicker(
 
   const library = libraryNames
     .filter(n => !historySet.has(n.toLowerCase()) && n.toLowerCase().includes(lower))
-    .sort((a, b) => a.localeCompare(b));
+    .sort((a, b) => a.localeCompare(b))
+    .slice(0, MAX_LIBRARY_RESULTS);
 
   return { history, library };
 }
