@@ -98,29 +98,38 @@ All remaining commits ship in one PR.
 
 1. **`feat(posthog): install posthog-react-native and add singleton config`** ✅
 2. **`feat(posthog): wrap root layout in PostHogProvider`** ✅
-3. **`feat(posthog): add manual screen tracking via navigation listener`**
-   - Call `posthog.screen()` via navigation listener co-located with Sentry
-   - Test: assert screen event fired on navigation
+3. **`feat(posthog): add manual screen tracking via navigation listener`** ✅
+   - Extracted `trackScreen(routeName)` to `src/analytics/screenTracking.ts` (testable pure fn)
+   - Added `ref.addListener('state', ...)` in `RootLayoutNav` alongside Sentry wiring
+   - Screen tracking unit tests removed in review — function is a 3-line guard with no testable logic
 
-4. **`feat(posthog): capture session lifecycle events`**
+4. **`feat(posthog): capture session lifecycle events`** ✅
    - `session_started` and `session_completed` only
    - `session_abandoned` deferred — requires `abandon-session-prompt` feature first
-   - Tests: mock `posthog-react-native` and assert event + property shape
+   - Tests: render LogSession, assert event + property shape
 
-5. **`feat(posthog): capture set_completed events`**
-   - Add `posthog.capture('set_completed', {...})` in the set save handler
-   - Include default and entered values for reps and weight
+5. **`feat(posthog): capture set_completed events`** ✅
+   - Added `posthog.capture('set_completed', {...})` in `handleLogSet`
+   - Includes default and entered values for reps and weight
    - Tests: assert event fired with correct property keys
 
-6. **`feat(posthog): capture rest_timer_started and import_completed events`**
-   - `rest_timer_started` in rest timer hook
-   - `import_completed` in notes and strong import confirm handlers
+6. **`feat(posthog): capture rest_timer_started and import_completed events`** ✅
+   - `rest_timer_started` in `RestTimer` component's mount effect
+   - `import_completed` in notes-import-review and strong-import confirm handlers
    - Tests: assert event + property shape for each
 
-7. **`feat(posthog): capture exercise_added event`**
-   - Fire `exercise_added` in `AddExerciseSheet` with `source: 'history'|'custom'`
+7. **`feat(posthog): capture exercise_added event`** ✅
+   - Passed `source: 'history'|'custom'` through `AddExerciseSheet.onAdd` callback
+   - Fire `exercise_added` in `handleAddExercise`
    - `source: 'library'` added when exercise picker Stage 3 ships
    - Tests: assert event fired with correct source for each path
+
+### Review fixes (pre-merge)
+
+- **`exercise_added`**: added `exercise: name` property — missing it would leave a permanent gap since event data can't be backfilled
+- **`import_completed`**: renamed `session_count` → `imported_count` — `session_count` was semantically wrong for the notes path (counts program days, not sessions)
+- **`rest_timer_started`**: changed `duration_s` → `duration_ms` to match `session_completed`; mixed units would require silent conversion in PostHog queries
+- **Screen tracking test**: deleted — tested a 3-line `if`-statement with no real logic
 
 ## Testing strategy
 
