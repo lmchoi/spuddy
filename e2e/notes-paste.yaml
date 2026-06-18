@@ -2,8 +2,17 @@ appId: ${APP_ID}
 ---
 - launchApp:
     clearState: true
-- tapOn: "Add"
+- tapOn: "Settings"
+- tapOn: "Paste workout notes"
 - tapOn: "Workout notes input"
-- inputText: "2099-01-01\nexercises: {\n  Squat / 3x5 100kg\n}"
-- tapOn: "Save 1 exercise"
-- assertVisible: "Saved!"
+- setClipboard: |
+    Push
+    - Bench press - 80kg
+    - Overhead press - 50kg
+- pasteText
+- hideKeyboard
+- assertVisible: "Review 1 day"
+- tapOn: "Review 1 day"
+- assertVisible: "Import 1 program"
+- tapOn: "Import 1 program"
+- assertVisible: "Push"
