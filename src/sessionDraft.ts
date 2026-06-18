@@ -1,20 +1,27 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { SessionState } from './domain/sessionLogger';
+import type { ProgramDay } from './types';
+
+export type Draft = { state: SessionState; day: ProgramDay };
 
 export function draftKey(programId: number, dayIndex: number): string {
   return `draft_session__${programId}__${dayIndex}`;
 }
 
-export async function saveDraft(key: string, state: SessionState): Promise<void> {
-  await AsyncStorage.setItem(key, JSON.stringify(state));
+export async function saveDraft(key: string, state: SessionState, day: ProgramDay): Promise<void> {
+  await AsyncStorage.setItem(key, JSON.stringify({ state, day }));
 }
 
-export async function loadDraft(key: string): Promise<SessionState | null> {
+export async function loadDraft(key: string): Promise<Draft | null> {
   const raw = await AsyncStorage.getItem(key);
   if (raw === null) return null;
   try {
-    const state = JSON.parse(raw) as SessionState;
-    return { ...state, isResting: false };
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!('state' in parsed) || !('day' in parsed)) {
+      await AsyncStorage.removeItem(key);
+      return null;
+    }
+    return { state: { ...(parsed.state as SessionState), isResting: false }, day: parsed.day as ProgramDay };
   } catch {
     await AsyncStorage.removeItem(key);
     return null;
