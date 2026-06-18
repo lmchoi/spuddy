@@ -660,17 +660,18 @@ export default function LogSession() {
         if (!day) { setState({ status: 'empty' }); return; }
         const key = draftKey(resolvedId, resolvedDayIndex);
         const draft = await loadDraft(key);
-        const session = draft ? reconcileDraft(draft, day) : initSession(day);
-        const input = inputFromTarget(day, session);
+        const workingDay = draft ? draft.day : day;
+        const session = draft ? reconcileDraft(draft.state, workingDay) : initSession(workingDay);
+        const input = inputFromTarget(workingDay, session);
         const notes: Record<number, string> = {};
-        for (const ex of day.exercises) {
+        for (const ex of workingDay.exercises) {
           if (ex.exerciseId !== undefined) {
             const note = getExerciseNote(db, ex.exerciseId);
             if (note) notes[ex.exerciseId] = note;
           }
         }
-        setState({ status: 'ready', day, session, input, resolvedProgramId: resolvedId, resolvedDayIndex, totalDays, key, notes });
-        posthog.capture('session_started', { exercise_count: day.exercises.length, source: 'program' });
+        setState({ status: 'ready', day: workingDay, session, input, resolvedProgramId: resolvedId, resolvedDayIndex, totalDays, key, notes });
+        posthog.capture('session_started', { exercise_count: workingDay.exercises.length, source: 'program' });
         setupNotificationChannel();
       } catch {
         setState({ status: 'empty' });
@@ -693,7 +694,7 @@ export default function LogSession() {
       entered_weight: weight,
     });
     const next = logSet(session, exIdx, reps, weight);
-    saveDraft(key, next);
+    saveDraft(key, next, day);
     setState({ ...state, session: next, input: { reps, weight } });
   }, [state]);
 
@@ -702,7 +703,7 @@ export default function LogSession() {
     const next = skipRest(state.session);
     // Carry the existing input forward — skip rest doesn't change exercise or
     // target, so there's no reason to re-derive the input from the plan.
-    saveDraft(state.key, next);
+    saveDraft(state.key, next, state.day);
     setState({ ...state, session: next });
   }, [state]);
 
@@ -710,7 +711,7 @@ export default function LogSession() {
     if (state.status !== 'ready') return;
     const next = jumpToExercise(state.session, idx);
     const nextInput = inputFromTarget(state.day, next);
-    saveDraft(state.key, next);
+    saveDraft(state.key, next, state.day);
     setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
@@ -718,7 +719,7 @@ export default function LogSession() {
     if (state.status !== 'ready') return;
     const next = jumpToExercise(state.session, state.session.currentExerciseIdx + 1);
     const nextInput = inputFromTarget(state.day, next);
-    saveDraft(state.key, next);
+    saveDraft(state.key, next, state.day);
     setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
@@ -726,7 +727,7 @@ export default function LogSession() {
     if (state.status !== 'ready') return;
     const next = addExtraSet(state.session, exIdx);
     const nextInput = inputFromTarget(state.day, next);
-    saveDraft(state.key, next);
+    saveDraft(state.key, next, state.day);
     setState({ ...state, session: next, input: nextInput });
   }, [state]);
 
@@ -747,12 +748,12 @@ export default function LogSession() {
     setNoteSheetOpen(false);
   }, [state]);
 
-  const handleAddExercise = useCallback((name: string, libraryId?: string) => {
+  const handleAddExercise = useCallback(async (name: string, libraryId?: string) => {
     if (state.status !== 'ready') return;
     posthog.capture('exercise_added', { source: libraryId ? 'library' : 'custom', exercise: name });
     const { session, day, key } = state;
     const { session: newSession, day: newDay } = addExercise(session, day, name);
-    
+
     // Eagerly persist the exercise (fire-and-forget)
     getDB().then(db => {
       resolveOrCreateExercise(db, name, libraryId);
@@ -762,7 +763,7 @@ export default function LogSession() {
 
     const newIdx = newDay.exercises.length - 1;
     const jumped = jumpToExercise(newSession, newIdx);
-    saveDraft(key, jumped);
+    await saveDraft(key, jumped, newDay);
     setState({ ...state, session: jumped, day: newDay, input: { reps: 10, weight: 0 } });
     setAddExerciseSheetOpen(false);
   }, [state]);

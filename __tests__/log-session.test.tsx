@@ -442,7 +442,7 @@ describe('add extra set', () => {
 // ─── Resume in-progress session ──────────────────────────────────────────────
 
 describe('resume in-progress session', () => {
-  const draftWithOneSetLogged: SessionState = {
+  const draftStateWithOneSetLogged: SessionState = {
     loggedSets: [[{ reps: 5, weight: 100 }], []],
     targetCounts: [2, 1],
     extraSetCounts: [0, 0],
@@ -450,6 +450,8 @@ describe('resume in-progress session', () => {
     isResting: false,
     startedAt: 9999,
   };
+
+  const draftWithOneSetLogged = { state: draftStateWithOneSetLogged, day: mockDay };
 
   it('restores a draft when one exists on mount', async () => {
     (loadDraft as jest.Mock).mockResolvedValueOnce(draftWithOneSetLogged);
@@ -544,6 +546,49 @@ describe('resume in-progress session', () => {
     await act(async () => { fireEvent.press(screen.getByText(/Finish session/i)); });
 
     expect(mockReplace).toHaveBeenCalled();
+  });
+});
+
+// ─── Resume with added exercise (day snapshot) ───────────────────────────────
+
+describe('resume with added exercise (day snapshot)', () => {
+  const dayWithAddedExercise = {
+    name: 'Day A',
+    exercises: [
+      { name: 'Squat', exerciseId: 1, targets: [{ reps: 5, weight: 100 }, { reps: 5, weight: 100 }] },
+      { name: 'Bench', exerciseId: 2, targets: [{ reps: 8, weight: 60 }] },
+      { name: 'Cable Fly', targets: [{ reps: 10, weight: 0 }] },
+    ],
+  };
+
+  it('strip shows added exercise when draft includes it in day snapshot', async () => {
+    const draft = {
+      state: {
+        loggedSets: [[], [], []],
+        targetCounts: [2, 1, 1],
+        extraSetCounts: [0, 0, 0],
+        currentExerciseIdx: 2,
+        isResting: false,
+        startedAt: 9999,
+      },
+      day: dayWithAddedExercise,
+    };
+    (loadDraft as jest.Mock).mockResolvedValueOnce(draft);
+
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    // Strip should show Cable Fly (from draft.day), not just the 2-exercise fetched day
+    expect(screen.getAllByText('Cable Fly').length).toBeGreaterThan(0);
+  });
+
+  it('resume without a draft still uses freshly-fetched day', async () => {
+    // loadDraft returns null (default) — screen should use getProgramDay result
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+
+    expect(screen.getByText('Bench')).toBeTruthy();
+    expect(screen.queryByText('Cable Fly')).toBeNull();
   });
 });
 
@@ -1299,13 +1344,15 @@ describe('add exercise mid-session', () => {
     expect(screen.queryByText('Cable Fly')).toBeNull();
   });
 
-  it('saves draft after adding an exercise', async () => {
+  it('saves draft with the updated day (including the added exercise) immediately on add', async () => {
     render(<LogSession />);
     await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
     await act(async () => { fireEvent.press(screen.getByText('+ Add exercise')); });
     await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly'); });
     await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
     expect(saveDraft).toHaveBeenCalledTimes(1);
+    const savedDay = (saveDraft as jest.Mock).mock.calls[0][2];
+    expect(savedDay.exercises.map((e: { name: string }) => e.name)).toContain('Cable Fly');
   });
 
   it('history rows appear in the sheet when history is non-empty', async () => {
