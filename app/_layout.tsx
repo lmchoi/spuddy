@@ -1,4 +1,5 @@
 import '../src/global.css';
+import { LogBox } from 'react-native';
 import { useFonts } from 'expo-font';
 import { DarkTheme, Stack, ThemeProvider, useNavigationContainerRef, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -11,6 +12,8 @@ import { setupNotificationResponseListener } from '@/src/notifications';
 import { PostHogProvider } from 'posthog-react-native';
 import { posthog } from '@/src/config/posthog';
 import { trackScreen } from '@/src/analytics/screenTracking';
+
+LogBox.ignoreLogs(['Bridgeless doesn\'t support CatalystInstance']);
 
 const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: !isRunningInExpoGo(),
