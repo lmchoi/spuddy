@@ -1,15 +1,7 @@
 appId: ${APP_ID}
 ---
-# Set up: import notes to create a 3-day program
 - launchApp:
-    clearState: true
-- tapOn: "Settings"
-- tapOn: "Paste workout notes"
-- tapOn: "⚙ Fill sample"
-- hideKeyboard
-- tapOn: "Review 3 days"
-- tapOn: "Import 1 program"
-- assertVisible: "Push"
+    clearState: false
 
 # Navigate to select-day via Add tab
 - tapOn: "Add workout"

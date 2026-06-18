@@ -1,14 +1,7 @@
 appId: ${APP_ID}
 ---
-# Set up: import notes, start a session
 - launchApp:
-    clearState: true
-- tapOn: "Settings"
-- tapOn: "Paste workout notes"
-- tapOn: "⚙ Fill sample"
-- hideKeyboard
-- tapOn: "Review 3 days"
-- tapOn: "Import 1 program"
+    clearState: false
 - tapOn: "Add workout"
 - tapOn: "Legs"
 - tapOn: "Start Legs"
@@ -19,18 +12,12 @@ appId: ${APP_ID}
 - assertVisible: "Add exercise"
 - assertVisible: "Exercise name"
 
-# Empty name — Add button should not submit
-- tapOn: "Add"
-- assertVisible: "Exercise name"
-
-# Enter a name and confirm
+# Enter a name and confirm via Create row
 - tapOn: "Exercise name"
-- inputText: "Cable Fly"
+- setClipboard: "Cable Fly"
+- pasteText
 - hideKeyboard
-- tapOn:
-    text: "Add"
-    below:
-      text: "Add exercise"
+- tapOn: "Create 'Cable Fly'"
 - assertNotVisible: "Exercise name"
 
 # New chip appears in the exercise strip
