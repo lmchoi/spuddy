@@ -1,27 +1,41 @@
-# Await session draft saves
+# Draft includes day snapshot
 
 ## Problem
 
-All five session-mutating handlers in `app/log-session.tsx` call `saveDraft()` without `await`. If the OS kills the app between the handler firing and the AsyncStorage write completing, the draft on disk is one step behind what the user saw — losing their last logged set.
+When a user adds an exercise mid-session, the new exercise is appended to `state.day`
+but the draft on disk only stored `SessionState` — no day shape. On resume, the freshly-
+fetched `ProgramDay` from the database wouldn't include the added exercise, so it was
+silently dropped.
+
+A secondary problem (tracked separately): the five session-mutating handlers still call
+`saveDraft` without `await`, so the draft can be one step behind on an unexpected app kill.
 
 ## Solution
 
-Make each handler `async` and `await saveDraft()` before calling `setState`. The write is guaranteed to land before the UI updates. AsyncStorage writes are <50ms so the button response is imperceptible to users.
+Store `{ state: SessionState, day: ProgramDay }` in the draft instead of bare `SessionState`.
+On resume, use `draft.day` as the working day so any mid-session additions are preserved.
 
-## Affected handlers
+Only `handleAddExercise` is awaited — because that handler changes the day shape, so the
+new structure must be flushed to disk before the UI reflects it. The other five handlers
+(logSet, skipRest, jump, nextExercise, addSet) remain fire-and-forget because the day shape
+doesn't change there; see backlog for the full-await follow-up.
 
-- `handleLogSet` (line 507)
-- `handleSkipRest` (line 519)
-- `handleJump` (line 528)
-- `handleNextExercise` (line 536)
-- `handleAddSet` (line 544)
+## Migration
+
+Old-format drafts (bare `SessionState`, no `state`/`day` keys) are detected in `loadDraft`,
+cleared from AsyncStorage, and `null` is returned. Users lose an in-progress draft on first
+open after the update; acceptable given drafts are a resilience aid, not the primary save path.
 
 ## Out of scope
 
-- AppState background-flush (fix 2) — separate PR
-- Draft corruption visibility (fix 3/4) — separate PR
+- Await `saveDraft` in all five session-mutating handlers — separate backlog item
+- AppState background-flush — separate PR
+- Draft corruption visibility — separate PR
 
 ## Commits
 
-1. `test: saveDraft is awaited before setState in all session handlers` — update/add tests in `__tests__/log-session.test.tsx` that spy on `saveDraft` and assert it resolves before state changes are reflected
-2. `fix: await saveDraft in all log-session mutation handlers` — make all five handlers async and await the draft save
+1. `feat(draft): save day snapshot alongside session state` — introduce `Draft = { state, day }`,
+   update `saveDraft`/`loadDraft` signatures, add old-format migration guard, update resume path
+   to use `draft.day` as `workingDay`, update all tests and call sites
+2. `fix(draft): await saveDraft in handleAddExercise so day snapshot is guaranteed written` —
+   make `handleAddExercise` async and await the draft write before `setState`
