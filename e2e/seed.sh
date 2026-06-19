@@ -10,6 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Pushing seed.db -> /data/data/$APP_ID/files/SQLite/spuddy.db"
 adb push "$SCRIPT_DIR/seed.db" /data/local/tmp/spuddy-seed.db
-adb shell "run-as $APP_ID cp /data/local/tmp/spuddy-seed.db files/SQLite/spuddy.db"
+adb root
+adb shell "cp /data/local/tmp/spuddy-seed.db /data/data/$APP_ID/files/SQLite/spuddy.db && chmod 660 /data/data/$APP_ID/files/SQLite/spuddy.db"
 adb shell rm /data/local/tmp/spuddy-seed.db
+adb unroot
 echo "Done."
