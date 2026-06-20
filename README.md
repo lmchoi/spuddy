@@ -36,8 +36,9 @@ Flows live in `e2e/`. Maestro is a CLI tool — not an npm dependency.
 
 **Setup:**
 ```
-brew install maestro
+brew install maestro@2.6.1
 ```
+> Pin to the same version used in CI (see ADR 021). Check `.github/workflows/` for the current pin before upgrading.
 
 **Run the smoke flow** (requires a running dev build on a connected device or emulator):
 ```
