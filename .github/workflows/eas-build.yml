@@ -43,13 +43,8 @@ jobs:
       - name: 🚀 Build APK via EAS
         uses: expo/expo-github-action@v8
         with:
-          eas-version: latest
+          eas-version: 20.3.0
           token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: 🔗 Initialize EAS project
-        run: eas init --non-interactive
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: 🔨 Run EAS build
         id: eas-build
@@ -92,4 +87,5 @@ jobs:
           arch: x86_64
           script: |
             adb install app.apk
-            maestro test --env APP_ID=com.mchoi.spuddy.preview e2e/smoke.yaml e2e/notes-paste.yaml e2e/select-day.yaml
+            bash e2e/seed.sh com.mchoi.spuddy.preview
+            maestro test --env APP_ID=com.mchoi.spuddy.preview e2e/smoke.yaml e2e/select-day.yaml e2e/add-exercise-mid-session.yaml e2e/notes-paste.yaml
