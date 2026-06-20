@@ -34,6 +34,10 @@ docs/
   ideas/              # unreviewed drafts, may contain hallucinations (see ideas/CLAUDE.md)
 ```
 
+## CI
+
+- **Pin tool versions** — never use `latest` or an unversioned install script in a workflow. Always specify an explicit version (e.g. `eas-version: 20.3.0`, `MAESTRO_VERSION=2.6.1`). See ADR 021.
+
 ## Maestro (E2E testing)
 
 Cheat sheet: `.claude/maestro.md`. Use it when writing or reviewing Maestro flows.
