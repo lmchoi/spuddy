@@ -79,7 +79,7 @@ jobs:
 
       - name: 🤖 Install Maestro
         run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
+          curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.6.1 bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
       - name: 📱 Run E2E flows
