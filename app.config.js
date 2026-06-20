@@ -42,6 +42,9 @@ module.exports = {
     extra: {
       posthogProjectToken: process.env.POSTHOG_PROJECT_TOKEN,
       posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',
+      eas: {
+        projectId: "f75efa58-00a3-4f85-85cb-613f93da5e8a",
+      },
     },
   },
 };
