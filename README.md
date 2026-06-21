@@ -36,7 +36,7 @@ Flows live in `e2e/`. Maestro is a CLI tool — not an npm dependency.
 
 **Setup:**
 ```
-brew install maestro@2.6.1
+curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.6.1 bash
 ```
 > Pin to the same version used in CI (see ADR 021). Check `.github/workflows/` for the current pin before upgrading.
 
