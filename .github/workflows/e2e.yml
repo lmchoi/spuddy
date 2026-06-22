@@ -6,6 +6,10 @@ on:
       gha_run_id:
         type: string
         required: false
+      artifact_name:
+        type: string
+        required: false
+        default: 'spuddy-prerelease-apk'
       apk_url:
         type: string
         required: false
@@ -17,6 +21,10 @@ on:
       gha_run_id:
         description: 'GHA run ID from android-prerelease workflow'
         required: false
+      artifact_name:
+        description: 'Artifact name in that run (default: spuddy-prerelease-apk)'
+        required: false
+        default: 'spuddy-prerelease-apk'
       apk_url:
         description: 'Direct APK URL from EAS build'
         required: false
@@ -55,8 +63,7 @@ jobs:
         if: ${{ inputs.gha_run_id != '' }}
         uses: actions/download-artifact@v4
         with:
-          # Must match the artifact name in android-debug.yml's "Upload APK" step
-          name: spuddy-prerelease-apk
+          name: ${{ inputs.artifact_name }}
           run-id: ${{ inputs.gha_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: apk/
