@@ -18,7 +18,10 @@ if adb root 2>&1 | grep -q "cannot run as root"; then
 else
   # adb root restarts the daemon — wait for reconnect before issuing the next command
   adb wait-for-device
-  adb shell "mkdir -p /data/data/$APP_ID/files/SQLite && cp /data/local/tmp/spuddy-seed.db /data/data/$APP_ID/files/SQLite/spuddy.db && chmod 660 /data/data/$APP_ID/files/SQLite/spuddy.db"
+  # Files created by adb root are owned by root:root; the app user (other) can't read them.
+  # Read the app's UID/GID from its data dir and chown the whole files/ subtree after copying.
+  APP_UGID=$(adb shell stat -c '%u:%g' "/data/data/$APP_ID" 2>/dev/null | tr -d '\r\n')
+  adb shell "mkdir -p /data/data/$APP_ID/files/SQLite && cp /data/local/tmp/spuddy-seed.db /data/data/$APP_ID/files/SQLite/spuddy.db && chown -R ${APP_UGID} /data/data/$APP_ID/files && chmod 660 /data/data/$APP_ID/files/SQLite/spuddy.db"
   adb unroot
 fi
 
