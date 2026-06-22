@@ -1,7 +1,6 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native';
-import ProgramDayDetailScreen, { AddExerciseSheet } from '../app/(tabs)/settings/[programId]/[dayIndex]';
 import { getAllExerciseNames } from '@/src/exerciseStorage';
-import React from 'react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import ProgramDayDetailScreen, { AddExerciseSheet } from '../app/(tabs)/settings/[programId]/[dayIndex]';
 
 // We use an external variable to set the *initial* state for our mock hook,
 // so that the component can actually update its state during interactions.
@@ -182,10 +181,43 @@ describe('ProgramDayDetail screen', () => {
     expect(screen.queryByText('Bench Press')).toBeNull();
   });
 
-  it('adds a new exercise when + Add exercise is pressed', () => {
+  it('pressing + Add exercise opens the add-exercise sheet', async () => {
     render(<ProgramDayDetailScreen />);
     fireEvent.press(screen.getByText('+ Add exercise'));
-    expect(screen.getByText('New exercise')).toBeTruthy();
+    await act(async () => {});
+    expect(screen.getByPlaceholderText('Exercise name')).toBeTruthy();
+  });
+
+  it('submitting a name in the sheet adds the exercise to the list', async () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('+ Add exercise'));
+    await act(async () => {});
+    fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Deadlift');
+    fireEvent.press(screen.getByText("Create 'Deadlift'"));
+    expect(screen.getByText('Deadlift')).toBeTruthy();
+    expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
+  });
+
+  it('dismissing the sheet leaves the exercise list unchanged', async () => {
+    render(<ProgramDayDetailScreen />);
+    const exerciseCount = screen.getAllByText('▸').length;
+    fireEvent.press(screen.getByText('+ Add exercise'));
+    await act(async () => {});
+    fireEvent.press(screen.getByText('Cancel'));
+    expect(screen.getAllByText('▸').length).toBe(exerciseCount);
+    expect(screen.queryByPlaceholderText('Exercise name')).toBeNull();
+  });
+
+  it('tapping a library row calls resolveOrCreateExercise with the correct libraryId', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { resolveOrCreateExercise } = require('@/src/storage');
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('+ Add exercise'));
+    await act(async () => {});
+    fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+    fireEvent.press(await screen.findByText('3/4 Sit-Up'));
+    await act(async () => {});
+    expect(resolveOrCreateExercise).toHaveBeenCalledWith(expect.anything(), '3/4 Sit-Up', '3_4_Sit-Up');
   });
 });
 
