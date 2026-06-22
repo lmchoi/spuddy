@@ -181,7 +181,7 @@ describe('exercise_added event', () => {
     await act(async () => { fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly'); });
     await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
 
-    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'custom', exercise: 'Cable Fly' });
+    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'custom', exercise: 'Cable Fly', source_screen: 'log_session' });
   });
 
   it('fires with source=custom when an existing exercise is picked from history', async () => {
@@ -195,7 +195,7 @@ describe('exercise_added event', () => {
     await waitFor(() => expect(screen.getByText('Deadlift')).toBeTruthy());
     await act(async () => { fireEvent.press(screen.getByText('Deadlift')); });
 
-    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'custom', exercise: 'Deadlift' });
+    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'custom', exercise: 'Deadlift', source_screen: 'log_session' });
   });
 
   it('fires with source=library when a library row is tapped', async () => {
@@ -208,6 +208,6 @@ describe('exercise_added event', () => {
     await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
     await act(async () => { fireEvent.press(screen.getByText('3/4 Sit-Up')); });
 
-    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'library', exercise: '3/4 Sit-Up' });
+    expect(mockCapture).toHaveBeenCalledWith('exercise_added', { source: 'library', exercise: '3/4 Sit-Up', source_screen: 'log_session' });
   });
 });

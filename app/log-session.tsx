@@ -750,7 +750,7 @@ export default function LogSession() {
 
   const handleAddExercise = useCallback(async (name: string, libraryId?: string) => {
     if (state.status !== 'ready') return;
-    posthog.capture('exercise_added', { source: libraryId ? 'library' : 'custom', exercise: name });
+    posthog.capture('exercise_added', { source: libraryId ? 'library' : 'custom', exercise: name, source_screen: 'log_session' });
     const { session, day, key } = state;
     const { session: newSession, day: newDay } = addExercise(session, day, name);
 
