@@ -44,6 +44,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: Verify APK source
+        run: |
+          if [ -z "${{ inputs.gha_run_id }}" ] && [ -z "${{ inputs.apk_url }}" ]; then
+            echo "::error::Either gha_run_id or apk_url must be provided"
+            exit 1
+          fi
+
       - name: Download APK from GHA artifact
         if: ${{ inputs.gha_run_id != '' }}
         uses: actions/download-artifact@v4
