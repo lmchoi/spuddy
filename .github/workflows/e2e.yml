@@ -89,6 +89,7 @@ jobs:
           api-level: 30
           arch: x86_64
           script: |
+            set -e
             adb install apk/app-release.apk
             bash e2e/seed.sh "$APP_ID"
             maestro test --env APP_ID="$APP_ID" --debug-output /tmp/maestro-debug --flatten-debug-output e2e/*.yaml
