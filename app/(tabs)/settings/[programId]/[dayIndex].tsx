@@ -17,6 +17,7 @@ import { resolveOrCreateExercise } from '@/src/storage';
 import { renameLibraryEntry, parseMuscleGroups } from '@/src/domain/exerciseLibrary';
 import { searchExercisePicker } from '@/src/domain/searchExercisePicker';
 import * as Sentry from '@sentry/react-native';
+import { posthog } from '@/src/config/posthog';
 
 // ─── Cell sub-components ─────────────────────────────────────────────────────
 
@@ -400,6 +401,7 @@ export default function ProgramDayDetailScreen() {
 
   function handleAddExercise(name: string, libraryId?: string) {
     Sentry.addBreadcrumb({ category: 'exercise', message: 'Exercise added', level: 'info' });
+    posthog.capture('exercise_added', { source: libraryId ? 'library' : 'custom', exercise: name, source_screen: 'program_editor' });
     setDay(prev => {
       const next: ProgramDay = {
         ...prev,
