@@ -85,6 +85,20 @@ Improve the "Add exercise" sheet in log-session so the user can pick from exerci
 
 ---
 
+### Stage 3b — Program day editor ✓ shipped
+
+**What:** Bring the same `AddExerciseSheet` UX (history list, library search, create row) to the program day editor (`[dayIndex].tsx`), replacing the old one-tap "New exercise" stub.
+
+**Deviations from plan:** Not originally planned here — work was done on branch `feat/add-exercise-settings`. The component was re-implemented locally in `[dayIndex].tsx` rather than extracted to a shared location; extraction is tracked in the backlog below.
+
+**Commits:**
+
+1. `test + feat(ui): AddExerciseSheet component in program day editor` ✓
+2. `test + feat(ui): wire add-exercise sheet into program day editor` ✓
+3. `feat(analytics): track source_screen on exercise_added` ✓ — adds `source_screen: 'log_session' | 'program_editor'` to the `exercise_added` PostHog event
+
+---
+
 ### Stage 4 — Richer browsing
 
 **What:** When no query is typed, add filter chips above the list (by category or muscle group). Each row shows a metadata hint (e.g. "Barbell · Chest"). Useful for browsing when the user doesn't know the exact name.
@@ -100,3 +114,7 @@ Improve the "Add exercise" sheet in log-session so the user can pick from exerci
 - Fuzzy/typo-tolerant matching
 - Exercise images
 - Manual library link overrides (that belongs to the exercise edit sheet in the program settings screen)
+
+## Backlog
+
+- **Extract `AddExerciseSheet` to a shared component** — the component is currently duplicated in `app/log-session.tsx` and `app/(tabs)/settings/[programId]/[dayIndex].tsx`. Extract to `components/spuddy/AddExerciseSheet.tsx` so Stage 4 changes only need to land in one place. Styling differences can be passed via a `sheetStyle` prop or aligned to use the same tokens.
