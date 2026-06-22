@@ -72,7 +72,7 @@ jobs:
           script: |
             adb install apk/app-release.apk
             bash e2e/seed.sh ${{ inputs.app_id }}
-            maestro test --env APP_ID=${{ inputs.app_id }} --debug-output /tmp/maestro-debug e2e/*.yaml
+            maestro test --env APP_ID=${{ inputs.app_id }} --debug-output /tmp/maestro-debug --flatten-debug-output e2e/*.yaml
 
       - name: Upload Maestro debug output
         if: always()

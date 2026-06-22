@@ -14,8 +14,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      artifact-name: spuddy-prerelease-${{ github.run_number }}
 
     steps:
       - name: Checkout
@@ -52,50 +50,14 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: spuddy-prerelease-${{ github.run_number }}
+          name: spuddy-prerelease-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 14
 
   e2e:
-    runs-on: ubuntu-latest
     needs: build
-    timeout-minutes: 30
-
-    steps:
-      - name: 🏗 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: ⚡ Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: 📥 Download APK
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.build.outputs.artifact-name }}
-          path: apk/
-
-      - name: 🤖 Install Maestro
-        run: |
-          curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.6.1 bash
-          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
-
-      - name: 📱 Run E2E flows
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          arch: x86_64
-          script: |
-            adb install apk/app-release.apk
-            bash e2e/seed.sh com.mchoi.spuddy.prerelease
-            maestro test --env APP_ID=com.mchoi.spuddy.prerelease --debug-output /tmp/maestro-debug --flatten-debug-output e2e/*.yaml
-
-      - name: 📸 Upload Maestro debug output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: maestro-debug-${{ github.run_number }}
-          path: /tmp/maestro-debug
-          if-no-files-found: ignore
+    uses: ./.github/workflows/e2e.yml
+    with:
+      gha_run_id: ${{ github.run_id }}
+      app_id: com.mchoi.spuddy.prerelease
+    secrets: inherit
