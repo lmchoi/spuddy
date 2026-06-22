@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text,
+  FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, StatusBar, Text,
   TextInput, View,
 } from 'react-native';
 import { styles } from '@/styles/tabs/settings/programId/dayIndex.styles';
+import { C } from '@/components/spuddy/palette';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useProgramDay } from '@/src/hooks/useProgramDay';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,8 +12,9 @@ import type { ProgramDay, ProgramExercise, Target } from '@/src/types';
 import { summaryLine } from '@/src/domain/programDay';
 import { getDB } from '@/src/db';
 import { updateProgramDay } from '@/src/programStorage';
-import { type ExerciseLibraryRow } from '@/src/exerciseStorage';
+import { getAllExerciseNames, type ExerciseLibraryRow } from '@/src/exerciseStorage';
 import { renameLibraryEntry, parseMuscleGroups } from '@/src/domain/exerciseLibrary';
+import { searchExercisePicker } from '@/src/domain/searchExercisePicker';
 import * as Sentry from '@sentry/react-native';
 
 // ─── Cell sub-components ─────────────────────────────────────────────────────
@@ -175,7 +177,114 @@ function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onClose }: 
   );
 }
 
-// ─── Sample shown until real DB data arrives ─────────────────────────────────
+// ─── Add exercise sheet ───────────────────────────────────────────────────────
+
+export function AddExerciseSheet({
+  onAdd,
+  onCancel,
+}: {
+  onAdd: (name: string, libraryId?: string) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState('');
+  const [history, setHistory] = useState<string[]>([]);
+  const trimmed = name.trim();
+
+  useEffect(() => {
+    getDB().then(db => {
+      setHistory(getAllExerciseNames(db));
+    }).catch(() => {});
+  }, []);
+
+  const { history: filteredHistory, library } = searchExercisePicker(history, trimmed);
+  const hasExactMatch =
+    filteredHistory.some(n => n.toLowerCase() === trimmed.toLowerCase()) ||
+    library.some(n => n.name.toLowerCase() === trimmed.toLowerCase());
+  const showCreate = trimmed.length > 0 && !hasExactMatch;
+
+  type ListItem =
+    | { kind: 'history'; name: string }
+    | { kind: 'section-header'; label: string }
+    | { kind: 'library'; name: string; libraryId?: string }
+    | { kind: 'create'; name: string };
+
+  const listData: ListItem[] = [
+    ...filteredHistory.map(n => ({ kind: 'history' as const, name: n })),
+    ...(library.length > 0 ? [{ kind: 'section-header' as const, label: 'From library' }] : []),
+    ...library.map(n => ({ kind: 'library' as const, name: n.name, libraryId: n.libraryId })),
+    ...(showCreate ? [{ kind: 'create' as const, name: trimmed }] : []),
+  ];
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.addExerciseOverlay}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <Pressable
+        testID="add-exercise-sheet-backdrop"
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        onPress={onCancel}
+      />
+      <Pressable style={styles.addExerciseSheetPanel} onPress={() => {}}>
+        <View style={styles.addExerciseSheetHandle} />
+        <View style={styles.addExerciseSheetHeader}>
+          <Pressable onPress={onCancel}>
+            <Text style={styles.addExerciseSheetCancel}>Cancel</Text>
+          </Pressable>
+          <Text style={styles.addExerciseSheetTitle}>Add exercise</Text>
+          <View style={styles.addExerciseSheetHeaderSpacer} />
+        </View>
+        <TextInput
+          style={styles.addExerciseSheetNameInput}
+          value={name}
+          onChangeText={setName}
+          placeholder="Exercise name"
+          placeholderTextColor={C.muted}
+          autoFocus
+          returnKeyType="done"
+          onSubmitEditing={() => trimmed && onAdd(trimmed)}
+        />
+        {listData.length > 0 && (
+          <FlatList
+            data={listData}
+            keyExtractor={item => {
+              if (item.kind === 'section-header') return 'section-header:' + item.label;
+              if (item.kind === 'library') return 'library:' + (item.libraryId ?? item.name);
+              return item.kind + ':' + item.name;
+            }}
+            style={styles.addExerciseSheetHistoryList}
+            initialNumToRender={30}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => {
+              if (item.kind === 'section-header') {
+                return <Text style={styles.addExerciseSheetSectionHeader}>{item.label}</Text>;
+              }
+              return (
+                <Pressable
+                  style={styles.addExerciseSheetHistoryRow}
+                  onPress={() => {
+                    if (item.kind === 'library') {
+                      onAdd(item.name, item.libraryId);
+                    } else {
+                      onAdd(item.name);
+                    }
+                  }}
+                >
+                  <Text style={[
+                    styles.addExerciseSheetHistoryRowText,
+                    item.kind === 'create' && styles.addExerciseSheetCreateRowText,
+                  ]}>
+                    {item.kind === 'create' ? `Create '${item.name}'` : item.name}
+                  </Text>
+                </Pressable>
+              );
+            }}
+          />
+        )}
+      </Pressable>
+    </KeyboardAvoidingView>
+  );
+}
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
