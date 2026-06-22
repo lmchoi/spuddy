@@ -13,6 +13,7 @@ import { summaryLine } from '@/src/domain/programDay';
 import { getDB } from '@/src/db';
 import { updateProgramDay } from '@/src/programStorage';
 import { getAllExerciseNames, type ExerciseLibraryRow } from '@/src/exerciseStorage';
+import { resolveOrCreateExercise } from '@/src/storage';
 import { renameLibraryEntry, parseMuscleGroups } from '@/src/domain/exerciseLibrary';
 import { searchExercisePicker } from '@/src/domain/searchExercisePicker';
 import * as Sentry from '@sentry/react-native';
@@ -304,6 +305,7 @@ export default function ProgramDayDetailScreen() {
   const [draftDayName, setDraftDayName] = useState('');
   const [sheetExIdx, setSheetExIdx] = useState<number | null>(null);
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
+  const [addExerciseSheetOpen, setAddExerciseSheetOpen] = useState(false);
 
   const pId = parseInt(programId ?? '0', 10);
   const idx = parseInt(dayIndex ?? '0', 10);
@@ -396,16 +398,20 @@ export default function ProgramDayDetailScreen() {
     setEditingCell(null);
   }
 
-  function addExercise() {
+  function handleAddExercise(name: string, libraryId?: string) {
     Sentry.addBreadcrumb({ category: 'exercise', message: 'Exercise added', level: 'info' });
     setDay(prev => {
       const next: ProgramDay = {
         ...prev,
-        exercises: [...prev.exercises, { name: 'New exercise', targets: [{ reps: 8 }] }],
+        exercises: [...prev.exercises, { name, targets: [{ reps: 8 }] }],
       };
       persistToDb(next);
       return next;
     });
+    if (libraryId) {
+      getDB().then(db => resolveOrCreateExercise(db, name, libraryId)).catch(() => {});
+    }
+    setAddExerciseSheetOpen(false);
   }
 
   return (
@@ -628,7 +634,7 @@ export default function ProgramDayDetailScreen() {
           );
         })}
 
-        <Pressable style={styles.addExercise} onPress={addExercise}>
+        <Pressable style={styles.addExercise} onPress={() => setAddExerciseSheetOpen(true)}>
           <Text style={styles.addExerciseText}>+ Add exercise</Text>
         </Pressable>
       </ScrollView>
@@ -640,6 +646,12 @@ export default function ProgramDayDetailScreen() {
         onRename={(i, exName) => updateExercise(i, { name: exName })}
         onClose={() => setSheetExIdx(null)}
       />
+      {addExerciseSheetOpen && (
+        <AddExerciseSheet
+          onAdd={handleAddExercise}
+          onCancel={() => setAddExerciseSheetOpen(false)}
+        />
+      )}
     </View>
   );
 }
