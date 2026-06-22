@@ -2,13 +2,16 @@ appId: ${APP_ID}
 ---
 - launchApp:
     clearState: false
+- takeScreenshot: launched
 - tapOn: "Add workout"
 - tapOn: "Legs"
 - tapOn: "Start Legs"
+- takeScreenshot: before-squat-assert
 - assertVisible: "Squat"
 
 # Tap the pill to open the name sheet
 - tapOn: "+ Add exercise"
+- takeScreenshot: before-add-exercise-sheet-assert
 - assertVisible: "Add exercise"
 - assertVisible: "Exercise name"
 
@@ -21,9 +24,11 @@ appId: ${APP_ID}
 - assertNotVisible: "Exercise name"
 
 # New chip appears in the exercise strip
+- takeScreenshot: before-cable-fly-assert
 - assertVisible: "Cable Fly"
 
 # Log a set for the new exercise
 - tapOn: "Done · Last set"
+- takeScreenshot: before-set-log-assert
 - assertVisible: "Set 1"
 - assertVisible: "10 × 0 kg"
