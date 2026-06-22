@@ -1,5 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import ProgramDayDetailScreen from '../app/(tabs)/settings/[programId]/[dayIndex]';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native';
+import ProgramDayDetailScreen, { AddExerciseSheet } from '../app/(tabs)/settings/[programId]/[dayIndex]';
+import { getAllExerciseNames } from '@/src/exerciseStorage';
 import React from 'react';
 
 // We use an external variable to set the *initial* state for our mock hook,
@@ -30,7 +31,9 @@ jest.mock('@/src/exerciseStorage', () => ({
   getExerciseNote: jest.fn(),
   setExerciseNote: jest.fn(),
   getExercisesLibraryData: (...args: unknown[]) => mockGetExercisesLibraryData(...args),
+  getAllExerciseNames: jest.fn().mockReturnValue(['Bench Press', 'Squat']),
 }));
+jest.mock('@/src/storage', () => ({ resolveOrCreateExercise: jest.fn() }));
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn().mockReturnValue({ programId: '1', dayIndex: '0' }),
   useRouter: () => ({ back: jest.fn() }),
@@ -345,5 +348,65 @@ describe('real data loading', () => {
     fireEvent.press(screen.getAllByText('▸')[0]);
     fireEvent.press(screen.getByText('+ Set'));
     await waitFor(() => expect(mockUpdateProgramDay).toHaveBeenCalled());
+  });
+});
+
+describe('AddExerciseSheet component', () => {
+  beforeEach(() => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue([]);
+  });
+
+  it('renders the name input', async () => {
+    render(<AddExerciseSheet onAdd={jest.fn()} onCancel={jest.fn()} />);
+    expect(screen.getByPlaceholderText('Exercise name')).toBeTruthy();
+    await act(async () => {});
+  });
+
+  it('renders history rows when history is non-empty', async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Bench Press', 'Squat']);
+    render(<AddExerciseSheet onAdd={jest.fn()} onCancel={jest.fn()} />);
+    expect(await screen.findByText('Bench Press')).toBeTruthy();
+    expect(screen.getByText('Squat')).toBeTruthy();
+  });
+
+  it('typing filters the history list', async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Bench Press', 'Squat', 'Bent-over Row']);
+    render(<AddExerciseSheet onAdd={jest.fn()} onCancel={jest.fn()} />);
+    await screen.findByText('Bench Press');
+    fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'ben');
+    expect(screen.getByText('Bench Press')).toBeTruthy();
+    expect(screen.queryByText('Squat')).toBeNull();
+  });
+
+  it('shows library section header with a query that matches library', async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue([]);
+    render(<AddExerciseSheet onAdd={jest.fn()} onCancel={jest.fn()} />);
+    await act(async () => {});
+    fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), '3/4 sit');
+    expect(screen.getByText('From library')).toBeTruthy();
+  });
+
+  it("shows Create 'x' row when no exact match", async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Bench Press']);
+    render(<AddExerciseSheet onAdd={jest.fn()} onCancel={jest.fn()} />);
+    await act(async () => {});
+    fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly');
+    expect(screen.getByText("Create 'Cable Fly'")).toBeTruthy();
+  });
+
+  it('tapping a history row calls onAdd with the exercise name', async () => {
+    (getAllExerciseNames as jest.Mock).mockReturnValue(['Squat']);
+    const onAdd = jest.fn();
+    render(<AddExerciseSheet onAdd={onAdd} onCancel={jest.fn()} />);
+    fireEvent.press(await screen.findByText('Squat'));
+    expect(onAdd).toHaveBeenCalledWith('Squat');
+  });
+
+  it('tapping the backdrop calls onCancel', async () => {
+    const onCancel = jest.fn();
+    render(<AddExerciseSheet onAdd={jest.fn()} onCancel={onCancel} />);
+    await act(async () => {});
+    fireEvent.press(screen.getByTestId('add-exercise-sheet-backdrop'));
+    expect(onCancel).toHaveBeenCalled();
   });
 });

@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { C } from '@/components/spuddy/palette';
+import { T } from '@/src/theme';
 
 export const COL_SET = 32;
 export const COL_REPS = 80;
@@ -424,5 +425,53 @@ export const styles = StyleSheet.create({
     fontSize: 10,
     color: C.muted,
     letterSpacing: 1,
+  },
+  // Add exercise sheet
+  addExerciseOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'flex-end',
+  } as object,
+  addExerciseSheetPanel: {
+    backgroundColor: C.bg2,
+    borderTopWidth: 1, borderTopColor: C.border,
+    borderRadius: 24, borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
+    padding: 20, paddingBottom: 40,
+    gap: 12,
+    maxHeight: '70%',
+  } as object,
+  addExerciseSheetHandle: {
+    width: 36, height: 4, borderRadius: 2,
+    backgroundColor: C.border, alignSelf: 'center', marginBottom: 4,
+  } as object,
+  addExerciseSheetHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+  } as object,
+  addExerciseSheetTitle: { fontSize: 15, fontWeight: '700', color: C.text } as object,
+  addExerciseSheetCancel: { fontSize: 14, fontWeight: '400', color: C.muted } as object,
+  addExerciseSheetHeaderSpacer: { width: 40 },
+  addExerciseSheetNameInput: {
+    backgroundColor: C.card, borderWidth: 1, borderColor: C.border,
+    borderRadius: 12, padding: 12,
+    fontSize: 15, color: C.text,
+  } as object,
+  addExerciseSheetHistoryList: { marginTop: 4 },
+  addExerciseSheetHistoryRow: {
+    paddingVertical: 13,
+    paddingHorizontal: T.spacing.screenEdge,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: C.border,
+  },
+  addExerciseSheetHistoryRowText: { fontSize: 15, color: C.text },
+  addExerciseSheetCreateRowText: { color: C.hit, fontWeight: '600' as const },
+  addExerciseSheetSectionHeader: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    color: C.muted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.6,
+    paddingTop: 14,
+    paddingBottom: 4,
+    paddingHorizontal: T.spacing.screenEdge,
   },
 });
