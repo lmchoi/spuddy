@@ -11,8 +11,11 @@ appId: ${APP_ID}
     - Overhead press - 50kg
 - pasteText
 - hideKeyboard
+- takeScreenshot: before-review-day-assert
 - assertVisible: "Review 1 day"
 - tapOn: "Review 1 day"
+- takeScreenshot: before-import-program-assert
 - assertVisible: "Import 1 program"
 - tapOn: "Import 1 program"
+- takeScreenshot: before-push-assert
 - assertVisible: "Push"

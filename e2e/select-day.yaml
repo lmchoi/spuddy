@@ -5,23 +5,29 @@ appId: ${APP_ID}
 
 # Navigate to select-day via Add tab
 - tapOn: "Add workout"
+- takeScreenshot: before-choose-day-assert
 - assertVisible: "Choose day"
 
 # Pill strip shows all 3 days
+- takeScreenshot: before-pill-strip-assert
 - assertVisible: "Push"
 - assertVisible: "Pull"
 - assertVisible: "Legs"
 
 # First day is active and shown as Next up
+- takeScreenshot: before-next-up-assert
 - assertVisible: "Next up"
 - assertVisible: "Bench press"
 
 # Switch to Pull day
 - tapOn: "Pull"
+- takeScreenshot: before-lat-pulldown-assert
 - assertVisible: "Lat pulldown"
 
 # Switch to Legs day and start
 - tapOn: "Legs"
+- takeScreenshot: before-squat-assert
 - assertVisible: "Squat"
 - tapOn: "Start Legs"
+- takeScreenshot: before-legs-session-assert
 - assertVisible: "Legs"
