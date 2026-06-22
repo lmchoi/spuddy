@@ -1,0 +1,83 @@
+name: E2E
+
+on:
+  workflow_call:
+    inputs:
+      gha_run_id:
+        type: string
+        required: false
+      apk_url:
+        type: string
+        required: false
+      app_id:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      gha_run_id:
+        description: 'GHA run ID from android-prerelease workflow'
+        required: false
+      apk_url:
+        description: 'Direct APK URL from EAS build'
+        required: false
+      app_id:
+        description: 'Bundle ID'
+        required: true
+        default: 'com.mchoi.spuddy.prerelease'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Download APK from GHA artifact
+        if: ${{ inputs.gha_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: spuddy-prerelease-apk
+          run-id: ${{ inputs.gha_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: apk/
+
+      - name: Download APK from URL
+        if: ${{ inputs.apk_url != '' }}
+        run: |
+          mkdir -p apk
+          curl -L -o apk/app-release.apk "${{ inputs.apk_url }}"
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | MAESTRO_VERSION=2.6.1 bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Run E2E flows
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          script: |
+            adb install apk/app-release.apk
+            bash e2e/seed.sh ${{ inputs.app_id }}
+            maestro test --env APP_ID=${{ inputs.app_id }} --debug-output /tmp/maestro-debug e2e/*.yaml
+
+      - name: Upload Maestro debug output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-debug-${{ github.run_number }}
+          path: /tmp/maestro-debug
+          if-no-files-found: ignore
