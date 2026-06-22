@@ -48,6 +48,7 @@ jobs:
         if: ${{ inputs.gha_run_id != '' }}
         uses: actions/download-artifact@v4
         with:
+          # Must match the artifact name in android-debug.yml's "Upload APK" step
           name: spuddy-prerelease-apk
           run-id: ${{ inputs.gha_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -55,9 +56,11 @@ jobs:
 
       - name: Download APK from URL
         if: ${{ inputs.apk_url != '' }}
+        env:
+          APK_URL: ${{ inputs.apk_url }}
         run: |
           mkdir -p apk
-          curl -L -o apk/app-release.apk "${{ inputs.apk_url }}"
+          curl -L -o apk/app-release.apk "$APK_URL"
 
       - name: Install Maestro
         run: |
@@ -66,13 +69,15 @@ jobs:
 
       - name: Run E2E flows
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          APP_ID: ${{ inputs.app_id }}
         with:
           api-level: 30
           arch: x86_64
           script: |
             adb install apk/app-release.apk
-            bash e2e/seed.sh ${{ inputs.app_id }}
-            maestro test --env APP_ID=${{ inputs.app_id }} --debug-output /tmp/maestro-debug --flatten-debug-output e2e/*.yaml
+            bash e2e/seed.sh "$APP_ID"
+            maestro test --env APP_ID="$APP_ID" --debug-output /tmp/maestro-debug --flatten-debug-output e2e/*.yaml
 
       - name: Upload Maestro debug output
         if: always()
