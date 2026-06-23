@@ -1,0 +1,47 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: false
+
+# Navigate to Settings tab → Push day editor
+- tapOn: "Settings"
+- takeScreenshot: settings-screen
+- tapOn: "Push"
+- takeScreenshot: push-day-editor
+
+# Open edit sheet for an unmatched exercise
+- tapOn: "Bench Press"
+- waitForAnimationToEnd
+- hideKeyboard
+- takeScreenshot: edit-sheet-unmatched
+- assertVisible: "LIBRARY MATCH"
+- assertVisible: "Search library"
+
+# Enter search mode
+- tapOn: "Search library"
+- waitForAnimationToEnd
+- takeScreenshot: search-mode-open
+
+# Type a short query — search input is auto-focused
+- inputText: "bench"
+- waitForAnimationToEnd
+- hideKeyboard
+- takeScreenshot: search-results
+
+# Pick a library entry
+- tapOn: "Barbell Bench Press - Medium Grip"
+- waitForAnimationToEnd
+- takeScreenshot: after-pick
+
+# Verify match card appears and search mode is gone
+- assertVisible: "100%"
+- assertVisible: "Barbell Bench Press - Medium Grip"
+- assertVisible: "Change match"
+
+# Save and reopen — verify link persists in-memory
+- tapOn: "SAVE"
+- tapOn: "Bench Press"
+- takeScreenshot: reopened-sheet
+- assertVisible: "100%"
+- assertVisible: "Barbell Bench Press - Medium Grip"
+- assertVisible: "Change match"
