@@ -437,6 +437,27 @@ describe('exercise edit sheet — search library mode', () => {
     expect(screen.queryByPlaceholderText('Search library')).toBeNull();
     expect(screen.getByDisplayValue('Squat')).toBeTruthy();
   });
+
+  it('state update waits for db write so a focus re-fetch cannot revert it', async () => {
+    let resolveGetDB!: (db: unknown) => void;
+    const dbPromise = new Promise<unknown>(resolve => { resolveGetDB = resolve; });
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getDB } = require('@/src/db');
+    (getDB as jest.Mock).mockReturnValueOnce(dbPromise);
+
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    fireEvent.press(screen.getByText('Search library'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
+    fireEvent.press(await screen.findByText('3/4 Sit-Up'));
+
+    // While db write is pending, state must not update yet — a focus re-fetch
+    // at this moment would read stale data and revert the match card.
+    expect(screen.queryByText('100%')).toBeNull();
+
+    await act(async () => { resolveGetDB({}); });
+    expect(screen.getByText('100%')).toBeTruthy();
+  });
 });
 
 describe('AddExerciseSheet component', () => {
