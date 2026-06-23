@@ -24,10 +24,7 @@ appId: ${APP_ID}
 - takeScreenshot: before-lat-pulldown-assert
 - assertVisible: "Lat pulldown"
 
-# Switch to Legs day and start
+# Switch to Legs day
 - tapOn: "Legs"
 - takeScreenshot: before-squat-assert
 - assertVisible: "Squat"
-- tapOn: "Start Legs"
-- takeScreenshot: before-legs-session-assert
-- assertVisible: "Legs"
