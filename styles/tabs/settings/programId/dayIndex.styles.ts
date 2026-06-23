@@ -426,6 +426,19 @@ export const styles = StyleSheet.create({
     color: C.muted,
     letterSpacing: 1,
   },
+  sheetSearchResults: {
+    maxHeight: 280,
+  },
+  sheetSearchRow: {
+    paddingVertical: 13,
+    paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: C.border,
+  },
+  sheetSearchRowText: {
+    fontSize: 15,
+    color: C.text,
+  },
   // Add exercise sheet
   addExerciseOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,

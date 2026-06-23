@@ -14,8 +14,10 @@ import { getDB } from '@/src/db';
 import { updateProgramDay } from '@/src/programStorage';
 import { getAllExerciseNames, type ExerciseLibraryRow } from '@/src/exerciseStorage';
 import { resolveOrCreateExercise } from '@/src/storage';
-import { renameLibraryEntry, parseMuscleGroups } from '@/src/domain/exerciseLibrary';
+import { renameLibraryEntry, parseMuscleGroups, matchById } from '@/src/domain/exerciseLibrary';
 import { searchExercisePicker } from '@/src/domain/searchExercisePicker';
+import { searchLibrary } from '@/src/domain/searchLibrary';
+import { setExerciseLibraryLink } from '@/src/exerciseStorage';
 import * as Sentry from '@sentry/react-native';
 import { posthog } from '@/src/config/posthog';
 
@@ -100,81 +102,133 @@ type ExerciseEditSheetProps = {
   exercises: ProgramExercise[];
   libraryRow: ExerciseLibraryRow | null;
   onRename: (exIdx: number, name: string) => void;
+  onLink: (libraryId: string) => void;
   onClose: () => void;
 };
 
 
-function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onClose }: ExerciseEditSheetProps) {
+function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onLink, onClose }: ExerciseEditSheetProps) {
   const exercise = exIdx !== null ? exercises[exIdx] : null;
   const [draft, setDraft] = useState(exercise?.name ?? '');
+  const [mode, setMode] = useState<'edit' | 'search'>('edit');
+  const [searchQuery, setSearchQuery] = useState('');
 
   if (exIdx === null || !exercise) return null;
 
   const isMatched = libraryRow?.libraryId != null;
   const muscles = parseMuscleGroups(libraryRow?.muscleGroups ?? null);
+  const libraryEntry = isMatched ? matchById(libraryRow!.libraryId!) : null;
 
   function handleSave() {
     if (exIdx !== null) onRename(exIdx, draft);
     onClose();
   }
 
+  function handlePickResult(libraryId: string) {
+    onLink(libraryId);
+    setMode('edit');
+    setSearchQuery('');
+  }
+
+  function handleDismissSearch() {
+    setMode('edit');
+    setSearchQuery('');
+  }
+
   return (
     <KeyboardAvoidingView style={styles.sheetOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <Pressable style={styles.sheetBackdrop} onPress={onClose} />
+      <Pressable style={styles.sheetBackdrop} onPress={mode === 'search' ? handleDismissSearch : onClose} />
       <View style={styles.sheet}>
-          <View style={styles.sheetHandle} />
-          <View style={styles.sheetSection}>
-            <Text style={styles.sheetSectionLabel}>Exercise name</Text>
-            <TextInput
-              style={styles.sheetInput}
-              value={draft}
-              onChangeText={setDraft}
-              autoFocus
-              returnKeyType="done"
-              onSubmitEditing={handleSave}
+        <View style={styles.sheetHandle} />
+        {mode === 'search' ? (
+          <>
+            <View style={styles.sheetSection}>
+              <TextInput
+                style={styles.sheetInput}
+                placeholder="Search library"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoFocus
+                returnKeyType="search"
+              />
+            </View>
+            <FlatList
+              data={searchLibrary(searchQuery)}
+              keyExtractor={item => item.libraryId}
+              style={styles.sheetSearchResults}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item }) => (
+                <Pressable style={styles.sheetSearchRow} onPress={() => handlePickResult(item.libraryId)}>
+                  <Text style={styles.sheetSearchRowText}>{item.name}</Text>
+                </Pressable>
+              )}
             />
-          </View>
-          <View style={styles.sheetSectionDivider} />
-          <View style={styles.sheetSection}>
-            <Text style={styles.sheetSectionLabel}>Library match</Text>
-            {isMatched ? (
-              <View style={styles.matchCard}>
-                <View style={styles.matchCardHead}>
-                  <View>
-                    <Text style={styles.matchCardName}>{exercise.name}</Text>
-                  </View>
-                  <View style={styles.matchConfBadge}>
-                    <Text style={styles.matchConfText}>{libraryRow!.libraryConfidence}%</Text>
-                  </View>
-                </View>
-                <View style={styles.pillsRow}>
-                  {muscles.map(m => (
-                    <View key={m} style={styles.pillCore}>
-                      <Text style={styles.pillCoreText}>{m}</Text>
+            <Pressable style={styles.btnDismiss} onPress={handleDismissSearch}>
+              <Text style={styles.btnDismissText}>dismiss</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <View style={styles.sheetSection}>
+              <Text style={styles.sheetSectionLabel}>Exercise name</Text>
+              <TextInput
+                style={styles.sheetInput}
+                value={draft}
+                onChangeText={setDraft}
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={handleSave}
+              />
+            </View>
+            <View style={styles.sheetSectionDivider} />
+            <View style={styles.sheetSection}>
+              <Text style={styles.sheetSectionLabel}>Library match</Text>
+              {isMatched ? (
+                <View style={styles.matchCard}>
+                  <View style={styles.matchCardHead}>
+                    <View>
+                      <Text style={styles.matchCardName}>{libraryEntry?.name ?? exercise.name}</Text>
                     </View>
-                  ))}
+                    <View style={styles.matchConfBadge}>
+                      <Text style={styles.matchConfText}>{libraryRow!.libraryConfidence}%</Text>
+                    </View>
+                  </View>
+                  <View style={styles.pillsRow}>
+                    {muscles.map(m => (
+                      <View key={m} style={styles.pillCore}>
+                        <Text style={styles.pillCoreText}>{m}</Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
-              </View>
-            ) : (
-              <View style={styles.noMatchCard}>
-                <Text style={styles.noMatchText}>
-                  {'No library match found.\nMuscle group data won\'t appear until\nthis exercise is linked.'}
-                </Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.sheetBtns}>
-            <Pressable style={styles.btnPrimary} onPress={handleSave}>
-              <Text style={styles.btnPrimaryText}>{isMatched ? 'Save' : 'Save name'}</Text>
+              ) : (
+                <View style={styles.noMatchCard}>
+                  <Text style={styles.noMatchText}>
+                    {'No library match found.\nMuscle group data won\'t appear until\nthis exercise is linked.'}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <View style={styles.sheetBtns}>
+              <Pressable style={styles.btnPrimary} onPress={handleSave}>
+                <Text style={styles.btnPrimaryText}>{isMatched ? 'Save' : 'Save name'}</Text>
+              </Pressable>
+              {isMatched ? (
+                <Pressable style={[styles.btnSecondary, styles.btnSecondaryDisabled]} disabled>
+                  <Text style={styles.btnSecondaryText}>Change match</Text>
+                </Pressable>
+              ) : (
+                <Pressable style={styles.btnSecondary} onPress={() => setMode('search')}>
+                  <Text style={styles.btnSecondaryText}>Search library</Text>
+                </Pressable>
+              )}
+            </View>
+            <Pressable style={styles.btnDismiss} onPress={onClose}>
+              <Text style={styles.btnDismissText}>dismiss</Text>
             </Pressable>
-            <Pressable style={[styles.btnSecondary, styles.btnSecondaryDisabled]} disabled>
-              <Text style={styles.btnSecondaryText}>{isMatched ? 'Change match' : 'Search library'}</Text>
-            </Pressable>
-          </View>
-          <Pressable style={styles.btnDismiss} onPress={onClose}>
-            <Text style={styles.btnDismissText}>dismiss</Text>
-          </Pressable>
-        </View>
+          </>
+        )}
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -397,6 +451,25 @@ export default function ProgramDayDetailScreen() {
     setExpandedIdx(null);
     setSheetExIdx(null);
     setEditingCell(null);
+  }
+
+  function handleLibraryLink(exerciseName: string, libraryId: string) {
+    const entry = matchById(libraryId);
+    if (!entry) return;
+    const muscleGroups = JSON.stringify(entry.primaryMuscles);
+    const equipment = entry.equipment ?? '';
+    getDB().then(db => setExerciseLibraryLink(db, exerciseName, libraryId, muscleGroups, equipment)).catch(() => {});
+    setLibraryData(prev => {
+      const next = new Map(prev);
+      next.set(exerciseName, {
+        name: exerciseName,
+        libraryId,
+        muscleGroups,
+        equipment: entry.equipment ?? null,
+        libraryConfidence: 100,
+      });
+      return next;
+    });
   }
 
   function handleAddExercise(name: string, libraryId?: string) {
@@ -646,6 +719,10 @@ export default function ProgramDayDetailScreen() {
         exercises={day.exercises}
         libraryRow={sheetExIdx !== null ? (libraryData.get(day.exercises[sheetExIdx]?.name ?? '') ?? null) : null}
         onRename={(i, exName) => updateExercise(i, { name: exName })}
+        onLink={(libraryId) => {
+          if (sheetExIdx === null) return;
+          handleLibraryLink(day.exercises[sheetExIdx].name, libraryId);
+        }}
         onClose={() => setSheetExIdx(null)}
       />
       {addExerciseSheetOpen && (
