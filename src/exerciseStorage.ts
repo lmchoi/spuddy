@@ -35,3 +35,16 @@ export function getExerciseNote(db: DrizzleDB, exerciseId: number): string | nul
 export function setExerciseNote(db: DrizzleDB, exerciseId: number, note: string | null): void {
   db.update(exercises).set({ notes: note }).where(eq(exercises.id, exerciseId)).run();
 }
+
+export function setExerciseLibraryLink(
+  db: DrizzleDB,
+  exerciseName: string,
+  libraryId: string,
+  muscleGroups: string,
+  equipment: string,
+): void {
+  db.update(exercises)
+    .set({ libraryId, muscleGroups, equipment, libraryConfidence: 100 })
+    .where(eq(exercises.name, exerciseName))
+    .run();
+}
