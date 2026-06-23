@@ -1,5 +1,5 @@
 import { resolveOrCreateExercise, type DrizzleDB } from '../src/storage';
-import { getAllExerciseNames, getExerciseNote, setExerciseNote } from '../src/exerciseStorage';
+import { getAllExerciseNames, getExerciseNote, setExerciseNote, setExerciseLibraryLink, getExercisesLibraryData } from '../src/exerciseStorage';
 import { makeInMemoryDB } from './helpers/makeInMemoryDB';
 
 describe('exerciseStorage', () => {
@@ -60,6 +60,24 @@ describe('exerciseStorage', () => {
       await setExerciseNote(db, idA, 'Note A');
       const noteB = await getExerciseNote(db, idB);
       expect(noteB).toBeNull();
+    });
+  });
+
+  describe('setExerciseLibraryLink', () => {
+    it('writes libraryId, muscleGroups, equipment, and libraryConfidence 100', () => {
+      resolveOrCreateExercise(db, 'Squat');
+      setExerciseLibraryLink(db, 'Squat', 'Barbell_Squat', '["quadriceps","glutes"]', 'barbell');
+      const [row] = getExercisesLibraryData(db, ['Squat']);
+      expect(row.libraryId).toBe('Barbell_Squat');
+      expect(row.muscleGroups).toBe('["quadriceps","glutes"]');
+      expect(row.equipment).toBe('barbell');
+      expect(row.libraryConfidence).toBe(100);
+    });
+
+    it('no-ops when exercise name does not exist', () => {
+      expect(() =>
+        setExerciseLibraryLink(db, 'NonExistent', 'some_id', 'chest', 'barbell')
+      ).not.toThrow();
     });
   });
 });
