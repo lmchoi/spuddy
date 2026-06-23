@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '@/styles/log-session.styles';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';
 import { getDB } from '@/src/db';
@@ -835,7 +835,6 @@ export default function LogSession() {
   if (state.status === 'loading') {
     return (
       <View style={[styles.container, styles.centered]}>
-        <Stack.Screen options={{ headerShown: false }} />
         <ActivityIndicator color={C.hit} />
       </View>
     );
@@ -844,7 +843,6 @@ export default function LogSession() {
   if (state.status === 'empty') {
     return (
       <View style={[styles.container, styles.centered, { padding: 40 }]}>
-        <Stack.Screen options={{ headerShown: false }} />
         <Text style={styles.emptyTitle}>No program found</Text>
         <Text style={styles.emptyText}>Import a program from Settings first.</Text>
         <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace(HOME_ROUTE)} style={[styles.confirmBtn, { width: '100%', marginTop: 20 }]}>
@@ -865,7 +863,6 @@ export default function LogSession() {
       style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle="light-content" />
 
       <View style={styles.header}>
