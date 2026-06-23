@@ -1,4 +1,4 @@
 appId: ${APP_ID}
 ---
 - launchApp
-- assertVisible: "Add workout"
+- assertVisible: "Settings"
