@@ -78,7 +78,7 @@ function RootLayoutNav() {
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => setupNotificationResponseListener(() => router.push('/log-session')), [router]);
+  useEffect(() => setupNotificationResponseListener(() => router.navigate('/log-session')), [router]);
 
   return (
     <PostHogProvider client={posthog} autocapture>

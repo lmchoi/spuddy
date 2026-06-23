@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/react-native';
 import { PostHogProvider } from 'posthog-react-native';
 import { posthog } from '../src/config/posthog';
 import RootLayout, { unstable_settings } from '../app/_layout';
+import * as notifications from '../src/notifications';
 
 jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
@@ -22,6 +23,7 @@ jest.mock('expo-splash-screen', () => ({
 
 const capturedScreens: { name: string; options?: Record<string, unknown> }[] = [];
 let capturedScreenOptions: Record<string, unknown> = {};
+const mockNavigate = jest.fn();
 
 jest.mock('expo-router', () => {
   const MockScreen = ({ name, options }: any) => {
@@ -37,7 +39,7 @@ jest.mock('expo-router', () => {
     }),
     ThemeProvider: ({ children }: any) => <>{children}</>,
     DarkTheme: { colors: { background: '#000' } },
-    useRouter: () => ({ push: jest.fn() }),
+    useRouter: () => ({ push: jest.fn(), navigate: mockNavigate }),
     useNavigationContainerRef: () => ({ current: null, addListener: jest.fn(() => () => {}), getCurrentRoute: jest.fn() }),
   };
 });
@@ -56,6 +58,7 @@ jest.mock('../src/config/posthog', () => ({ posthog: {} }));
 beforeEach(() => {
   capturedScreens.length = 0;
   capturedScreenOptions = {};
+  mockNavigate.mockReset();
 });
 
 describe('Sentry initialisation', () => {
@@ -100,6 +103,21 @@ describe('PostHog provider', () => {
       expect.objectContaining({ client: posthog, autocapture: true }),
       undefined,
     );
+  });
+});
+
+describe('notification response listener', () => {
+  it('uses router.navigate (not push) so tapping a rest notification while on log-session does not stack a duplicate', () => {
+    let capturedCallback: (() => void) | undefined;
+    jest.spyOn(notifications, 'setupNotificationResponseListener').mockImplementation((cb) => {
+      capturedCallback = cb;
+      return () => {};
+    });
+
+    render(<RootLayout />);
+    expect(capturedCallback).toBeDefined();
+    capturedCallback!();
+    expect(mockNavigate).toHaveBeenCalledWith('/log-session');
   });
 });
 
