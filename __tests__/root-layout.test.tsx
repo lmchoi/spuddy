@@ -119,4 +119,11 @@ describe('RootLayoutNav screen registration', () => {
     expect(screen).toBeDefined();
     expect(screen?.options?.headerShown).toBe(false);
   });
+
+  it('registers log-session with headerShown: false', () => {
+    render(<RootLayout />);
+    const screen = capturedScreens.find((s) => s.name === 'log-session');
+    expect(screen).toBeDefined();
+    expect(screen?.options?.headerShown).toBe(false);
+  });
 });
