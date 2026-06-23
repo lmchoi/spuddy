@@ -459,18 +459,20 @@ export default function ProgramDayDetailScreen() {
     const muscleGroups = JSON.stringify(entry.primaryMuscles);
     const equipment = entry.equipment ?? '';
     posthog.capture('library_link_set', { exercise: exerciseName, library_id: libraryId });
-    getDB().then(db => setExerciseLibraryLink(db, exerciseName, libraryId, muscleGroups, equipment)).catch(() => {});
-    setLibraryData(prev => {
-      const next = new Map(prev);
-      next.set(exerciseName, {
-        name: exerciseName,
-        libraryId,
-        muscleGroups,
-        equipment: entry.equipment ?? null,
-        libraryConfidence: 100,
+    getDB().then(db => {
+      setExerciseLibraryLink(db, exerciseName, libraryId, muscleGroups, equipment);
+      setLibraryData(prev => {
+        const next = new Map(prev);
+        next.set(exerciseName, {
+          name: exerciseName,
+          libraryId,
+          muscleGroups,
+          equipment: entry.equipment ?? null,
+          libraryConfidence: 100,
+        });
+        return next;
       });
-      return next;
-    });
+    }).catch(console.error);
   }
 
   function handleAddExercise(name: string, libraryId?: string) {
