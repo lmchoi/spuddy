@@ -31,6 +31,7 @@ jest.mock('@/src/exerciseStorage', () => ({
   setExerciseNote: jest.fn(),
   getExercisesLibraryData: (...args: unknown[]) => mockGetExercisesLibraryData(...args),
   getAllExerciseNames: jest.fn().mockReturnValue(['Bench Press', 'Squat']),
+  setExerciseLibraryLink: jest.fn(),
 }));
 jest.mock('@/src/storage', () => ({ resolveOrCreateExercise: jest.fn() }));
 jest.mock('expo-router', () => ({
@@ -291,7 +292,7 @@ describe('exercise edit sheet', () => {
     };
     render(<ProgramDayDetailScreen />);
     fireEvent.press(screen.getByText('Bench Press'));
-    expect(screen.getAllByText('Bench Press').length).toBeGreaterThan(1);
+    expect(screen.getByText('Barbell Bench Press - Medium Grip')).toBeTruthy();
     expect(screen.getByText('100%')).toBeTruthy();
   });
 
@@ -380,6 +381,61 @@ describe('real data loading', () => {
     fireEvent.press(screen.getAllByText('▸')[0]);
     fireEvent.press(screen.getByText('+ Set'));
     await waitFor(() => expect(mockUpdateProgramDay).toHaveBeenCalled());
+  });
+});
+
+describe('exercise edit sheet — search library mode', () => {
+  it('pressing "Search library" opens search mode for unmatched exercise', () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    fireEvent.press(screen.getByText('Search library'));
+    expect(screen.getByPlaceholderText('Search library')).toBeTruthy();
+  });
+
+  it('"Change match" does not open search mode for matched exercise', () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Bench Press'));
+    fireEvent.press(screen.getByText('Change match'));
+    expect(screen.queryByPlaceholderText('Search library')).toBeNull();
+  });
+
+  it('search mode renders results for a query', async () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    fireEvent.press(screen.getByText('Search library'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
+    expect(await screen.findByText('3/4 Sit-Up')).toBeTruthy();
+  });
+
+  it('tapping a result updates match card and returns to edit mode', async () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    fireEvent.press(screen.getByText('Search library'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
+    fireEvent.press(await screen.findByText('3/4 Sit-Up'));
+    await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
+    expect(screen.queryByPlaceholderText('Search library')).toBeNull();
+  });
+
+  it('match card shows library entry name not exercise name', async () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    fireEvent.press(screen.getByText('Search library'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
+    fireEvent.press(await screen.findByText('3/4 Sit-Up'));
+    // library name should appear in the match card (not in a search result, since search is gone)
+    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+    expect(screen.queryByPlaceholderText('Search library')).toBeNull();
+  });
+
+  it('dismiss in search mode returns to edit without linking', () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    fireEvent.press(screen.getByText('Search library'));
+    expect(screen.getByPlaceholderText('Search library')).toBeTruthy();
+    fireEvent.press(screen.getByText('dismiss'));
+    expect(screen.queryByPlaceholderText('Search library')).toBeNull();
+    expect(screen.getByDisplayValue('Squat')).toBeTruthy();
   });
 });
 
