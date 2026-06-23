@@ -458,6 +458,7 @@ export default function ProgramDayDetailScreen() {
     if (!entry) return;
     const muscleGroups = JSON.stringify(entry.primaryMuscles);
     const equipment = entry.equipment ?? '';
+    posthog.capture('library_link_set', { exercise: exerciseName, library_id: libraryId });
     getDB().then(db => setExerciseLibraryLink(db, exerciseName, libraryId, muscleGroups, equipment)).catch(() => {});
     setLibraryData(prev => {
       const next = new Map(prev);
