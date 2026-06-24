@@ -14,7 +14,7 @@
 - **Selectors are testable** — every domain selector must have unit tests. This is the main mechanism for catching regressions without a running device.
 - **Custom hooks are wiring, not logic** — hooks are acceptable for connecting domain functions to React state (e.g. calling `useReducer` with a domain reducer, or bridging to a context), but must not contain domain logic themselves. Logic in a hook can only be tested via `renderHook`; logic in a pure function can be tested with a plain `jest` call.
 
-- **Root Stack defaults to `headerShown: false`** — `app/_layout.tsx` sets `screenOptions={{ headerShown: false }}` on the root `<Stack>`, so custom-header screens need no explicit entry. Only screens that opt into the native header (currently just `strong-import`) need a `<Stack.Screen>` entry.
+- **Root Stack defaults to `headerShown: false`** — `app/_layout.tsx` sets `screenOptions={{ headerShown: false }}` on the root `<Stack>`. `index` is always the first named child to anchor the initial route — without it, Expo Router can treat the first (or only) named `<Stack.Screen>` as the entry point. Screens that need non-default config get a named entry in `_layout.tsx`, not inline in the component.
 
 ## Styling
 

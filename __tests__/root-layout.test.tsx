@@ -109,11 +109,9 @@ describe('RootLayoutNav screen registration', () => {
     expect(capturedScreenOptions).toMatchObject({ headerShown: false });
   });
 
-  it('opts strong-import into the native header with a title', () => {
+  it('registers index as the first entry to anchor the initial route', () => {
     render(<RootLayout />);
-    const screen = capturedScreens.find((s) => s.name === 'strong-import');
-    expect(screen?.options?.headerShown).toBe(true);
-    expect(screen?.options?.title).toBe('Import from Strong');
+    expect(capturedScreens[0]?.name).toBe('index');
   });
 
 });

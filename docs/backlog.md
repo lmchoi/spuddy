@@ -44,3 +44,5 @@ Items that can't be picked up until a dependency lands.
 ## Inbox
 
 New items land here. Triage before picking up.
+
+- **Delete orphaned Expo template files** — `components/ExternalLink.tsx`, `components/useColorScheme.ts`, `components/useColorScheme.web.ts` were left behind when their consumers (`Themed.tsx`, `EditScreenInfo.tsx`, `modal.tsx`) were deleted in PR #143. Safe to delete; nothing imports them.
