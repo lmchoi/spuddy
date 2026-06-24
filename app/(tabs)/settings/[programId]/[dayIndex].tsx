@@ -112,20 +112,26 @@ function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onLink, onC
   const [draft, setDraft] = useState(exercise?.name ?? '');
   const [mode, setMode] = useState<'edit' | 'search'>('edit');
   const [searchQuery, setSearchQuery] = useState('');
+  const [pendingLinkId, setPendingLinkId] = useState<string | null>(null);
 
   if (exIdx === null || !exercise) return null;
 
-  const isMatched = libraryRow?.libraryId != null;
-  const muscles = parseMuscleGroups(libraryRow?.muscleGroups ?? null);
-  const libraryEntry = isMatched ? matchById(libraryRow!.libraryId!) : null;
+  const effectiveLibraryId = pendingLinkId ?? libraryRow?.libraryId ?? null;
+  const isMatched = effectiveLibraryId != null;
+  const libraryEntry = isMatched ? matchById(effectiveLibraryId!) : null;
+  const muscles = libraryEntry
+    ? parseMuscleGroups(JSON.stringify(libraryEntry.primaryMuscles))
+    : parseMuscleGroups(libraryRow?.muscleGroups ?? null);
+  const confidence = pendingLinkId ? 100 : (libraryRow?.libraryConfidence ?? 100);
 
   function handleSave() {
+    if (pendingLinkId) onLink(pendingLinkId);
     if (exIdx !== null) onRename(exIdx, draft);
     onClose();
   }
 
   function handlePickResult(libraryId: string) {
-    onLink(libraryId);
+    setPendingLinkId(libraryId);
     setMode('edit');
     setSearchQuery('');
   }
@@ -190,7 +196,7 @@ function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onLink, onC
                       <Text style={styles.matchCardName}>{libraryEntry?.name ?? exercise.name}</Text>
                     </View>
                     <View style={styles.matchConfBadge}>
-                      <Text style={styles.matchConfText}>{libraryRow!.libraryConfidence}%</Text>
+                      <Text style={styles.matchConfText}>{confidence}%</Text>
                     </View>
                   </View>
                   <View style={styles.pillsRow}>

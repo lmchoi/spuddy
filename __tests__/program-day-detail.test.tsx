@@ -438,25 +438,36 @@ describe('exercise edit sheet — search library mode', () => {
     expect(screen.getByDisplayValue('Squat')).toBeTruthy();
   });
 
-  it('state update waits for db write so a focus re-fetch cannot revert it', async () => {
-    let resolveGetDB!: (db: unknown) => void;
-    const dbPromise = new Promise<unknown>(resolve => { resolveGetDB = resolve; });
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getDB } = require('@/src/db');
-    (getDB as jest.Mock).mockReturnValueOnce(dbPromise);
+  it('dismiss after picking a result does not commit the link', async () => {
+    const { setExerciseLibraryLink } = require('@/src/exerciseStorage');
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    fireEvent.press(screen.getByText('Search library'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
+    fireEvent.press(await screen.findByText('3/4 Sit-Up'));
+    // match card shows pending state
+    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+    // user dismisses without saving
+    fireEvent.press(screen.getByText('dismiss'));
+    expect(setExerciseLibraryLink).not.toHaveBeenCalled();
+  });
 
+  it('db write only happens on Save, not on pick', async () => {
+    const { setExerciseLibraryLink } = require('@/src/exerciseStorage');
     render(<ProgramDayDetailScreen />);
     fireEvent.press(screen.getByText('Squat'));
     fireEvent.press(screen.getByText('Search library'));
     fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
     fireEvent.press(await screen.findByText('3/4 Sit-Up'));
 
-    // While db write is pending, state must not update yet — a focus re-fetch
-    // at this moment would read stale data and revert the match card.
-    expect(screen.queryByText('100%')).toBeNull();
+    // match card shows immediately from local pending state
+    await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
+    // but db write has not happened yet
+    expect(setExerciseLibraryLink).not.toHaveBeenCalled();
 
-    await act(async () => { resolveGetDB({}); });
-    expect(screen.getByText('100%')).toBeTruthy();
+    // pressing Save commits the link
+    fireEvent.press(screen.getByText('Save'));
+    await waitFor(() => expect(setExerciseLibraryLink).toHaveBeenCalled());
   });
 });
 
