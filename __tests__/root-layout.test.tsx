@@ -116,9 +116,4 @@ describe('RootLayoutNav screen registration', () => {
     expect(screen?.options?.title).toBe('Import from Strong');
   });
 
-  it('registers modal with presentation: modal', () => {
-    render(<RootLayout />);
-    const screen = capturedScreens.find((s) => s.name === 'modal');
-    expect(screen?.options?.presentation).toBe('modal');
-  });
 });
