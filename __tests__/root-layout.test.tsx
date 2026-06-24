@@ -21,6 +21,7 @@ jest.mock('expo-splash-screen', () => ({
 }));
 
 const capturedScreens: { name: string; options?: Record<string, unknown> }[] = [];
+let capturedScreenOptions: Record<string, unknown> = {};
 
 jest.mock('expo-router', () => {
   const MockScreen = ({ name, options }: any) => {
@@ -28,7 +29,10 @@ jest.mock('expo-router', () => {
     return null;
   };
   return {
-    Stack: Object.assign(({ children }: any) => <>{children}</>, {
+    Stack: Object.assign(({ screenOptions, children }: any) => {
+      capturedScreenOptions = screenOptions ?? {};
+      return <>{children}</>;
+    }, {
       Screen: MockScreen,
     }),
     ThemeProvider: ({ children }: any) => <>{children}</>,
@@ -51,6 +55,7 @@ jest.mock('../src/config/posthog', () => ({ posthog: {} }));
 
 beforeEach(() => {
   capturedScreens.length = 0;
+  capturedScreenOptions = {};
 });
 
 describe('Sentry initialisation', () => {
@@ -99,31 +104,21 @@ describe('PostHog provider', () => {
 });
 
 describe('RootLayoutNav screen registration', () => {
-  it('registers notes-import with headerShown: false', () => {
+  it('defaults all screens to headerShown: false via screenOptions', () => {
     render(<RootLayout />);
-    const screen = capturedScreens.find((s) => s.name === 'notes-import');
-    expect(screen).toBeDefined();
-    expect(screen?.options?.headerShown).toBe(false);
+    expect(capturedScreenOptions).toMatchObject({ headerShown: false });
   });
 
-  it('registers notes-import-review with headerShown: false', () => {
+  it('opts strong-import into the native header with a title', () => {
     render(<RootLayout />);
-    const screen = capturedScreens.find((s) => s.name === 'notes-import-review');
-    expect(screen).toBeDefined();
-    expect(screen?.options?.headerShown).toBe(false);
+    const screen = capturedScreens.find((s) => s.name === 'strong-import');
+    expect(screen?.options?.headerShown).toBe(true);
+    expect(screen?.options?.title).toBe('Import from Strong');
   });
 
-  it('registers select-day with headerShown: false', () => {
+  it('registers modal with presentation: modal', () => {
     render(<RootLayout />);
-    const screen = capturedScreens.find((s) => s.name === 'select-day');
-    expect(screen).toBeDefined();
-    expect(screen?.options?.headerShown).toBe(false);
-  });
-
-  it('registers log-session with headerShown: false', () => {
-    render(<RootLayout />);
-    const screen = capturedScreens.find((s) => s.name === 'log-session');
-    expect(screen).toBeDefined();
-    expect(screen?.options?.headerShown).toBe(false);
+    const screen = capturedScreens.find((s) => s.name === 'modal');
+    expect(screen?.options?.presentation).toBe('modal');
   });
 });

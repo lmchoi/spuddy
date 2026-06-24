@@ -83,15 +83,9 @@ function RootLayoutNav() {
   return (
     <PostHogProvider client={posthog} autocapture>
     <ThemeProvider value={WarmDarkTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="notes-import" options={{ headerShown: false }} />
-        <Stack.Screen name="notes-import-review" options={{ headerShown: false }} />
         <Stack.Screen name="strong-import" options={{ title: 'Import from Strong', headerShown: true }} />
-        <Stack.Screen name="select-day" options={{ headerShown: false }} />
-        <Stack.Screen name="log-session" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
     </PostHogProvider>
