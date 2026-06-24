@@ -84,7 +84,7 @@ function RootLayoutNav() {
     <PostHogProvider client={posthog} autocapture>
     <ThemeProvider value={WarmDarkTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="strong-import" options={{ title: 'Import from Strong', headerShown: true }} />
+        <Stack.Screen name="index" />
       </Stack>
     </ThemeProvider>
     </PostHogProvider>

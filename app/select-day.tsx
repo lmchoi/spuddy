@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '@/styles/select-day.styles';
-import { Stack, useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';
 import { getDB } from '@/src/db';
@@ -47,7 +47,6 @@ export default function SelectDay() {
   if (state.status === 'loading') {
     return (
       <View style={[styles.container, styles.centered]}>
-        <Stack.Screen options={{ headerShown: false }} />
         <ActivityIndicator color={C.hit} />
       </View>
     );
@@ -56,7 +55,6 @@ export default function SelectDay() {
   if (state.status === 'empty') {
     return (
       <View style={[styles.container, styles.centered, { padding: 40 }]}>
-        <Stack.Screen options={{ headerShown: false }} />
         <Text style={styles.emptyTitle}>No program found</Text>
         <Text style={styles.emptyText}>Import a program from Settings first.</Text>
         <Pressable onPress={() => router.back()} style={[styles.startBtn, { width: '100%', marginTop: 20 }]}>
@@ -75,7 +73,6 @@ export default function SelectDay() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle="light-content" />
 
       <View style={styles.header}>
