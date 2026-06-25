@@ -1,3 +1,4 @@
+import { posthog } from '@/src/config/posthog';
 import { getAllExerciseNames } from '@/src/exerciseStorage';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import ProgramDayDetailScreen, { AddExerciseSheet } from '../app/(tabs)/settings/[programId]/[dayIndex]';
@@ -478,6 +479,30 @@ describe('exercise edit sheet — search library mode', () => {
     // pressing Save commits the link
     fireEvent.press(screen.getByText('Save'));
     await waitFor(() => expect(setExerciseLibraryLink).toHaveBeenCalled());
+  });
+
+  it('library_link_set fires with is_change false for a first-time link', async () => {
+    const mockCapture = posthog.capture as jest.Mock;
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Squat'));
+    fireEvent.press(screen.getByText('Search library'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
+    fireEvent.press(await screen.findByText('3/4 Sit-Up'));
+    await waitFor(() => expect(screen.getByText('100%')).toBeTruthy());
+    fireEvent.press(screen.getByText('Save'));
+    await waitFor(() => expect(mockCapture).toHaveBeenCalledWith('library_link_set', expect.objectContaining({ is_change: false })));
+  });
+
+  it('library_link_set fires with is_change true when replacing an existing link', async () => {
+    const mockCapture = posthog.capture as jest.Mock;
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Bench Press'));
+    fireEvent.press(screen.getByText('Change match'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
+    fireEvent.press(await screen.findByText('3/4 Sit-Up'));
+    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
+    fireEvent.press(screen.getByText('Save'));
+    await waitFor(() => expect(mockCapture).toHaveBeenCalledWith('library_link_set', expect.objectContaining({ is_change: true })));
   });
 });
 
