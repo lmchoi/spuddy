@@ -392,10 +392,20 @@ describe('exercise edit sheet — search library mode', () => {
     expect(screen.getByPlaceholderText('Search library')).toBeTruthy();
   });
 
-  it('"Change match" does not open search mode for matched exercise', () => {
+  it('"Change match" opens search mode for matched exercise', () => {
     render(<ProgramDayDetailScreen />);
     fireEvent.press(screen.getByText('Bench Press'));
     fireEvent.press(screen.getByText('Change match'));
+    expect(screen.getByPlaceholderText('Search library')).toBeTruthy();
+  });
+
+  it('tapping a result from Change match replaces the existing match card', async () => {
+    render(<ProgramDayDetailScreen />);
+    fireEvent.press(screen.getByText('Bench Press'));
+    fireEvent.press(screen.getByText('Change match'));
+    fireEvent.changeText(screen.getByPlaceholderText('Search library'), '3/4 sit');
+    fireEvent.press(await screen.findByText('3/4 Sit-Up'));
+    await waitFor(() => expect(screen.getByText('3/4 Sit-Up')).toBeTruthy());
     expect(screen.queryByPlaceholderText('Search library')).toBeNull();
   });
 
