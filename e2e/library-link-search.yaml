@@ -1,7 +1,7 @@
 appId: ${APP_ID}
 ---
 - launchApp:
-    clearState: true
+    clearState: false
 
 # Navigate to Settings tab → Push day editor
 - tapOn: "Settings"
