@@ -3,6 +3,18 @@ appId: ${APP_ID}
 - launchApp:
     clearState: false
 
+# Navigate back to tab root in case a prior flow left the app deep in the stack.
+# The ← button appears in log-session and select-day; optional so it's skipped
+# if we're already at the tabs root.
+- tapOn:
+    text: "←"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "←"
+    optional: true
+- waitForAnimationToEnd
+
 # Navigate to Settings tab → Push day editor
 - tapOn: "Settings"
 - takeScreenshot: settings-screen
