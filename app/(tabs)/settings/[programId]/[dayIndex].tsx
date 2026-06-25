@@ -220,7 +220,7 @@ function ExerciseEditSheet({ exIdx, exercises, libraryRow, onRename, onLink, onC
                 <Text style={styles.btnPrimaryText}>{isMatched ? 'Save' : 'Save name'}</Text>
               </Pressable>
               {isMatched ? (
-                <Pressable style={[styles.btnSecondary, styles.btnSecondaryDisabled]} disabled>
+                <Pressable style={styles.btnSecondary} onPress={() => setMode('search')}>
                   <Text style={styles.btnSecondaryText}>Change match</Text>
                 </Pressable>
               ) : (
