@@ -77,4 +77,4 @@ New file `src/domain/searchLibrary.ts`. Empty query returns `[]`. Up to 20 resul
 - **Pre-populate search with exercise name** — initialise the search input with the existing exercise name so results appear immediately on open. Small UX improvement, zero risk.
 - **Auto-rename after linking** — after picking a library entry, rename the program exercise to the canonical library name. Safe for the common case: rename the exercises table row `name` column (sessions use `exerciseId` FK so history stays intact). Blocked on the collision case: if the library name already exists as a separate exercises row, the UNIQUE constraint on `exercises.name` prevents the rename. Removing the constraint was considered but rejected (silent duplicates). Correct solution is merge (see below).
 - **Merge exercises** — consolidate two exercises rows (and their sessions) into one. Needed when rename collides with an existing row. Prerequisite for fully correct auto-rename in the collision case.
-- **"Change match" / unlink** — swap or remove an existing library link. Button is already rendered but disabled.
+- **"Change match"** — ✓ shipped. Unlink / "Remove match" remains deferred.
