@@ -45,4 +45,6 @@ Items that can't be picked up until a dependency lands.
 
 New items land here. Triage before picking up.
 
-- **Delete orphaned Expo template files** — `components/ExternalLink.tsx`, `components/useColorScheme.ts`, `components/useColorScheme.web.ts` were left behind when their consumers (`Themed.tsx`, `EditScreenInfo.tsx`, `modal.tsx`) were deleted in PR #143. Safe to delete; nothing imports them.
+- **Progress detail back button after finish** — after finishing a session, `router.replace` to `progress/[date]` leaves no back history, so `router.back()` surfaces `select-day` instead of the progress list. Fix: pass `from=finish` param from `log-session.tsx` (lines 802/813) and guard the back button in `progress/[date].tsx` to `router.replace('/(tabs)/progress')` when `from === 'finish'`. PR 94 can be closed; this is a clean two-file change on a fresh branch.
+- **Remove NativeWind scaffold** — `metro.config.js` (`withNativewind`), `postcss.config.mjs`, `src/global.css`, `nativewind-env.d.ts`, and the `nativewind`, `react-native-css`, `tailwindcss`, `@tailwindcss/postcss` packages are all unused. Needs its own ADR before removal. Deferred from the dead-code cleanup PR.
+- **Unused exports cleanup** — knip flags 10 exported symbols and 3 exported types with no consumers: `WEIGHT_STEPS`, `STATUS_LABEL`, `importPrograms`, `insertPrograms`, `sessionExists`, 5 `COL_*` style constants in `dayIndex.styles.ts`, and types `LoggedSet`, `ParsedSection`, `ParseLine`. Low-risk; all internal. Deferred from the dead-code cleanup PR.
