@@ -32,7 +32,3 @@ appId: ${APP_ID}
 - takeScreenshot: before-set-log-assert
 - assertVisible: "Set 1"
 - assertVisible: "10 × 0 kg"
-
-# Navigate back to tab root so subsequent flows start from a known state
-- back
-- back
