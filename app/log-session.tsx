@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState, useCallback } from 'react';
+import { useEffect, useReducer, useState, useCallback, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '@/styles/log-session.styles';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { C } from '@/components/spuddy/palette';
 import { getDB } from '@/src/db';
@@ -37,6 +37,7 @@ import {
   resolvePostSessionAction,
   buildNewDay,
   reconcileDraft,
+  shouldPromptOnExit,
   type SessionState,
 } from '@/src/domain/sessionLogger';
 import { DEFAULT_REST_SECONDS } from '@/src/types';
@@ -632,6 +633,7 @@ function inputFromTarget(day: ProgramDay, session: SessionState): InputState {
 export default function LogSession() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const navigation = useNavigation();
   const { programId, dayIndex } = useLocalSearchParams<{ programId: string; dayIndex: string }>();
 
   const [state, setState] = useReducer(
@@ -640,6 +642,50 @@ export default function LogSession() {
   );
   const [noteSheetOpen, setNoteSheetOpen] = useState(false);
   const [addExerciseSheetOpen, setAddExerciseSheetOpen] = useState(false);
+
+  const stateRef = useRef(state);
+
+  useEffect(() => {
+    stateRef.current = state;
+  });
+
+  useEffect(() => {
+    return navigation.addListener('beforeRemove', (e) => {
+      if (!shouldPromptOnExit()) return;
+      e.preventDefault();
+      Alert.alert(
+        'Leave session?',
+        'Your progress is saved as a draft. Discard to remove it.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              posthog.capture('session_exit_cancel');
+            },
+          },
+          {
+            text: 'Resume later',
+            onPress: () => {
+              posthog.capture('session_exit_resume_later');
+              navigation.dispatch(e.data.action);
+            },
+          },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: async () => {
+              posthog.capture('session_exit_discard');
+              const s = stateRef.current;
+              if (s.status === 'ready') await clearDraft(s.key).catch(() => {});
+              navigation.dispatch(e.data.action);
+            },
+          },
+        ],
+      );
+    });
+  }, [navigation]);
+
   useEffect(() => {
     async function load() {
       try {

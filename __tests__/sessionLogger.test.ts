@@ -15,6 +15,7 @@ import {
   resolvePostSessionAction,
   reconcileDraft,
   addExercise,
+  shouldPromptOnExit,
 } from '../src/domain/sessionLogger';
 import type { ProgramDay } from '../src/types';
 
@@ -589,5 +590,11 @@ describe('addExercise', () => {
     const { session, day: d1 } = addExercise(state, day, 'Cable Fly');
     const newDay = buildNewDay(session, d1, 'Next Day');
     expect(newDay.exercises.map(e => e.name)).not.toContain('Cable Fly');
+  });
+});
+
+describe('shouldPromptOnExit', () => {
+  it('returns true', () => {
+    expect(shouldPromptOnExit()).toBe(true);
   });
 });

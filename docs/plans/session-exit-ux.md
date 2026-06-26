@@ -17,9 +17,10 @@ When the user navigates away from an active session, show a Keep / Discard promp
 On `beforeRemove`:
 1. Call `shouldPromptOnExit()` — currently a stub returning `true`; the hook for future set-count logic
 2. Call `e.preventDefault()` to block navigation
-3. Show `Alert.alert` with two buttons:
-   - **Keep** — does nothing; user stays in session; fires `session_exit_keep`
-   - **Discard** — calls `clearDraft(key)` then `navigation.dispatch(e.data.action)` to complete the blocked navigation; fires `session_exit_discard`
+3. Show `Alert.alert` with three buttons:
+   - **Cancel** — does nothing; user stays in session; fires `session_exit_cancel`
+   - **Resume later** — navigates back *and* keeps the draft (auto-resume on next open); fires `session_exit_resume_later`
+   - **Discard** — calls `clearDraft(key)` then `navigation.dispatch(e.data.action)`; fires `session_exit_discard`
 
 **Files changing:**
 - `src/domain/sessionLogger.ts` — add `shouldPromptOnExit()`
@@ -27,9 +28,10 @@ On `beforeRemove`:
 
 No schema changes, no new storage keys, no new routes.
 
-**PostHog events:** `session_exit_keep`, `session_exit_discard` — no properties in this PR (deferred).
+**PostHog events:** `session_exit_cancel`, `session_exit_resume_later`, `session_exit_discard` — no properties in this PR (deferred).
 
 ## Commits
 
-1. `feat: add shouldPromptOnExit domain function` — test: returns `true`; exists as hook for future set-count guard
-2. `feat: wire session exit prompt via beforeRemove` — manual verify: prompt appears on back tap, Discard clears draft and navigates, Keep stays in session; `session_exit_keep` / `session_exit_discard` fired
+1. `feat: add shouldPromptOnExit domain function` — test: returns `true`; exists as hook for future set-count guard ✓
+2. `feat: wire session exit prompt via beforeRemove` — initial 2-button Keep/Discard wiring ✓
+3. `fix: session exit prompt — 3-button UX (Dismiss / Keep / Discard)` — Dismiss stays in session, Keep goes back keeping draft, Discard clears draft then goes back

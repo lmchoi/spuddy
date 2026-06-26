@@ -30,6 +30,7 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ programId: '1', dayIndex: '0' }),
   useRouter: () => ({ replace: mockReplace, back: jest.fn(), canGoBack: jest.fn().mockReturnValue(true) }),
+  useNavigation: () => ({ addListener: jest.fn(() => () => {}), dispatch: jest.fn() }),
   Stack: { Screen: () => null },
 }));
 

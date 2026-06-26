@@ -123,6 +123,10 @@ export function resolvePostSessionAction(state: SessionState): 'prompt' | 'navig
   return detectSessionChanges(state) ? 'prompt' : 'navigate';
 }
 
+export function shouldPromptOnExit(): boolean {
+  return true;
+}
+
 export function addExercise(
   state: SessionState,
   day: ProgramDay,
