@@ -644,7 +644,10 @@ export default function LogSession() {
   const [addExerciseSheetOpen, setAddExerciseSheetOpen] = useState(false);
 
   const stateRef = useRef(state);
-  stateRef.current = state;
+
+  useEffect(() => {
+    stateRef.current = state;
+  });
 
   useEffect(() => {
     return navigation.addListener('beforeRemove', (e) => {
