@@ -1614,7 +1614,7 @@ describe('session exit prompt', () => {
     const action = { type: 'GO_BACK' };
     const fakeEvent = { preventDefault: jest.fn(), data: { action } };
     await act(async () => { capturedBeforeRemoveListener!(fakeEvent); });
-    expect(clearDraft).toHaveBeenCalled();
+    expect(clearDraft).toHaveBeenCalledWith('draft_session__1__0');
     expect(mockDispatch).toHaveBeenCalledWith(action);
     expect(posthog.capture).toHaveBeenCalledWith('session_exit_discard');
   });

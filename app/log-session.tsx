@@ -685,6 +685,7 @@ export default function LogSession() {
       );
     });
   }, [navigation]);
+
   useEffect(() => {
     async function load() {
       try {
