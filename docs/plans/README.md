@@ -9,20 +9,15 @@ Index of implementation plan files. For priority and roadmap, see `docs/backlog.
 | [Abandon Session Prompt](./abandon-session-prompt.md) | Prompt to discard or keep draft when backing out of a session |
 | [Add Exercise Picker](./add-exercise-picker.md) | Pick from previously-used exercises instead of typing from scratch |
 | [Add Workout Live Preview](./add-workout-live-preview.md) | Add Workout screen — live preview of the day before starting |
-| [Await Draft Saves](./await-draft-saves.md) | Add `await` to `saveDraft()` calls so no set is lost on OS kill |
-| [Freeform Notes Follow-up](./freeform-notes-followup.md) | Refine freeform import — destructive behaviour + parser ambiguities |
 | [Import Warnings Pattern](./import-warnings-pattern.md) | Surface partial data loss via consistent `warnings` on import results |
 | [Improve Test Coverage](./improve-test-coverage.md) | Improve test coverage across domain and UI layers |
-| [Maestro Notes Paste Flow](./maestro-notes-paste-flow.md) | E2E flow for the notes-paste happy path |
 | [Notification Sound Toggle](./notification-sound-toggle.md) | Toggle rest-timer notification sound on/off |
 | [Personal Records](./personal-records.md) | Personal Records — storage and display |
-| [Post-session Program Update](./post-session-program-update.md) | Prompt to save a new program day when logged sets diverge |
-| [PostHog Analytics](./posthog-analytics.md) | Usage analytics via PostHog |
-| [Progress Streak Hero](./progress-streak-hero.md) | Progress tab — Streak Hero + pill tab bar |
 | [Program Import UX](./program-import-ux.md) | Program import UX improvements |
+| [Rename Exercise](./rename-exercise.md) | Rename an exercise with library re-matching |
+| [Session Exit UX](./session-exit-ux.md) | Keep / Discard prompt when navigating away from an active session |
 | [Settings Page Redesign](./settings-page-redesign.md) | Settings page redesign |
-| [Stylesheet Extraction](./stylesheet-extraction.md) | Move inline `StyleSheet` blocks into sibling `*.styles.ts` files |
-| [Tab Bar Pill](./tab-bar-pill.md) | Tab bar — floating pill redesign |
+| [Tab Bar Pill](./tab-bar-pill.md) | Tab bar — floating pill redesign (Slice 2: Settings warm-dark) |
 | [What's New](./whats-new.md) | Static changelog in Settings |
 
 ## Archived
@@ -30,6 +25,9 @@ Index of implementation plan files. For priority and roadmap, see `docs/backlog.
 | Plan | Summary |
 | :--- | :--- |
 | [Add Exercise Mid-session](./archive/add-exercise-mid-session.md) | Add a new exercise during a live session via pill + name sheet |
+| [Add Exercise Settings](./archive/add-exercise-settings.md) | Bottom sheet for adding exercises in the program day editor |
+| [Library Link Override](./archive/library-link-override.md) | Manual library link override + Change match in ExerciseEditSheet |
+| [PostHog Analytics](./archive/posthog-analytics.md) | Usage analytics via PostHog |
 | [Add Extra Set](./archive/add-extra-set.md) | Add an extra set to an exercise mid-session |
 | [Android UI Alignment](./archive/android-ui-alignment.md) | Bring all screens onto the M3/ADR-014 design baseline |
 | [Data Export (SQLite)](./archive/data-export-sqlite.md) | VACUUM INTO backup + share sheet in Settings |
