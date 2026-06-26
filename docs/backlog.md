@@ -8,7 +8,7 @@ Sections are ordered by priority. New items land in **Inbox** first; triage move
 
 Core loop for a new user setting up via notes import or a simple program.
 
-- **Session exit UX** — when the user backs out of a live session, prompt to keep or discard the draft. Resume already lands them back in automatically; this is the deliberate-discard path. Plan: `docs/plans/abandon-session-prompt.md`.
+- **Session exit UX** — when the user backs out of a live session, prompt to keep or discard the draft. Resume already lands them back in automatically; this is the deliberate-discard path. Plan: `docs/plans/session-exit-ux.md`.
 - **Progress detail back button after finish** — after finishing a session, `router.replace` to `progress/[date]` leaves no back history, so `router.back()` surfaces `select-day` instead of the progress list. Fix: pass `from=finish` param from `log-session.tsx` (lines 802/813) and guard the back button in `progress/[date].tsx` to `router.replace('/(tabs)/progress')` when `from === 'finish'`. PR 94 can be closed; this is a clean two-file change on a fresh branch.
 
 ## Next milestone (Strong parity)
@@ -20,6 +20,8 @@ Features needed for a power user migrating from Strong with years of history.
 
 ## Nice to have
 
+- **Session exit: skip prompt when no sets logged** — `shouldPromptOnExit` currently always returns `true`; enhance it to return `false` when zero sets have been logged across all exercises. One extra argument to the function, one extra test case. Deferred from `session-exit-ux`.
+- **Session exit: PostHog event properties** — add `sets_logged`, `exercises_started`, and `total_exercises` as properties on `session_exit_keep` / `session_exit_discard` events, and `exercises_started` to `session_completed` for parity. Extract a `buildSessionEventProperties(state)` selector in `src/domain/sessionLogger.ts` so all three call sites share the same code path. Deferred from `session-exit-ux`.
 - **Pre-populate library search with exercise name** — initialise the search input in `ExerciseEditSheet` search mode with the current exercise name so results appear immediately on open. Small UX improvement, zero risk. Deferred from `library-link-override`.
 - **Auto-rename after linking** — after picking a library entry via "Search library" or "Change match", rename the program exercise to the canonical library name. Safe unless the library name already exists as a separate `exercises` row (UNIQUE constraint prevents rename in that case — blocked on Merge exercises below). Deferred from `library-link-override`.
 - **Remove match / unlink** — allow users to clear a manual or auto-matched library link from `ExerciseEditSheet`. Only "Change match" was shipped; unlinking was deferred from `library-link-override`.
