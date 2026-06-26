@@ -47,6 +47,24 @@ git pull
 git branch -d "$BRANCH"
 ```
 
-### Step 5: Confirm
+### Step 5: Archive the plan
 
-Tell the user the branch and worktree have been cleaned up and they are back on main.
+Check whether a plan file exists for this milestone:
+
+```bash
+ls docs/plans/"$SLUG".md 2>/dev/null
+```
+
+If the file exists, move it to the archive and update the README:
+
+```bash
+mv docs/plans/"$SLUG".md docs/plans/archive/"$SLUG".md
+```
+
+Then remove the corresponding row from the `## Active` table in `docs/plans/README.md` and add a row to the `## Archived` table. Insert it in alphabetical order by plan title.
+
+If no matching plan file is found, list the files in `docs/plans/` and ask the user which one (if any) corresponds to this milestone.
+
+### Step 6: Confirm
+
+Tell the user the branch and worktree have been cleaned up, they are back on main, and which plan file (if any) was archived.
