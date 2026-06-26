@@ -32,6 +32,14 @@ const mockReplace = jest.fn();
 const mockBack = jest.fn();
 const mockCanGoBack = jest.fn().mockReturnValue(true);
 
+type BeforeRemoveListener = (e: { preventDefault: () => void; data: { action: object } }) => void;
+let capturedBeforeRemoveListener: BeforeRemoveListener | null = null;
+const mockDispatch = jest.fn();
+const mockAddListener = jest.fn((event: string, cb: BeforeRemoveListener) => {
+  if (event === 'beforeRemove') capturedBeforeRemoveListener = cb;
+  return () => {};
+});
+
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
@@ -39,6 +47,7 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ programId: '1', dayIndex: '0' }),
   useRouter: () => ({ replace: mockReplace, back: mockBack, canGoBack: mockCanGoBack }),
+  useNavigation: () => ({ addListener: mockAddListener, dispatch: mockDispatch }),
   Stack: { Screen: () => null },
 }));
 
@@ -1526,7 +1535,67 @@ describe('add exercise mid-session', () => {
         fireEvent.changeText(screen.getByPlaceholderText('Exercise name'), 'Cable Fly');
       });
       await act(async () => { fireEvent.press(screen.getByText("Create 'Cable Fly'")); });
-      
+
       expect(resolveOrCreateExercise).toHaveBeenCalledWith(expect.anything(), 'Cable Fly', undefined);
     });
   });
+
+// ─── Session exit prompt ──────────────────────────────────────────────────────
+
+describe('session exit prompt', () => {
+  beforeEach(() => {
+    capturedBeforeRemoveListener = null;
+  });
+
+  it('registers a beforeRemove listener on mount', async () => {
+    render(<LogSession />);
+    await waitFor(() => expect(screen.getAllByText('Squat').length).toBeGreaterThan(0));
+    expect(mockAddListener).toHaveBeenCalledWith('beforeRemove', expect.any(Function));
+    expect(capturedBeforeRemoveListener).not.toBeNull();
+  });
+
+  it('shows Keep/Discard alert when beforeRemove fires', async () => {
+    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    render(<LogSession />);
+    await waitFor(() => expect(capturedBeforeRemoveListener).not.toBeNull());
+    const fakeEvent = { preventDefault: jest.fn(), data: { action: {} } };
+    act(() => { capturedBeforeRemoveListener!(fakeEvent); });
+    expect(fakeEvent.preventDefault).toHaveBeenCalled();
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Leave session?',
+      expect.any(String),
+      expect.arrayContaining([
+        expect.objectContaining({ text: 'Keep' }),
+        expect.objectContaining({ text: 'Discard' }),
+      ]),
+    );
+  });
+
+  it('Discard clears draft and dispatches navigation action', async () => {
+    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      const discard = (buttons as { text: string; onPress?: () => void }[]).find(b => b.text === 'Discard');
+      discard?.onPress?.();
+    });
+    render(<LogSession />);
+    await waitFor(() => expect(capturedBeforeRemoveListener).not.toBeNull());
+    const action = { type: 'GO_BACK' };
+    const fakeEvent = { preventDefault: jest.fn(), data: { action } };
+    await act(async () => { capturedBeforeRemoveListener!(fakeEvent); });
+    expect(clearDraft).toHaveBeenCalled();
+    expect(mockDispatch).toHaveBeenCalledWith(action);
+  });
+
+  it('Keep fires posthog event and does not navigate', async () => {
+    const { posthog } = jest.requireMock('@/src/config/posthog');
+    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      const keep = (buttons as { text: string; onPress?: () => void }[]).find(b => b.text === 'Keep');
+      keep?.onPress?.();
+    });
+    render(<LogSession />);
+    await waitFor(() => expect(capturedBeforeRemoveListener).not.toBeNull());
+    const fakeEvent = { preventDefault: jest.fn(), data: { action: {} } };
+    act(() => { capturedBeforeRemoveListener!(fakeEvent); });
+    expect(mockDispatch).not.toHaveBeenCalled();
+    expect(posthog.capture).toHaveBeenCalledWith('session_exit_keep');
+  });
+});
