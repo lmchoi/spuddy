@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Exercise — placement options</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0e0b07;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #F5EDDD;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  h1 { font-size: 13px; color: #6B5639; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: -32px; }
+
+  /* ── phone shell ── */
+  .phone {
+    background: #181109;
+    border-radius: 36px;
+    border: 2px solid #3A2C1F;
+    padding: 0;
+    max-width: 360px;
+    overflow: hidden;
+  }
+
+  .label {
+    font-size: 11px;
+    color: #A89175;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+
+  .option-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #B7D26A;
+    padding: 12px 16px 0;
+  }
+
+  .option-desc {
+    font-size: 12px;
+    color: #A89175;
+    padding: 4px 16px 12px;
+    line-height: 1.5;
+  }
+
+  /* ── status bar ── */
+  .statusbar {
+    height: 44px;
+    background: #181109;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    justify-content: space-between;
+  }
+  .statusbar-time { font-size: 15px; font-weight: 600; color: #F5EDDD; }
+  .statusbar-icons { display: flex; gap: 6px; align-items: center; }
+  .statusbar-icon { width: 16px; height: 10px; background: #F5EDDD; border-radius: 2px; opacity: 0.8; }
+
+  /* ── header ── */
+  .screen-header {
+    padding: 8px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #251A12;
+  }
+  .back-btn {
+    font-size: 13px;
+    color: #B7D26A;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .header-title { font-size: 13px; font-weight: 700; color: #F5EDDD; }
+  .header-timer { font-size: 13px; color: #A89175; font-variant-numeric: tabular-nums; }
+
+  /* ── strip ── */
+  .strip {
+    padding: 12px 16px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-bottom: 1px solid #251A12;
+  }
+
+  .chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 7px 11px;
+    border-radius: 999px;
+    border: 1px solid #3A2C1F;
+    background: #2E2218;
+    gap: 5px;
+    cursor: pointer;
+  }
+  .chip.active { border-color: #B7D26A; background: #2F3D1B; }
+  .chip.done { opacity: 0.5; }
+
+  .chip-name { font-size: 12px; font-weight: 600; color: #D6C2A2; white-space: nowrap; }
+  .chip.active .chip-name { color: #B7D26A; }
+  .chip.done .chip-name { color: #6B5639; }
+
+  .chip-dots { display: flex; gap: 4px; align-items: center; }
+  .dot { width: 5px; height: 5px; border-radius: 3px; background: #3A2C1F; }
+  .dot.hit { background: #B7D26A; }
+  .dot.active { background: transparent; border: 1px solid #B7D26A; }
+
+  /* ── add pill variants ── */
+  .add-chip {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 7px 11px;
+    border-radius: 999px;
+    gap: 6px;
+    cursor: pointer;
+    align-self: center;
+  }
+  .add-chip-dashed {
+    border: 1.5px dashed #52402C;
+    background: transparent;
+  }
+  .add-chip-dashed:hover { border-color: #B7D26A; }
+  .add-chip-text { font-size: 12px; font-weight: 600; color: #6B5639; }
+  .add-chip-icon { font-size: 14px; color: #6B5639; line-height: 1; }
+
+  /* below strip row */
+  .add-row {
+    padding: 8px 16px 10px;
+    border-bottom: 1px solid #251A12;
+  }
+
+  /* ── exercise card ── */
+  .exercise-area { padding: 16px; }
+  .ex-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .ex-name { font-size: 18px; font-weight: 700; color: #F5EDDD; }
+  .ex-meta { font-size: 12px; color: #A89175; margin-top: 2px; }
+  .note-btn { font-size: 12px; color: #A89175; padding: 4px 0; }
+
+  .set-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #251A12;
+  }
+  .set-num { font-size: 12px; color: #6B5639; width: 24px; }
+  .stepper { display: flex; align-items: center; gap: 8px; flex: 1; background: #2E2218; border-radius: 12px; padding: 10px 14px; }
+  .stepper-btn { width: 28px; height: 28px; border-radius: 8px; background: #3A2C1F; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #D6C2A2; }
+  .stepper-val { flex: 1; text-align: center; font-size: 16px; font-weight: 700; color: #F5EDDD; }
+  .stepper-label { font-size: 10px; color: #6B5639; text-align: center; }
+
+  .log-btn {
+    margin-top: 14px;
+    background: #B7D26A;
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #181109;
+  }
+
+  /* ── bottom add exercise (option C) ── */
+  .bottom-add {
+    padding: 12px 16px;
+    border-top: 1px solid #251A12;
+    display: flex;
+    justify-content: center;
+  }
+  .add-chip-outline {
+    border: 1.5px dashed #52402C;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 18px;
+    border-radius: 999px;
+    gap: 7px;
+    cursor: pointer;
+  }
+
+  .divider {
+    height: 1px;
+    background: #251A12;
+    margin: 0;
+  }
+
+  .scroll-hint { padding: 0 16px 6px; font-size: 10px; color: #3A2C1F; text-align: right; }
+</style>
+</head>
+<body>
+
+<h1>Add exercise pill — placement options</h1>
+
+<!-- ══════════════════════════════════════════════════════
+     OPTION A — pill inline in the strip, after last chip
+     ══════════════════════════════════════════════════════ -->
+<div>
+  <div class="option-label">Option A — inline in the strip</div>
+  <div class="option-desc">The + pill sits in the wrap-flow alongside the exercise chips. Feels like "another exercise slot waiting to be filled." Scroll behaviour: if the strip wraps to 2 rows it's always at the end of the last row.</div>
+  <div class="phone">
+    <div class="statusbar">
+      <span class="statusbar-time">9:41</span>
+      <div class="statusbar-icons"><div class="statusbar-icon"></div></div>
+    </div>
+    <div class="screen-header">
+      <span class="back-btn">‹ Back</span>
+      <span class="header-title">Push A</span>
+      <span class="header-timer">24:07</span>
+    </div>
+    <div class="strip">
+      <div class="chip done">
+        <span class="chip-name">Bench Press</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot hit"></div><div class="dot hit"></div></div>
+      </div>
+      <div class="chip done">
+        <span class="chip-name">Incline DB</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot hit"></div><div class="dot"></div></div>
+      </div>
+      <div class="chip active">
+        <span class="chip-name">Tricep Pushdown</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot active"></div><div class="dot"></div></div>
+      </div>
+      <!-- ADD CHIP -->
+      <div class="add-chip add-chip-dashed">
+        <span class="add-chip-icon">+</span>
+        <span class="add-chip-text">Add exercise</span>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="exercise-area">
+      <div class="ex-header">
+        <div>
+          <div class="ex-name">Tricep Pushdown</div>
+          <div class="ex-meta">Set 2 of 3</div>
+        </div>
+        <div class="note-btn">📝</div>
+      </div>
+      <div class="set-row">
+        <div class="set-num">1</div>
+        <div class="stepper"><div class="stepper-btn">−</div><div><div class="stepper-val">12</div><div class="stepper-label">REPS</div></div><div class="stepper-btn">+</div></div>
+        <div class="stepper"><div class="stepper-btn">−</div><div><div class="stepper-val">20</div><div class="stepper-label">KG</div></div><div class="stepper-btn">+</div></div>
+      </div>
+      <div class="log-btn">Log set</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     OPTION B — pill on its own row below the strip
+     ══════════════════════════════════════════════════════ -->
+<div>
+  <div class="option-label">Option B — own row below strip</div>
+  <div class="option-desc">Strip stays clean with only real exercises. The + pill sits on a dedicated row beneath, left-aligned. Clear visual hierarchy: "here are your exercises / here is the escape hatch." Easiest to tap on a phone.</div>
+  <div class="phone">
+    <div class="statusbar">
+      <span class="statusbar-time">9:41</span>
+      <div class="statusbar-icons"><div class="statusbar-icon"></div></div>
+    </div>
+    <div class="screen-header">
+      <span class="back-btn">‹ Back</span>
+      <span class="header-title">Push A</span>
+      <span class="header-timer">24:07</span>
+    </div>
+    <div class="strip">
+      <div class="chip done">
+        <span class="chip-name">Bench Press</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot hit"></div><div class="dot hit"></div></div>
+      </div>
+      <div class="chip done">
+        <span class="chip-name">Incline DB</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot hit"></div><div class="dot"></div></div>
+      </div>
+      <div class="chip active">
+        <span class="chip-name">Tricep Pushdown</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot active"></div><div class="dot"></div></div>
+      </div>
+    </div>
+    <div class="add-row">
+      <div class="add-chip add-chip-dashed" style="display:inline-flex;">
+        <span class="add-chip-icon">+</span>
+        <span class="add-chip-text">Add exercise</span>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="exercise-area">
+      <div class="ex-header">
+        <div>
+          <div class="ex-name">Tricep Pushdown</div>
+          <div class="ex-meta">Set 2 of 3</div>
+        </div>
+        <div class="note-btn">📝</div>
+      </div>
+      <div class="set-row">
+        <div class="set-num">1</div>
+        <div class="stepper"><div class="stepper-btn">−</div><div><div class="stepper-val">12</div><div class="stepper-label">REPS</div></div><div class="stepper-btn">+</div></div>
+        <div class="stepper"><div class="stepper-btn">−</div><div><div class="stepper-val">20</div><div class="stepper-label">KG</div></div><div class="stepper-btn">+</div></div>
+      </div>
+      <div class="log-btn">Log set</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     OPTION C — centered pill at the bottom of the scroll
+     ══════════════════════════════════════════════════════ -->
+<div>
+  <div class="option-label">Option C — bottom of scroll, below current card</div>
+  <div class="option-desc">The + pill anchors below the active exercise card. User discovers it by scrolling down. Least disruptive to the strip — the strip stays purely navigational. Downside: hidden by default; user has to know to scroll.</div>
+  <div class="phone">
+    <div class="statusbar">
+      <span class="statusbar-time">9:41</span>
+      <div class="statusbar-icons"><div class="statusbar-icon"></div></div>
+    </div>
+    <div class="screen-header">
+      <span class="back-btn">‹ Back</span>
+      <span class="header-title">Push A</span>
+      <span class="header-timer">24:07</span>
+    </div>
+    <div class="strip">
+      <div class="chip done">
+        <span class="chip-name">Bench Press</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot hit"></div><div class="dot hit"></div></div>
+      </div>
+      <div class="chip done">
+        <span class="chip-name">Incline DB</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot hit"></div><div class="dot"></div></div>
+      </div>
+      <div class="chip active">
+        <span class="chip-name">Tricep Pushdown</span>
+        <div class="chip-dots"><div class="dot hit"></div><div class="dot active"></div><div class="dot"></div></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="exercise-area">
+      <div class="ex-header">
+        <div>
+          <div class="ex-name">Tricep Pushdown</div>
+          <div class="ex-meta">Set 2 of 3</div>
+        </div>
+        <div class="note-btn">📝</div>
+      </div>
+      <div class="set-row">
+        <div class="set-num">1</div>
+        <div class="stepper"><div class="stepper-btn">−</div><div><div class="stepper-val">12</div><div class="stepper-label">REPS</div></div><div class="stepper-btn">+</div></div>
+        <div class="stepper"><div class="stepper-btn">−</div><div><div class="stepper-val">20</div><div class="stepper-label">KG</div></div><div class="stepper-btn">+</div></div>
+      </div>
+      <div class="log-btn">Log set</div>
+    </div>
+    <div class="scroll-hint">↓ scroll</div>
+    <div class="bottom-add">
+      <div class="add-chip-outline">
+        <span style="font-size:14px; color:#6B5639;">+</span>
+        <span style="font-size:12px; font-weight:600; color:#6B5639;">Add exercise</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
