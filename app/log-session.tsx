@@ -658,10 +658,17 @@ export default function LogSession() {
         'Your progress is saved as a draft. Discard to remove it.',
         [
           {
-            text: 'Keep',
+            text: 'Cancel',
             style: 'cancel',
             onPress: () => {
-              posthog.capture('session_exit_keep');
+              posthog.capture('session_exit_cancel');
+            },
+          },
+          {
+            text: 'Resume later',
+            onPress: () => {
+              posthog.capture('session_exit_resume_later');
+              navigation.dispatch(e.data.action);
             },
           },
           {

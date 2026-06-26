@@ -1554,7 +1554,7 @@ describe('session exit prompt', () => {
     expect(capturedBeforeRemoveListener).not.toBeNull();
   });
 
-  it('shows Keep/Discard alert when beforeRemove fires', async () => {
+  it('shows Cancel/Resume later/Discard alert when beforeRemove fires', async () => {
     jest.spyOn(Alert, 'alert').mockImplementation(() => {});
     render(<LogSession />);
     await waitFor(() => expect(capturedBeforeRemoveListener).not.toBeNull());
@@ -1565,13 +1565,46 @@ describe('session exit prompt', () => {
       'Leave session?',
       expect.any(String),
       expect.arrayContaining([
-        expect.objectContaining({ text: 'Keep' }),
+        expect.objectContaining({ text: 'Cancel' }),
+        expect.objectContaining({ text: 'Resume later' }),
         expect.objectContaining({ text: 'Discard' }),
       ]),
     );
   });
 
+  it('Cancel stays in session and fires posthog event', async () => {
+    const { posthog } = jest.requireMock('@/src/config/posthog');
+    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      const cancel = (buttons as { text: string; onPress?: () => void }[]).find(b => b.text === 'Cancel');
+      cancel?.onPress?.();
+    });
+    render(<LogSession />);
+    await waitFor(() => expect(capturedBeforeRemoveListener).not.toBeNull());
+    const fakeEvent = { preventDefault: jest.fn(), data: { action: {} } };
+    act(() => { capturedBeforeRemoveListener!(fakeEvent); });
+    expect(mockDispatch).not.toHaveBeenCalled();
+    expect(clearDraft).not.toHaveBeenCalled();
+    expect(posthog.capture).toHaveBeenCalledWith('session_exit_cancel');
+  });
+
+  it('Resume later dispatches navigation without clearing draft', async () => {
+    const { posthog } = jest.requireMock('@/src/config/posthog');
+    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      const resume = (buttons as { text: string; onPress?: () => void }[]).find(b => b.text === 'Resume later');
+      resume?.onPress?.();
+    });
+    render(<LogSession />);
+    await waitFor(() => expect(capturedBeforeRemoveListener).not.toBeNull());
+    const action = { type: 'GO_BACK' };
+    const fakeEvent = { preventDefault: jest.fn(), data: { action } };
+    act(() => { capturedBeforeRemoveListener!(fakeEvent); });
+    expect(clearDraft).not.toHaveBeenCalled();
+    expect(mockDispatch).toHaveBeenCalledWith(action);
+    expect(posthog.capture).toHaveBeenCalledWith('session_exit_resume_later');
+  });
+
   it('Discard clears draft and dispatches navigation action', async () => {
+    const { posthog } = jest.requireMock('@/src/config/posthog');
     jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
       const discard = (buttons as { text: string; onPress?: () => void }[]).find(b => b.text === 'Discard');
       discard?.onPress?.();
@@ -1583,19 +1616,6 @@ describe('session exit prompt', () => {
     await act(async () => { capturedBeforeRemoveListener!(fakeEvent); });
     expect(clearDraft).toHaveBeenCalled();
     expect(mockDispatch).toHaveBeenCalledWith(action);
-  });
-
-  it('Keep fires posthog event and does not navigate', async () => {
-    const { posthog } = jest.requireMock('@/src/config/posthog');
-    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
-      const keep = (buttons as { text: string; onPress?: () => void }[]).find(b => b.text === 'Keep');
-      keep?.onPress?.();
-    });
-    render(<LogSession />);
-    await waitFor(() => expect(capturedBeforeRemoveListener).not.toBeNull());
-    const fakeEvent = { preventDefault: jest.fn(), data: { action: {} } };
-    act(() => { capturedBeforeRemoveListener!(fakeEvent); });
-    expect(mockDispatch).not.toHaveBeenCalled();
-    expect(posthog.capture).toHaveBeenCalledWith('session_exit_keep');
+    expect(posthog.capture).toHaveBeenCalledWith('session_exit_discard');
   });
 });
